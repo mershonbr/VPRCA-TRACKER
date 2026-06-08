@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VPRCA Team Project Tracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
+<style>
+:root{--ou-green:#006A4E;--ou-green-dark:#00472F;--ou-green-light:#E8F4F0;--ou-gold:#C5962B;--ou-gold-light:#FDF6E3;--bg:#fff;--bg2:#f7f8f9;--bg3:#eef0f2;--text:#111827;--text2:#4B5563;--text3:#9CA3AF;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);--radius:8px;--radius-lg:12px;--green-bg:#E8F5E9;--green-text:#1B5E20;--green-border:#81C784;--yellow-bg:#FFFDE7;--yellow-text:#7B5800;--yellow-border:#FFD54F;--red-bg:#FFEBEE;--red-text:#B71C1C;--red-border:#EF9A9A;--black-bg:#ECEFF1;--black-text:#263238;--black-border:#90A4AE;--blue-bg:#E3F2FD;--blue-text:#0D47A1;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06);}
+@media(prefers-color-scheme:dark){:root{--ou-green:#00A67E;--ou-green-dark:#007A5E;--ou-green-light:#0a2820;--ou-gold:#E8B84B;--ou-gold-light:#2a1f00;--bg:#111827;--bg2:#1F2937;--bg3:#161D29;--text:#F9FAFB;--text2:#9CA3AF;--text3:#4B5563;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);--green-bg:#0a2e0a;--green-text:#86EFAC;--green-border:#166534;--yellow-bg:#1c1500;--yellow-text:#FDE68A;--yellow-border:#92400E;--red-bg:#1f0808;--red-text:#FCA5A5;--red-border:#7F1D1D;--black-bg:#1a2530;--black-text:#CBD5E1;--black-border:#334155;--blue-bg:#0c1f3d;--blue-text:#93C5FD;--shadow:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 12px rgba(0,0,0,.4);}}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg3);color:var(--text);min-height:100vh}input,select,textarea,button{font-family:inherit}
+#loading-screen{position:fixed;inset:0;background:var(--ou-green-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:1.5rem}
+#loading-screen .ls-logo{height:72px;width:auto;filter:brightness(0) invert(1)}
+#loading-screen .ls-title{color:#fff;font-size:18px;font-weight:700}
+#loading-screen .ls-sub{color:rgba(255,255,255,.6);font-size:13px}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#login-wrap{display:none;position:fixed;inset:0;background:var(--ou-green-dark);align-items:center;justify-content:center;z-index:9998;padding:1rem}
+#login-wrap.show{display:flex}
+.lcard{background:var(--bg);border-radius:var(--radius-lg);width:100%;max-width:400px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.lcard-head{background:var(--ou-green-dark);padding:1.75rem;text-align:center;border-bottom:3px solid var(--ou-gold)}
+.lcard-head img{height:44px;width:auto;filter:brightness(0) invert(1);margin-bottom:.75rem}
+.lcard-head h2{color:#fff;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.lcard-head p{color:rgba(255,255,255,.6);font-size:12px;margin-top:3px}
+.lcard-body{padding:1.75rem}
+.lf{margin-bottom:1rem}
+.lf label{display:block;font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.lf input,.lf select{width:100%;height:42px;padding:0 12px;font-size:14px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
+.lf input:focus,.lf select:focus{border-color:var(--ou-green)}
+.lbtn{width:100%;height:44px;background:var(--ou-green);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;margin-top:.25rem;transition:background .15s}
+.lbtn:hover{background:var(--ou-green-dark)}
+.lerr{background:var(--red-bg);color:var(--red-text);border:1px solid var(--red-border);border-radius:var(--radius);padding:.6rem .85rem;font-size:13px;margin-bottom:.75rem;display:none}
+.lerr.show{display:block}
+.linfo{background:var(--blue-bg);color:var(--blue-text);border:1px solid #90CAF9;border-radius:var(--radius);padding:.6rem .85rem;font-size:13px;margin-bottom:.75rem;display:none}
+.linfo.show{display:block}
+.lsuccess{background:var(--green-bg);color:var(--green-text);border:1px solid var(--green-border);border-radius:var(--radius);padding:.6rem .85rem;font-size:13px;margin-bottom:.75rem;display:none}
+.lsuccess.show{display:block}
+.llink{background:none;border:none;color:var(--ou-green);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;margin-top:.75rem;display:inline-block}
+.topbar{background:var(--ou-green-dark);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--ou-gold)}
+.topbar-brand{display:flex;align-items:center;gap:14px}
+.topbar-title h1{color:#fff;font-size:13px;font-weight:700;line-height:1.2}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.live-dot{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#86EFAC;padding:3px 8px;border-radius:20px;border:1px solid rgba(134,239,172,.3);background:rgba(134,239,172,.1)}
+.live-dot span{width:6px;height:6px;border-radius:50%;background:#86EFAC;animation:pulse 2s infinite;display:inline-block}
+.user-chip{display:flex;align-items:center;gap:7px;padding:3px 10px 3px 4px;border-radius:20px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
+.u-av{width:26px;height:26px;border-radius:50%;background:var(--ou-gold);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--ou-green-dark);flex-shrink:0}
+.u-name{color:#fff;font-size:12px;font-weight:600}
+.main{max-width:1600px;margin:0 auto;padding:1.25rem 1.5rem 4rem}
+.metric-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
+.mc{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:.85rem 1rem;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.mc.g::before{background:var(--green-border)}.mc.y::before{background:var(--yellow-border)}.mc.r::before{background:var(--red-border)}.mc.o::before{background:var(--ou-gold)}
+.mc .ml{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px}
+.mc .mv{font-size:26px;font-weight:800;color:var(--text);line-height:1}
+.mc .ms{font-size:11px;color:var(--text2);margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:5px 12px;height:32px;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);cursor:pointer;white-space:nowrap;transition:all .15s;font-family:inherit}
+.btn:hover{background:var(--bg2)}.btn.pri{background:var(--ou-green);color:#fff;border-color:transparent}.btn.pri:hover{background:var(--ou-green-dark)}
+.btn.gld{background:var(--ou-gold);color:#fff;border-color:transparent;font-weight:700}.btn.gld:hover{opacity:.9}
+.btn.dng{background:var(--red-bg);color:var(--red-text);border-color:var(--red-border)}
+.btn.ext{background:var(--yellow-bg);color:var(--yellow-text);border-color:var(--yellow-border);font-size:12px;height:28px;padding:3px 10px}
+.btn.sm{height:30px;font-size:12px;padding:4px 10px}.btn.xs{height:24px;font-size:11px;padding:2px 8px}
+.btn.gh{border-color:transparent;color:var(--text2)}.btn.gh:hover{background:var(--bg2);color:var(--text)}
+.btn.eml{background:var(--green-bg);color:var(--green-text);border-color:var(--green-border);font-size:12px;height:28px;padding:3px 10px}
+.btn.adm{background:#4F46E5;color:#fff;border-color:transparent}.btn.adm:hover{background:#4338CA}
+.ibtn{background:none;border:none;cursor:pointer;padding:5px;border-radius:var(--radius);color:var(--text2);font-size:16px;display:inline-flex;align-items:center;transition:all .15s}
+.ibtn:hover{color:var(--text);background:var(--bg2)}
+.toolbar{display:flex;align-items:center;gap:6px;margin-bottom:.85rem;flex-wrap:wrap}
+.sw{position:relative;flex:1;min-width:160px}
+.sw i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;font-size:15px}
+.sw input{padding-left:32px;width:100%}
+input[type=text],input[type=email],input[type=number],input[type=date],input[type=password],select,textarea{font-family:inherit;font-size:12px;padding:5px 8px;height:32px;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--ou-green)}
+textarea{height:auto;resize:vertical}
+input[type=checkbox]{width:15px;height:15px;accent-color:var(--ou-green);cursor:pointer}
+.etog{display:flex;align-items:center;gap:8px;padding:5px 12px;height:34px;border:.5px solid var(--border2);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;background:var(--bg);color:var(--text2);user-select:none}
+.etog.on{background:var(--ou-gold-light);color:var(--ou-gold);border-color:var(--ou-gold)}
+.cat-tabs{display:flex;align-items:center;gap:6px;margin-bottom:.85rem;flex-wrap:wrap}
+.cat-tab{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 14px;height:32px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none}
+.cat-tab:hover{background:var(--bg2);color:var(--text)}
+.cat-tab.active{background:var(--ou-green);color:#fff;border-color:var(--ou-green)}
+.cat-tab .ctc{background:rgba(255,255,255,.25);color:inherit;font-size:10px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:2px}
+.cat-tab:not(.active) .ctc{background:var(--bg3);color:var(--text3)}
+.rbadge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;border:.5px solid transparent}
+.rg{background:var(--green-bg);color:var(--green-text);border-color:var(--green-border)}
+.ry{background:var(--yellow-bg);color:var(--yellow-text);border-color:var(--yellow-border)}
+.rr{background:var(--red-bg);color:var(--red-text);border-color:var(--red-border)}
+.rb{background:var(--black-bg);color:var(--black-text);border-color:var(--black-border)}
+.rc{background:var(--blue-bg);color:var(--blue-text);border-color:#90CAF9}
+.flag-eric{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;background:var(--ou-gold-light);color:var(--ou-gold);border:.5px solid var(--ou-gold);text-transform:uppercase;letter-spacing:.04em}
+.vbadge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;border:.5px solid transparent}
+.vpriv{background:#F3E8FF;color:#6B21A8;border-color:#C084FC}
+.vgrp{background:var(--blue-bg);color:var(--blue-text);border-color:#90CAF9}
+.pdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#EF4444;animation:pulse 1.5s infinite}
+.tw{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+thead th{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;text-align:left;background:var(--bg2);border-bottom:.5px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:.5px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg2)}
+tbody tr.re{background:var(--ou-gold-light)}
+tbody tr.re:hover{background:#FAF0C0}
+tbody tr.rr-row{background:var(--red-bg)}
+tbody td{font-size:12px;padding:7px 10px;color:var(--text);vertical-align:middle}
+.ie{background:none;border:none;font-size:13px;color:var(--text);font-family:inherit;cursor:pointer;padding:2px 4px;border-radius:4px;width:100%}
+.ie:hover{background:var(--bg3)}.ie:focus{outline:1.5px solid var(--ou-green);background:var(--bg);cursor:text}
+select.ie{cursor:pointer;height:auto;padding:2px 4px}
+.pdiv td{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;background:var(--bg3);color:var(--text3);border-bottom:.5px solid var(--border)}
+.cb-banner{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:.85rem 1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--red-text);cursor:pointer}
+.cb-banner:hover{opacity:.9}
+.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.1rem;flex-wrap:wrap;gap:.5rem}
+.sh h2{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.sh p{font-size:11px;color:var(--text2);margin-top:2px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+.modal{background:var(--bg);border:.5px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:640px;padding:1.75rem;position:relative;margin:auto;box-shadow:var(--shadow-md)}
+.modal h2{font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;padding-right:2rem}
+.modal .msub{font-size:13px;color:var(--text2);margin-bottom:1.5rem}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:.5px solid var(--border)}
+.mclose{position:absolute;top:1rem;right:1rem}
+.fr{margin-bottom:.9rem}
+.fr .fl{display:block;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px}
+.fr input,.fr select,.fr textarea{width:100%}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f3{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.sdiv{font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin:1.4rem 0 .8rem;padding-bottom:.5rem;border-bottom:.5px solid var(--border);display:flex;align-items:center;gap:8px}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tcard{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.65rem .85rem;display:flex;align-items:flex-start;gap:10px;cursor:pointer;transition:border-color .15s}
+.tcard.on{border-color:var(--ou-green);background:var(--ou-green-light)}
+.tcard label{font-size:13px;font-weight:500;cursor:pointer}
+.tcard .td{font-size:11px;color:var(--text2);margin-top:2px}
+.vis-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.9rem}
+.vopt{border:1.5px solid var(--border2);border-radius:var(--radius);padding:.85rem;cursor:pointer;transition:all .15s;text-align:center}
+.vopt .vi{font-size:22px;margin-bottom:6px}
+.vopt h4{font-size:13px;font-weight:700;color:var(--text)}
+.vopt p{font-size:11px;color:var(--text2);margin-top:2px}
+.vopt.sel-priv{border-color:#A855F7;background:#F3E8FF}
+.vopt.sel-grp{border-color:var(--ou-green);background:var(--ou-green-light)}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.di{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.65rem .85rem}
+.di .dil{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px}
+.di .dv{font-size:14px;font-weight:700;color:var(--text)}
+.ne{padding:.55rem 0;border-bottom:.5px solid var(--border);font-size:13px;line-height:1.5}
+.ne:last-child{border-bottom:none}
+.nm{font-size:11px;color:var(--text3);margin-bottom:2px}
+.etr{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:.5px solid var(--border);gap:8px}
+.etr:last-child{border-bottom:none}
+.rrow{display:flex;align-items:center;gap:8px;background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.5rem .75rem;margin-bottom:6px;font-size:13px}
+.rrow .rn{font-weight:700;min-width:90px}
+.rrow .re{color:var(--text2);flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aur{display:flex;align-items:center;gap:12px;padding:.75rem 0;border-bottom:.5px solid var(--border)}
+.aur:last-child{border-bottom:none}
+.auav{width:36px;height:36px;border-radius:50%;background:var(--ou-green-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--ou-green);flex-shrink:0}
+.logrow{display:flex;align-items:flex-start;gap:10px;padding:.55rem 0;border-bottom:.5px solid var(--border);font-size:12px}
+.logrow:last-child{border-bottom:none}
+.ldot{width:8px;height:8px;border-radius:50%;margin-top:3px;flex-shrink:0}
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--text);color:var(--bg);padding:.7rem 1.1rem;border-radius:var(--radius);font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-md)}
+#toast.show{opacity:1}
+.empty{text-align:center;padding:4rem 1rem;color:var(--text2)}
+.empty i{font-size:36px;display:block;margin:0 auto 12px;color:var(--text3)}
+.tab-bar{background:var(--ou-green-dark);padding:0 1.5rem;display:flex;align-items:flex-end;gap:4px;border-bottom:1px solid rgba(255,255,255,.1)}
+.tab-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:9px 16px;border:none;border-radius:6px 6px 0 0;background:transparent;color:rgba(255,255,255,.55);cursor:pointer;transition:all .15s;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab-btn:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.08)}
+.tab-btn.active{color:#fff;background:var(--bg);border-bottom-color:var(--bg)}
+.sop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem}
+.sop-header h2{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.sop-selector{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sop-selector select{min-width:280px;font-size:13px;height:34px;padding:0 10px}
+.sop-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.sop-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
+.sop-meta-item{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.6rem .85rem}
+.sop-meta-item .sml{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.sop-meta-item .svl{font-size:13px;font-weight:700;color:var(--text)}
+.step-list{display:flex;flex-direction:column;gap:10px}
+.step-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;display:flex;align-items:flex-start;gap:12px;transition:box-shadow .15s;position:relative}
+.step-card:hover{box-shadow:var(--shadow)}
+.step-card.done{opacity:.6;background:var(--bg2)}
+.step-card.done .step-title{text-decoration:line-through;color:var(--text3)}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--ou-green);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-card.done .step-num{background:var(--green-border)}
+.step-body{flex:1;min-width:0}
+.step-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.step-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:6px}
+.step-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.step-meta span{font-size:11px;color:var(--text3);display:inline-flex;align-items:center;gap:4px}
+.step-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.step-drag{cursor:grab;color:var(--text3);font-size:16px;padding:2px;line-height:1}
+.step-drag:active{cursor:grabbing}
+.sop-empty{text-align:center;padding:3rem 1rem;color:var(--text2);background:var(--bg2);border:.5px dashed var(--border2);border-radius:var(--radius-lg)}
+.sop-empty i{font-size:32px;display:block;margin:0 auto 10px;color:var(--text3)}
+.add-step-bar{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.85rem 1rem;margin-top:.75rem}
+@media print{.topbar,.tab-bar,.sop-selector,.step-actions,.add-step-bar,.btn,.ibtn{display:none!important}.step-card{break-inside:avoid;border:1px solid #ccc!important;margin-bottom:8px!important}.sop-card{box-shadow:none!important}}
+@media(max-width:960px){.metric-strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.main{padding:1rem}.metric-strip{grid-template-columns:1fr 1fr}.f2,.f3,.vis-opts{grid-template-columns:1fr}.tgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="loading-screen">
+  <img class="ls-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AYKDTIyEBqBRAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAADGklEQVR42u3cO4tbQRAF4Dv7/7+5e5Isk0DARoJNJJvsQrKRQOwiWBDI2kIs2BIisDEYwcLGYASLwIJA8CMQxAsW8QMkYMGCTQJBoBMJBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+AAAAAElFTkSuQmCC" alt="Ohio University">
+  <div class="ls-title">VPRCA Team Project Tracker</div>
+  <div class="ls-sub">Connecting to live database…</div>
+  <div class="spinner"></div>
+</div>
+
+<div id="login-wrap">
+  <div class="lcard">
+    <div class="lcard-head">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AYKDTIyEBqBRAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAADGklEQVR42u3cO4tbQRAF4Dv7/7+5e5Isk0DARoJNJJvsQrKRQOwiWBDI2kIs2BIisDEYwcLGYASLwIJA8CMQxAsW8QMkYMGCTQJBoBMJBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+AAAAAElFTkSuQmCC" alt="">
+      <h2>VPRCA Team Project Tracker</h2>
+      <p>Ohio University · Division of Research &amp; Creative Activity</p>
+    </div>
+    <div class="lcard-body">
+      <div id="login-panel">
+        <div id="lerr" class="lerr"></div>
+        <div id="linfo" class="linfo"></div>
+        <div class="lf"><label>Your name</label>
+          <select id="lu">
+            <option value="">— Select your name —</option>
+            <option value="G. Jason Jolley">G. Jason Jolley</option>
+            <option value="Keith Leffler">Keith Leffler</option>
+            <option value="Kim Littlefield">Kim Littlefield</option>
+            <option value="Brian Mershon">Brian Mershon (Admin)</option>
+            <option value="Eric Muth">Eric Muth</option>
+          </select>
+        </div>
+        <div id="pw-row" class="lf" style="display:none"><label>Password</label><input type="password" id="lpw" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div id="cpw-row" class="lf" style="display:none"><label>Confirm password</label><input type="password" id="lcpw" placeholder="Confirm your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="lbtn" onclick="doLogin()">Sign in</button>
+        <div style="text-align:center"><button class="llink" onclick="showForgot()">Forgot password?</button></div>
+      </div>
+      <div id="forgot-panel" style="display:none">
+        <div id="ferr" class="lerr"></div>
+        <div id="fsucc" class="lsuccess"></div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.5">Select your name and we'll notify Brian Mershon (Admin) to reset your password.</p>
+        <div class="lf"><label>Your name</label>
+          <select id="fu">
+            <option value="">— Select your name —</option>
+            <option value="G. Jason Jolley">G. Jason Jolley</option>
+            <option value="Keith Leffler">Keith Leffler</option>
+            <option value="Kim Littlefield">Kim Littlefield</option>
+            <option value="Eric Muth">Eric Muth</option>
+          </select>
+        </div>
+        <button class="lbtn" onclick="doForgot()">Send reset request</button>
+        <div style="text-align:center"><button class="llink" onclick="showLogin()">← Back to sign in</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AYKDTIyEBqBRAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAADGklEQVR42u3cO4tbQRAF4Dv7/7+5e5Isk0DARoJNJJvsQrKRQOwiWBDI2kIs2BIisDEYwcLGYASLwIJA8CMQxAsW8QMkYMGCTQJBoBMJBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+QiAQyBMIBMI+AAAAAElFTkSuQmCC" alt="Ohio University" style="height:48px;width:auto;filter:brightness(0) invert(1)">
+      <div style="width:1px;height:32px;background:rgba(255,255,255,.2)"></div>
+      <div class="topbar-title"><h1>VPRCA Team Project Tracker</h1></div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-dot"><span></span> Live</div>
+      <div class="user-chip"><div class="u-av" id="uav"></div><span class="u-name" id="uname"></span></div>
+      <button class="btn sm adm" id="admin-btn" style="display:none" onclick="openAdmin()"><i class="ti ti-shield"></i> Admin</button>
+      <button class="btn sm gh" onclick="openContacts()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-address-book"></i> Contacts</button>
+      <button class="btn sm gh" onclick="openNotifLog()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-bell"></i> Log</button>
+      <button class="btn sm gh" onclick="refreshDash()" id="refresh-btn" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Refresh dashboard"><i class="ti ti-refresh"></i> Refresh</button>
+      <button class="btn gld sm" onclick="openAdd()"><i class="ti ti-plus"></i> Add item</button>
+      <button class="btn sm gh" onclick="doSignOut()" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.15)" title="Sign out"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+    <button class="tab-btn" id="tab-sop" onclick="switchTab('sop')"><i class="ti ti-list-check"></i> SOPs</button>
+  </div>
+  <div class="main"><div id="dash"></div><div id="sop-view" style="display:none"></div></div>
+</div>
+<div id="ovr"></div>
+<div id="toast"></div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,collection,doc,onSnapshot,setDoc,deleteDoc,getDocs,writeBatch}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const FB={apiKey:"AIzaSyBxFaWEq6QmGd7POL8sN6NKFcFAvUOG_C0",authDomain:"vprca-tracker.firebaseapp.com",projectId:"vprca-tracker",storageBucket:"vprca-tracker.firebasestorage.app",messagingSenderId:"379502867253",appId:"1:379502867253:web:349c1f3a490da69db2527c"};
+const db=getFirestore(initializeApp(FB));
+
+const PHASES=['Not Started','Planned','In Progress','Complete'];
+const CATEGORIES=['Event','Policies/Procedures','Major Initiative','Personal'];
+const GROUPS=['VPRCA Leadership Team','OSP','Research Compliance','Research Development','LAR','Other'];
+const TRIGGERS=[{id:'t30',l:'30-day deadline alert',d:'30 days before due date'},{id:'t14',l:'2-week notice',d:'14 days before due date'},{id:'t1',l:'Day-before reminder',d:'1 day before due date'},{id:'tc',l:'Completion notice',d:'When marked Complete'}];
+const OWNERS=[{name:'G. Jason Jolley',email:'jolleyg1@ohio.edu'},{name:'Keith Leffler',email:'leffler@ohio.edu'},{name:'Kim Littlefield',email:'kplittle@ohio.edu'},{name:'Brian Mershon',email:'mershon@ohio.edu'},{name:'Eric Muth',email:'vprca@ohio.edu'}];
+const ADMIN='Brian Mershon';
+
+const DEFAULTS=[
+  {id:'1',name:'Innovation Ecosystem',category:'Major Initiative',phase:'In Progress',due:'2026-09-30',owner:'',approvalRequired:false,nextStep:'Finalize partner agreements',flag:false,description:'Discover Pillar initiative.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'2',name:'Shared Research Infrastructure',category:'Major Initiative',phase:'In Progress',due:'2026-10-15',owner:'',approvalRequired:false,nextStep:'Complete vendor selection',flag:false,description:'Shared infrastructure.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'3',name:'OHIO Aviation Vision 2035',category:'Major Initiative',phase:'In Progress',due:'2026-12-31',owner:'',approvalRequired:false,nextStep:'Draft stakeholder review',flag:false,description:'Aviation vision 2035.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'4',name:'Research Division Summer Retreat',category:'Event',phase:'In Progress',due:'2026-07-16',owner:'',approvalRequired:false,nextStep:'Confirm venue and agenda',flag:false,description:'Annual leadership retreat.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'5',name:'PRS Awards',category:'Event',phase:'Planned',due:'2026-08-01',owner:'',approvalRequired:false,nextStep:'Identify nominees',flag:false,description:'PRS Awards ceremony.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'6',name:'Airport Convening',category:'Event',phase:'Planned',due:'2026-09-30',owner:'',approvalRequired:false,nextStep:'Confirm participants',flag:false,description:'Airport venue event.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:false},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'7',name:'Inventors Dinner',category:'Event',phase:'Planned',due:'2026-11-01',owner:'',approvalRequired:false,nextStep:'Book venue',flag:false,description:'Annual Inventors Dinner.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'8',name:'Creators Dinner',category:'Event',phase:'Not Started',due:'2026-12-01',owner:'',approvalRequired:false,nextStep:'Kickoff planning',flag:false,description:'Future initiative.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'9',name:'Capability Statements',category:'Policies/Procedures',phase:'Planned',due:'2026-09-01',owner:'',approvalRequired:false,nextStep:'Assign leads per unit',flag:false,description:'Capability statements.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:false},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'10',name:'COI / COC Policy',category:'Policies/Procedures',phase:'In Progress',due:'2026-06-30',owner:'',approvalRequired:true,nextStep:'Final legal review',flag:false,description:'COI/COC policy revision.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'Research Compliance',createdBy:'Brian Mershon'},
+  {id:'11',name:'Research Misconduct Policy',category:'Policies/Procedures',phase:'In Progress',due:'2026-08-15',owner:'',approvalRequired:true,nextStep:'Comment period closes July 1',flag:false,description:'Policy revision.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'Research Compliance',createdBy:'Brian Mershon'},
+  {id:'12',name:'TTO + TreMonti Work',category:'Policies/Procedures',phase:'In Progress',due:'2026-10-23',owner:'',approvalRequired:false,nextStep:'Align on IP framework',flag:false,description:'TTO/TreMonti collaboration.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'Research Development',createdBy:'Brian Mershon'},
+  {id:'13',name:'Innovation Center Anchor Tenant',category:'Major Initiative',phase:'In Progress',due:'2026-12-31',owner:'',approvalRequired:true,nextStep:'Eric decision required',flag:true,description:'Strategic risk — Eric review required.',notes:[{date:'2026-06-04',text:'Flagged for Eric review.',author:'Brian Mershon'}],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+];
+
+let S={projects:[],contacts:[],notifLog:[],ericOnly:false,searchQ:'',fCategory:'',fPhase:'',fRisk:'',fOwner:'',fGroup:'',fVis:''};
+let CU=null,_ed=null;
+
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtD=d=>{if(!d)return'—';const[y,m,dd]=d.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+dd+', '+y};
+const fmtS=d=>{if(!d)return'—';const[y,m,dd]=d.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+dd};
+const dU=d=>{if(!d)return 999;return Math.ceil((new Date(d)-new Date())/86400000)};
+const ini=n=>n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+const isAdmin=()=>CU===ADMIN;
+async function sha256(s){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+
+function cRisk(p){if(p.completed)return'c';const d=dU(p.due);if(d<0)return'b';if(d<=14)return'r';if(d<=30)return'y';return'g'}
+function rBadge(p){const r=cRisk(p);const lbl={g:'🟢 On Track',y:'🟡 Caution',r:'🔴 High Risk',b:'⚫ Past Due',c:'✅ Complete'};const cls={g:'rg',y:'ry',r:'rr',b:'rb',c:'rc'};return`<span class="rbadge ${cls[r]}">${lbl[r]}</span>`}
+function rowCls(p){if(p.flag)return're';const r=cRisk(p);if(r==='r'||r==='b')return'rr-row';return''}
+function pSort(arr){const o=p=>{if(p.flag)return 0;const r=cRisk(p);if(r==='b')return 1;if(r==='r')return 2;if(r==='y')return 3;return 4};return[...arr].sort((a,b)=>{const oa=o(a),ob=o(b);if(oa!==ob)return oa-ob;return(a.due||'').localeCompare(b.due||'')})}
+function canSee(p){if(isAdmin())return true;if(p.visibility==='private')return p.createdBy===CU;return true}
+function getFiltered(){let r=S.projects.filter(canSee);if(S.ericOnly)r=r.filter(p=>p.flag||p.approvalRequired);if(S.searchQ){const q=S.searchQ.toLowerCase();r=r.filter(p=>p.name.toLowerCase().includes(q)||(p.nextStep||'').toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q)||(p.owner||'').toLowerCase().includes(q))}if(S.fCategory)r=r.filter(p=>p.category===S.fCategory);if(S.fPhase)r=r.filter(p=>p.phase===S.fPhase);if(S.fRisk)r=r.filter(p=>cRisk(p)===S.fRisk);if(S.fOwner)r=r.filter(p=>(p.owner||'')===S.fOwner);if(S.fGroup)r=r.filter(p=>p.visibility==='group'&&p.group===S.fGroup);if(S.fVis)r=r.filter(p=>p.visibility===S.fVis);return pSort(r)}
+function getMets(){const v=S.projects.filter(canSee),rs=v.map(p=>cRisk(p));return{total:v.length,g:rs.filter(r=>r==='g').length,y:rs.filter(r=>r==='y').length,r:rs.filter(r=>r==='r').length,b:rs.filter(r=>r==='b').length,c:v.filter(p=>p.completed).length,e:v.filter(p=>p.flag||p.approvalRequired).length,priv:v.filter(p=>p.visibility==='private').length,upcoming:v.filter(p=>{const d=dU(p.due);return d>=0&&d<=30&&!p.completed}).length}}
+function aTrig(p){const d=dU(p.due),out=[];const t=p.triggers||{};if(t.t30&&d<=30&&d>14)out.push({id:'t30',l:'30-day alert',d:'30 days before due'});if(t.t14&&d<=14&&d>1)out.push({id:'t14',l:'2-week alert',d:'14 days before due'});if(t.t1&&d<=1&&d>=0)out.push({id:'t1',l:'Day-before',d:'1 day before due'});if(t.tc&&p.phase==='Complete')out.push({id:'tc',l:'Completion',d:'When marked complete'});return out}
+function mailto(p,l,d){const to=(p.recipients||[]).map(r=>r.email).join(',');if(!to)return null;const s=encodeURIComponent('['+l+'] '+p.name+' — VPRCA Tracker');const b=encodeURIComponent('Project: '+p.name+'\nVisibility: '+(p.visibility==='private'?'Private':'Group — '+p.group)+'\nRisk: '+cRisk(p).toUpperCase()+'\nDeadline: '+fmtD(p.due)+'\nNext Step: '+(p.nextStep||'—')+'\n\nTrigger: '+d);return'mailto:'+to+'?subject='+s+'&body='+b}
+
+async function saveP(p){await setDoc(doc(db,'projects',String(p.id)),p)}
+async function delP(id){await deleteDoc(doc(db,'projects',String(id)))}
+async function saveC(c){await setDoc(doc(db,'contacts',c.email.replace(/[^a-zA-Z0-9]/g,'_')),c)}
+async function delC(email){await deleteDoc(doc(db,'contacts',email.replace(/[^a-zA-Z0-9]/g,'_')))}
+async function saveLog(l){await setDoc(doc(db,'meta','notifLog'),{entries:l.slice(0,100)})}
+async function getUsers(){try{const sn=await getDocs(collection(db,'meta'));const ud=sn.docs.find(d=>d.id==='users');return ud?ud.data():{}}catch(e){return{}}}
+async function saveUsers(u){await setDoc(doc(db,'meta','users'),u)}
+async function saveResetReq(name){await setDoc(doc(db,'passwordResets',name.replace(/\s/g,'_')),{userName:name,requestDate:today(),status:'pending'})}
+
+async function bootstrap(){
+  const sn=await getDocs(collection(db,'projects'));
+  if(sn.empty){
+    const b=writeBatch(db);
+    DEFAULTS.forEach(p=>b.set(doc(db,'projects',p.id),p));
+    OWNERS.forEach(o=>b.set(doc(db,'contacts',o.email.replace(/[^a-zA-Z0-9]/g,'_')),o));
+    await b.commit();
+  } else {
+    const cs=await getDocs(collection(db,'contacts'));
+    const em=cs.docs.map(d=>d.data().email);
+    const b=writeBatch(db);let n=false;
+    OWNERS.forEach(o=>{if(!em.includes(o.email)){b.set(doc(db,'contacts',o.email.replace(/[^a-zA-Z0-9]/g,'_')),o);n=true}});
+    if(n)await b.commit();
+  }
+  // Seed admin password if not set
+  const users=await getUsers();
+  if(!users['Brian_Mershon']){
+    const hash=await sha256('1804');
+    users['Brian_Mershon']={name:'Brian Mershon',hash,created:today()};
+    await saveUsers(users);
+  }
+  document.getElementById('loading-screen').style.display='none';
+  const saved=sessionStorage.getItem('vprca_user');
+  if(saved&&OWNERS.find(o=>o.name===saved)){completeLogin(saved);}
+  else{document.getElementById('login-wrap').className='show'}
+}
+
+// ── Auth ──
+document.getElementById('lu').addEventListener('change',async function(){
+  const name=this.value;if(!name)return;
+  const users=await getUsers();
+  const key=name.replace(/\s/g,'_');
+  const isFirst=!users[key];
+  document.getElementById('pw-row').style.display='';
+  document.getElementById('cpw-row').style.display=isFirst?'':'none';
+  const li=document.getElementById('linfo');
+  if(isFirst){li.textContent='First time signing in — set your password below.';li.className='linfo show';}
+  else{li.className='linfo'}
+  document.getElementById('lpw').focus();
+});
+
+window.doLogin=async function(){
+  const name=document.getElementById('lu').value;
+  const pw=document.getElementById('lpw').value;
+  const cpw=document.getElementById('lcpw').value;
+  const err=document.getElementById('lerr');
+  err.className='lerr';
+  if(!name){err.textContent='Please select your name.';err.className='lerr show';return}
+  if(!pw){err.textContent='Please enter your password.';err.className='lerr show';return}
+  const users=await getUsers();
+  const key=name.replace(/\s/g,'_');
+  const isFirst=!users[key];
+  if(isFirst){
+    if(pw!==cpw){err.textContent='Passwords do not match.';err.className='lerr show';return}
+    if(pw.length<4){err.textContent='Password must be at least 4 characters.';err.className='lerr show';return}
+    if(name===ADMIN){
+      const h=await sha256(pw);
+      if(h!==users['Brian_Mershon']?.hash){err.textContent='Incorrect initial password.';err.className='lerr show';return}
+    }
+    const hash=await sha256(pw);
+    users[key]={name,hash,created:today()};
+    await saveUsers(users);
+    completeLogin(name);
+  } else {
+    const hash=await sha256(pw);
+    if(hash!==users[key].hash){err.textContent='Incorrect password. Try again or use "Forgot password".';err.className='lerr show';return}
+    completeLogin(name);
+  }
+};
+
+function completeLogin(name){
+  CU=name;sessionStorage.setItem('vprca_user',name);
+  document.getElementById('login-wrap').className='';
+  document.getElementById('app').style.display='block';
+  document.getElementById('uav').textContent=ini(name);
+  document.getElementById('uname').textContent=name;
+  if(isAdmin())document.getElementById('admin-btn').style.display='';
+  startListeners();
+}
+window.doSignOut=function(){
+  sessionStorage.removeItem('vprca_user');CU=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-wrap').className='show';
+  document.getElementById('lu').value='';
+  document.getElementById('lpw').value='';
+  document.getElementById('lcpw').value='';
+  document.getElementById('pw-row').style.display='none';
+  document.getElementById('cpw-row').style.display='none';
+  document.getElementById('lerr').className='lerr';
+  document.getElementById('linfo').className='linfo';
+};
+window.showForgot=function(){document.getElementById('login-panel').style.display='none';document.getElementById('forgot-panel').style.display=''}
+window.showLogin=function(){document.getElementById('forgot-panel').style.display='none';document.getElementById('login-panel').style.display=''}
+window.doForgot=async function(){
+  const name=document.getElementById('fu').value;
+  const err=document.getElementById('ferr'),suc=document.getElementById('fsucc');
+  err.className='lerr';suc.className='lsuccess';
+  if(!name){err.textContent='Please select your name.';err.className='lerr show';return}
+  await saveResetReq(name);
+  suc.textContent='Reset request sent! Brian Mershon will reset your password and let you know.';
+  suc.className='lsuccess show';
+};
+
+// ── Admin ──
+window.openAdmin=async function(){
+  if(!isAdmin())return;
+  const users=await getUsers();
+  const rsn=await getDocs(collection(db,'passwordResets'));
+  const resets=rsn.docs.map(d=>d.data()).filter(r=>r.status==='pending');
+  let rHTML=resets.length?resets.map(r=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:.5px solid var(--border);gap:8px"><div><div style="font-size:13px;font-weight:700">${esc(r.userName)}</div><div style="font-size:11px;color:var(--text2)">Requested ${esc(r.requestDate)}</div></div><button class="btn sm pri" onclick="adminReset('${esc(r.userName)}')"><i class="ti ti-key"></i> Reset password</button></div>`).join(''):'<p style="font-size:13px;color:var(--text2)">No pending reset requests.</p>';
+  let uHTML=OWNERS.map(o=>{const k=o.name.replace(/\s/g,'_'),u=users[k];return`<div class="aur"><div class="auav">${ini(o.name)}</div><div style="flex:1"><div style="font-size:13px;font-weight:700">${esc(o.name)}${o.name===ADMIN?` <span class="flag-eric">Admin</span>`:''}</div><div style="font-size:11px;color:var(--text2)">${u?'Account created '+esc(u.created):'Not yet signed in'}</div></div>${u&&o.name!==ADMIN?`<button class="btn xs dng" onclick="adminReset('${esc(o.name)}')"><i class="ti ti-key"></i> Reset</button>`:''}</div>`}).join('');
+  let privHTML=S.projects.filter(p=>p.visibility==='private').length===0?'<p style="font-size:13px;color:var(--text2)">No private projects.</p>':S.projects.filter(p=>p.visibility==='private').map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.4rem 0;border-bottom:.5px solid var(--border)"><span style="font-size:13px;font-weight:600">${esc(p.name)}</span><span style="font-size:11px;color:var(--text2)">🔒 ${esc(p.createdBy)}</span></div>`).join('');
+  showOv(`<div class="modal" style="max-width:560px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2><i class="ti ti-shield" style="font-size:18px;vertical-align:-2px;color:#4F46E5"></i> Admin Panel</h2>
+    <p class="msub">Manage team accounts, reset passwords, and view all private projects.</p>
+    ${resets.length?`<div style="background:var(--red-bg);border:.5px solid var(--red-border);border-radius:var(--radius);padding:.75rem .85rem;margin-bottom:1rem"><div style="font-size:11px;font-weight:800;color:var(--red-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">⚠️ Pending reset requests (${resets.length})</div>${rHTML}</div>`:''}
+    <div class="sdiv"><i class="ti ti-users"></i> Team accounts</div>
+    <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.25rem .85rem">${uHTML}</div>
+    <div class="sdiv"><i class="ti ti-eye"></i> All private projects</div>
+    <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.5rem .85rem">${privHTML}</div>
+    <div class="mfoot"><button class="btn" onclick="closeOv()">Close</button></div>
+  </div>`);
+};
+window.adminReset=async function(name){
+  const pw=prompt('Set a new temporary password for '+name+':');
+  if(!pw||pw.length<4){toast('Password must be at least 4 characters.');return}
+  const hash=await sha256(pw);
+  const users=await getUsers();
+  const key=name.replace(/\s/g,'_');
+  if(!users[key])users[key]={name,created:today()};
+  users[key].hash=hash;
+  await saveUsers(users);
+  try{await deleteDoc(doc(db,'passwordResets',name.replace(/\s/g,'_')))}catch(e){}
+  toast('✅ Password reset for '+name+'. Temp: "'+pw+'"');
+  closeOv();openAdmin();
+};
+
+// ── Refresh dashboard ──
+window.refreshDash=async function(){
+  const btn=document.getElementById('refresh-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2" style="animation:spin .7s linear infinite"></i> Refreshing…';}
+  try{
+    const sn=await getDocs(collection(db,'projects'));
+    S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));
+    const cs=await getDocs(collection(db,'contacts'));
+    S.contacts=cs.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name));
+    renderDash();
+    toast('Dashboard refreshed.');
+  } catch(e){toast('Refresh failed: '+e.message);}
+  finally{if(btn){setTimeout(()=>{btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh"></i> Refresh';},600);}}
+};
+function startListeners(){
+  onSnapshot(collection(db,'projects'),sn=>{S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));if(currentTab==='dash')renderDash();else renderSOP();checkNotify()});
+  onSnapshot(collection(db,'contacts'),sn=>{S.contacts=sn.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name))});
+  onSnapshot(doc(db,'meta','notifLog'),sn=>{if(sn.exists())S.notifLog=sn.data().entries||[]});
+}
+
+// ── Render dashboard ──
+function renderDash(){
+  const m=getMets(),rows=getFiltered(),crit=S.projects.filter(canSee).find(p=>p.flag);
+  const now=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  let html=`<div class="sh"><div><h2>Portfolio overview</h2><p>${now} &nbsp;·&nbsp; Signed in as <strong>${esc(CU)}</strong></p></div>
+    <div class="etog${S.ericOnly?' on':''}" onclick="S.ericOnly=!S.ericOnly;renderDash()"><i class="ti ti-user-check"></i> Eric review${S.ericOnly?' (on)':' only'}</div>
+  </div>
+  <div class="metric-strip">
+    <div class="mc o"><div class="ml">Visible projects</div><div class="mv">${m.total}</div><div class="ms">${m.priv} private · ${m.total-m.priv} group</div></div>
+    <div class="mc g"><div class="ml">🟢 On track</div><div class="mv" style="color:var(--green-text)">${m.g}</div><div class="ms" style="color:var(--green-text)">${Math.round(m.g/Math.max(m.total,1)*100)}% of portfolio</div></div>
+    <div class="mc y"><div class="ml">🟡 Caution · 🔴 High risk</div><div class="mv" style="color:var(--yellow-text)">${m.y} <span style="font-size:18px;font-weight:400;color:var(--text3)">·</span> <span style="color:var(--red-text)">${m.r}</span></div><div class="ms">⚫ Past due: ${m.b}</div></div>
+    <div class="mc r"><div class="ml">Eric queue · Completed</div><div class="mv" style="color:var(--ou-gold)">${m.e} <span style="font-size:18px;font-weight:400;color:var(--text3)">·</span> <span style="font-size:22px;color:var(--green-text)">${m.c}</span></div><div class="ms">${m.upcoming} due within 30 days</div></div>
+  </div>`;
+  if(crit)html+=`<div class="cb-banner" onclick="openDetail('${crit.id}')"><i class="ti ti-alert-triangle" style="font-size:20px;flex-shrink:0"></i><div><strong>#1 Priority — Decision required:</strong> ${esc(crit.name)}<br><span style="font-size:12px;opacity:.8">${esc(crit.nextStep||'')}</span></div><div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span class="flag-eric"><i class="ti ti-user" style="font-size:9px"></i> Eric</span><i class="ti ti-chevron-right"></i></div></div>`;
+
+  // ── Category tabs ──
+  const catCounts={};
+  S.projects.filter(canSee).forEach(p=>{const c=p.category||'Uncategorized';catCounts[c]=(catCounts[c]||0)+1});
+  const allCount=S.projects.filter(canSee).length;
+  html+=`<div class="cat-tabs">
+    <div class="cat-tab${!S.fCategory?' active':''}" onclick="S.fCategory='';renderDash()">All <span class="ctc">${allCount}</span></div>
+    ${CATEGORIES.map(c=>`<div class="cat-tab${S.fCategory===c?' active':''}" onclick="S.fCategory=${JSON.stringify(c)};renderDash()">${esc(c)}${catCounts[c]?`<span class="ctc">${catCounts[c]}</span>`:''}</div>`).join('')}
+  </div>`;
+
+  html+=`<div class="toolbar">
+    <div class="sw"><i class="ti ti-search"></i><input type="text" placeholder="Search items…" value="${esc(S.searchQ)}" oninput="S.searchQ=this.value;renderDash()" style="width:100%"></div>
+    <select onchange="S.fVis=this.value;renderDash()"><option value="">All visibility</option><option value="group" ${S.fVis==='group'?'selected':''}>👥 Group</option><option value="private" ${S.fVis==='private'?'selected':''}>🔒 Private</option></select>
+    <select onchange="S.fGroup=this.value;renderDash()"><option value="">All groups</option>${GROUPS.map(g=>`<option value="${esc(g)}" ${S.fGroup===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
+    <select onchange="S.fOwner=this.value;renderDash()"><option value="">All owners</option>${OWNERS.map(o=>`<option value="${esc(o.name)}" ${S.fOwner===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}</select>
+    <select onchange="S.fPhase=this.value;renderDash()"><option value="">All phases</option>${PHASES.map(p=>`<option value="${esc(p)}" ${S.fPhase===p?'selected':''}>${p}</option>`).join('')}</select>
+    <select onchange="S.fRisk=this.value;renderDash()"><option value="">All risk</option><option value="r" ${S.fRisk==='r'?'selected':''}>🔴 High Risk</option><option value="y" ${S.fRisk==='y'?'selected':''}>🟡 Caution</option><option value="g" ${S.fRisk==='g'?'selected':''}>🟢 On Track</option><option value="b" ${S.fRisk==='b'?'selected':''}>⚫ Past Due</option></select>
+    ${S.fGroup||S.fPhase||S.fRisk||S.fOwner||S.fVis||S.searchQ?`<button class="btn sm gh" onclick="clearF()"><i class="ti ti-x"></i> Clear</button>`:''}
+  </div>
+  <div class="tw"><table>
+    <thead><tr>
+      <th style="width:20%">Name</th>
+      <th style="width:8%">Visibility</th>
+      <th style="width:8%">Owner</th>
+      <th style="width:9%">Category</th>
+      <th style="width:8%">Phase</th>
+      <th style="width:9%">Risk</th>
+      <th style="width:8%">Deadline</th>
+      <th style="width:18%">Next step</th>
+      <th style="width:5%;text-align:center">Appr.</th>
+      <th style="width:4%;text-align:center">Done</th>
+      <th style="width:3%"></th>
+    </tr></thead><tbody>`;
+  if(!rows.length){html+=`<tr><td colspan="11"><div class="empty"><i class="ti ti-search"></i><p>No items match your filters.</p></div></td></tr>`}
+  else{
+    let lg=null;
+    const gl=p=>{if(p.flag)return'⭐ Eric review';const r=cRisk(p);if(r==='b')return'⚫ Past due';if(r==='r')return'🔴 High risk';if(r==='y')return'🟡 Caution';return'🟢 On track'};
+    rows.forEach(p=>{
+      const grp=gl(p);if(grp!==lg){html+=`<tr class="pdiv"><td colspan="11">${esc(grp)}</td></tr>`;lg=grp}
+      const r=cRisk(p),days=dU(p.due),dc=days<0?'var(--red-text)':days<=14?'var(--red-text)':days<=30?'var(--yellow-text)':'var(--text)';
+      const ce=isAdmin()||p.createdBy===CU,at=aTrig(p);
+      html+=`<tr class="${rowCls(p)}" onclick="openDetail('${p.id}')" style="cursor:pointer;${p.completed?'opacity:.6':''}">
+        <td><div style="font-weight:700;font-size:12px;${p.completed?'text-decoration:line-through;color:var(--text3)':''}">${esc(p.name)}</div>
+        ${p.flag?`<span class="flag-eric" style="margin-top:2px;display:inline-flex;font-size:9px"><i class="ti ti-user" style="font-size:8px"></i> Eric</span>`:''}
+        ${at.length&&(p.recipients||[]).length?`<span class="pdot" style="margin-left:3px"></span>`:''}
+        ${p.completed&&p.completedDate?`<div style="font-size:10px;color:var(--green-text);font-weight:600;margin-top:1px">✅ ${esc(fmtS(p.completedDate))}</div>`:''}</td>
+        <td onclick="event.stopPropagation()">${p.visibility==='private'?`<span class="vbadge vpriv" style="font-size:9px"><i class="ti ti-lock" style="font-size:9px"></i> Private</span>`:`<span class="vbadge vgrp" style="font-size:9px">${esc(p.group||'Group')}</span>`}</td>
+        <td onclick="event.stopPropagation()">${ce?`<select class="ie" style="font-size:11px" onchange="inlineE('${p.id}','owner',this.value)" onclick="event.stopPropagation()"><option value="">—</option>${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(p.owner||'')===o.name?'selected':''}>${esc(o.name.split(' ').pop())}</option>`).join('')}</select>`:`<span style="font-size:11px;color:var(--text2)">${esc((p.owner||'').split(' ').pop()||'—')}</span>`}</td>
+        <td><span style="font-size:11px;color:var(--text2)">${esc(p.category||'—')}</span></td>
+        <td onclick="event.stopPropagation()">${ce?`<select class="ie" style="font-size:11px" onchange="inlineE('${p.id}','phase',this.value)" onclick="event.stopPropagation()">${PHASES.map(ph=>`<option value="${ph}" ${p.phase===ph?'selected':''}>${ph}</option>`).join('')}</select>`:`<span style="font-size:11px;color:var(--text2)">${esc(p.phase)}</span>`}</td>
+        <td>${rBadge(p)}</td>
+        <td><span style="color:${dc};font-size:11px;font-weight:700">${fmtS(p.due)||'—'}</span>${(r==='r'||r==='b')&&ce?`<div><button class="btn ext" style="margin-top:3px;font-size:10px;height:20px;padding:1px 6px" onclick="event.stopPropagation();extD('${p.id}',14)">+14d</button></div>`:''}</td>
+        <td onclick="event.stopPropagation()">${ce?`<input type="text" class="ie" value="${esc(p.nextStep||'')}" placeholder="Next step…" style="width:100%;font-size:11px" onchange="inlineE('${p.id}','nextStep',this.value)" onclick="event.stopPropagation()">`:`<span style="font-size:11px;color:var(--text2)">${esc(p.nextStep||'—')}</span>`}</td>
+        <td style="text-align:center">${p.approvalRequired?`<span class="flag-eric" style="font-size:9px"><i class="ti ti-check" style="font-size:9px"></i></span>`:`<span style="color:var(--text3);font-size:11px">—</span>`}</td>
+        <td style="text-align:center" onclick="event.stopPropagation()">${ce?`<input type="checkbox" ${p.completed?'checked':''} onchange="toggleC('${p.id}',this.checked)" onclick="event.stopPropagation()" style="width:14px;height:14px">`:`<span style="font-size:11px;color:var(--text3)">${p.completed?'✅':'—'}</span>`}</td>
+        <td onclick="event.stopPropagation()" style="white-space:nowrap">${ce?`<button class="ibtn" onclick="event.stopPropagation();openEdit('${p.id}')" style="padding:3px"><i class="ti ti-edit" style="font-size:13px"></i></button><button class="ibtn" onclick="event.stopPropagation();doDelP('${p.id}')" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button>`:`<button class="ibtn" onclick="openDetail('${p.id}')" style="padding:3px"><i class="ti ti-eye" style="font-size:13px"></i></button>`}</td>
+      </tr>`;
+    });
+  }
+  html+=`</tbody></table></div>`;
+  document.getElementById('dash').innerHTML=html;
+}
+window.renderDash=renderDash;
+window.clearF=()=>{S.fCategory='';S.fPhase='';S.fRisk='';S.fOwner='';S.fGroup='';S.fVis='';S.searchQ='';renderDash()};
+
+// ── Tab navigation ──
+let currentTab='dash';
+window.switchTab=function(tab){
+  currentTab=tab;
+  document.getElementById('tab-dash').className='tab-btn'+(tab==='dash'?' active':'');
+  document.getElementById('tab-sop').className='tab-btn'+(tab==='sop'?' active':'');
+  document.getElementById('dash').style.display=tab==='dash'?'':'none';
+  document.getElementById('sop-view').style.display=tab==='sop'?'':'none';
+  if(tab==='sop')renderSOP();
+};
+
+// ── SOP state ──
+let sopSelectedId=null;
+let dragSrc=null;
+
+// ── SOP render ──
+function renderSOP(){
+  const el=document.getElementById('sop-view');
+  const visible=S.projects.filter(canSee);
+  const withSteps=visible.filter(p=>(p.steps||[]).length>0);
+
+  // Build selector options — all visible items
+  const opts=visible.map(p=>`<option value="${esc(p.id)}" ${sopSelectedId===p.id?'selected':''}>${esc(p.name)}${(p.steps||[]).length?' ('+p.steps.length+' steps)':''}</option>`).join('');
+
+  let html=`<div class="sop-header">
+    <div><h2><i class="ti ti-list-check" style="font-size:18px;vertical-align:-2px;color:var(--ou-green)"></i> SOPs &amp; Session Plans</h2>
+    <p style="font-size:12px;color:var(--text2);margin-top:3px">Step-by-step order of operations for each item</p></div>
+    <div class="sop-selector">
+      <select id="sop-sel" onchange="sopSelectedId=this.value;renderSOP()">
+        <option value="">— Select an item to view its SOP —</option>
+        ${opts}
+      </select>
+      ${sopSelectedId?`<button class="btn sm pri" onclick="printSOP()"><i class="ti ti-printer"></i> Print</button>
+      <button class="btn sm" onclick="exportSopDocx()"><i class="ti ti-file-word"></i> Export Word</button>`:''}
+    </div>
+  </div>`;
+
+  if(!sopSelectedId){
+    // Overview — show all items with step counts
+    if(withSteps.length){
+      html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">`;
+      withSteps.forEach(p=>{
+        const done=(p.steps||[]).filter(s=>s.done).length,total=(p.steps||[]).length;
+        const pct=Math.round(done/total*100);
+        html+=`<div class="sop-card" style="cursor:pointer" onclick="sopSelectedId='${p.id}';document.getElementById('sop-sel').value='${p.id}';renderSOP()">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.75rem">
+            <div><div style="font-size:15px;font-weight:800;color:var(--text)">${esc(p.name)}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">${esc(p.category||'—')} · ${esc(p.owner||'Unassigned')}</div></div>
+            <span class="rbadge ${cRisk(p)==='g'?'rg':cRisk(p)==='y'?'ry':cRisk(p)==='r'?'rr':cRisk(p)==='b'?'rb':'rc'}" style="font-size:10px">${total} step${total!==1?'s':''}</span>
+          </div>
+          <div style="background:var(--bg3);border-radius:20px;height:6px;overflow:hidden;margin-bottom:6px">
+            <div style="height:100%;width:${pct}%;background:var(--ou-green);border-radius:20px;transition:width .3s"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text2)">${done} of ${total} steps complete (${pct}%)</div>
+        </div>`;
+      });
+      html+=`</div>`;
+    } else {
+      html+=`<div class="sop-empty"><i class="ti ti-list-check"></i><p style="font-size:14px;font-weight:600;margin-bottom:6px">No SOPs yet</p><p style="font-size:13px">Select an item above and add steps to build its SOP.</p></div>`;
+    }
+  } else {
+    const p=S.projects.find(x=>x.id===sopSelectedId);
+    if(!p){html+=`<div class="sop-empty"><i class="ti ti-alert-circle"></i><p>Item not found.</p></div>`;el.innerHTML=html;return;}
+    const ce=isAdmin()||p.createdBy===CU;
+    const steps=p.steps||[];
+    const done=steps.filter(s=>s.done).length;
+    const pct=steps.length?Math.round(done/steps.length*100):0;
+
+    html+=`<div class="sop-card" id="sop-detail">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+        <div>
+          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px">${esc(p.name)}</div>
+          ${p.description?`<p style="font-size:13px;color:var(--text2);line-height:1.5;max-width:700px">${esc(p.description)}</p>`:''}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${ce?`<button class="btn sm pri" onclick="openAddStep('${p.id}')"><i class="ti ti-plus"></i> Add step</button>`:''}
+        </div>
+      </div>
+      <div class="sop-meta">
+        <div class="sop-meta-item"><div class="sml">Category</div><div class="svl">${esc(p.category||'—')}</div></div>
+        <div class="sop-meta-item"><div class="sml">Owner</div><div class="svl">${esc(p.owner||'Unassigned')}</div></div>
+        <div class="sop-meta-item"><div class="sml">Deadline</div><div class="svl">${fmtD(p.due)}</div></div>
+        <div class="sop-meta-item"><div class="sml">Progress</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;background:var(--bg3);border-radius:20px;height:8px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:var(--ou-green);border-radius:20px"></div>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap">${done}/${steps.length}</span>
+          </div>
+        </div>
+      </div>`;
+
+    if(!steps.length){
+      html+=`<div class="sop-empty"><i class="ti ti-list-details"></i>
+        <p style="font-size:14px;font-weight:600;margin-bottom:6px">No steps yet</p>
+        <p style="font-size:13px">${ce?'Click "Add step" to begin building this SOP.':'The item creator can add steps here.'}</p>
+      </div>`;
+    } else {
+      html+=`<div class="step-list" id="step-list">`;
+      steps.forEach((s,i)=>{
+        html+=`<div class="step-card${s.done?' done':''}" draggable="${ce}" ondragstart="dragStart(event,${i})" ondragover="dragOver(event,${i})" ondrop="dropStep(event,'${p.id}',${i})" ondragleave="this.style.borderColor=''" id="step-${i}">
+          ${ce?`<div class="step-drag" title="Drag to reorder"><i class="ti ti-grip-vertical"></i></div>`:''}
+          <div class="step-num">${s.done?'<i class="ti ti-check" style="font-size:12px"></i>':i+1}</div>
+          <div class="step-body">
+            <div class="step-title">${esc(s.title)}</div>
+            ${s.desc?`<div class="step-desc">${esc(s.desc)}</div>`:''}
+            <div class="step-meta">
+              ${s.assignee?`<span><i class="ti ti-user"></i>${esc(s.assignee)}</span>`:''}
+              ${s.due?`<span><i class="ti ti-calendar"></i>${fmtD(s.due)}</span>`:''}
+              ${s.done&&s.doneDate?`<span style="color:var(--green-text)"><i class="ti ti-check"></i>Done ${esc(fmtS(s.doneDate))}</span>`:''}
+            </div>
+          </div>
+          <div class="step-actions">
+            ${ce?`<label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);cursor:pointer;margin-right:4px">
+              <input type="checkbox" ${s.done?'checked':''} onchange="toggleStep('${p.id}',${i},this.checked)" style="width:15px;height:15px">Done</label>
+            <button class="ibtn" onclick="openEditStep('${p.id}',${i})" title="Edit step"><i class="ti ti-edit" style="font-size:14px"></i></button>
+            <button class="ibtn" onclick="deleteStep('${p.id}',${i})" title="Delete step"><i class="ti ti-trash" style="font-size:14px"></i></button>`:''}
+          </div>
+        </div>`;
+      });
+      html+=`</div>`;
+    }
+    html+=`</div>`;
+  }
+  el.innerHTML=html;
+}
+window.renderSOP=renderSOP;
+
+// ── Step drag/drop ──
+window.dragStart=(e,i)=>{dragSrc=i;e.dataTransfer.effectAllowed='move'};
+window.dragOver=(e,i)=>{e.preventDefault();e.dataTransfer.dropEffect='move';const c=document.getElementById('step-'+i);if(c)c.style.borderColor='var(--ou-green)'};
+window.dropStep=async(e,pid,targetI)=>{
+  e.preventDefault();
+  if(dragSrc===null||dragSrc===targetI)return;
+  const p=S.projects.find(x=>x.id===pid);if(!p||!p.steps)return;
+  const steps=[...p.steps];
+  const [moved]=steps.splice(dragSrc,1);
+  steps.splice(targetI,0,moved);
+  p.steps=steps;
+  await saveP(p);
+  dragSrc=null;
+  renderSOP();
+};
+
+// ── Add/Edit step modal ──
+window.openAddStep=pid=>{
+  showOv(`<div class="modal" style="max-width:500px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Add step</h2><p class="msub">Add an ordered step to this SOP / session plan.</p>
+    <div class="fr"><label class="fl">Step title *</label><input type="text" id="st-title" placeholder="e.g. Book venue" style="width:100%"></div>
+    <div class="fr"><label class="fl">Description</label><textarea id="st-desc" rows="3" placeholder="Details, instructions, or notes for this step…" style="width:100%"></textarea></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Assigned to</label>
+        <select id="st-assign" style="width:100%">
+          <option value="">— Unassigned —</option>
+          ${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fr"><label class="fl">Due date</label><input type="date" id="st-due" style="width:100%"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="saveStep('${pid}',null)"><i class="ti ti-plus"></i> Add step</button>
+    </div>
+  </div>`);
+  setTimeout(()=>{const t=document.getElementById('st-title');if(t)t.focus()},100);
+};
+
+window.openEditStep=(pid,idx)=>{
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  const s=(p.steps||[])[idx];if(!s)return;
+  showOv(`<div class="modal" style="max-width:500px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Edit step ${idx+1}</h2><p class="msub">Update this step's details.</p>
+    <div class="fr"><label class="fl">Step title *</label><input type="text" id="st-title" value="${esc(s.title)}" style="width:100%"></div>
+    <div class="fr"><label class="fl">Description</label><textarea id="st-desc" rows="3" style="width:100%">${esc(s.desc||'')}</textarea></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Assigned to</label>
+        <select id="st-assign" style="width:100%">
+          <option value="">— Unassigned —</option>
+          ${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(s.assignee||'')===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fr"><label class="fl">Due date</label><input type="date" id="st-due" value="${esc(s.due||'')}" style="width:100%"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="saveStep('${pid}',${idx})"><i class="ti ti-check"></i> Save changes</button>
+    </div>
+  </div>`);
+  setTimeout(()=>{const t=document.getElementById('st-title');if(t)t.focus()},100);
+};
+
+window.saveStep=async(pid,idx)=>{
+  const title=document.getElementById('st-title').value.trim();
+  if(!title){toast('Step title is required.');return;}
+  const desc=document.getElementById('st-desc').value.trim();
+  const assignee=document.getElementById('st-assign').value;
+  const due=document.getElementById('st-due').value;
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  if(!p.steps)p.steps=[];
+  const step={title,desc,assignee,due,done:false,doneDate:null,addedBy:CU,addedDate:today()};
+  if(idx===null){p.steps.push(step);}
+  else{step.done=p.steps[idx].done;step.doneDate=p.steps[idx].doneDate;p.steps[idx]=step;}
+  await saveP(p);
+  closeOv();
+  renderSOP();
+  toast(idx===null?'Step added.':'Step updated.');
+};
+
+window.toggleStep=async(pid,idx,checked)=>{
+  const p=S.projects.find(x=>x.id===pid);if(!p||!p.steps)return;
+  p.steps[idx].done=checked;
+  p.steps[idx].doneDate=checked?today():null;
+  await saveP(p);
+  renderSOP();
+};
+
+window.deleteStep=async(pid,idx)=>{
+  if(!confirm('Delete this step?'))return;
+  const p=S.projects.find(x=>x.id===pid);if(!p||!p.steps)return;
+  p.steps.splice(idx,1);
+  await saveP(p);
+  renderSOP();
+  toast('Step deleted.');
+};
+
+// ── Print SOP ──
+window.printSOP=function(){
+  const p=S.projects.find(x=>x.id===sopSelectedId);if(!p)return;
+  const steps=p.steps||[];
+  const win=window.open('','_blank','width=800,height=900');
+  win.document.write(`<!DOCTYPE html><html><head><title>SOP — ${p.name}</title>
+  <style>
+    body{font-family:Arial,sans-serif;max-width:750px;margin:40px auto;color:#111;font-size:13px}
+    h1{font-size:22px;font-weight:800;border-bottom:3px solid #006A4E;padding-bottom:8px;margin-bottom:16px;color:#006A4E}
+    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+    .meta-item{background:#f5f5f5;padding:8px 12px;border-radius:6px}
+    .meta-item .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#666;margin-bottom:2px}
+    .meta-item .val{font-size:13px;font-weight:700}
+    .step{display:flex;gap:12px;margin-bottom:12px;padding:10px 12px;border:1px solid #ddd;border-radius:6px;break-inside:avoid}
+    .step.done{background:#f9f9f9;opacity:.7}
+    .step-num{width:26px;height:26px;border-radius:50%;background:#006A4E;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .step.done .step-num{background:#81C784}
+    .step-title{font-size:14px;font-weight:700;margin-bottom:3px}
+    .step.done .step-title{text-decoration:line-through;color:#888}
+    .step-desc{font-size:12px;color:#555;line-height:1.5;margin-bottom:4px}
+    .step-meta{font-size:11px;color:#888}
+    h3{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#006A4E;margin:20px 0 10px;border-bottom:1px solid #ddd;padding-bottom:4px}
+    @page{margin:1in}
+  </style></head><body>
+  <h1>SOP: ${p.name}</h1>
+  <div class="meta">
+    <div class="meta-item"><div class="lbl">Category</div><div class="val">${p.category||'—'}</div></div>
+    <div class="meta-item"><div class="lbl">Owner</div><div class="val">${p.owner||'Unassigned'}</div></div>
+    <div class="meta-item"><div class="lbl">Deadline</div><div class="val">${fmtD(p.due)}</div></div>
+  </div>
+  ${p.description?`<p style="font-size:13px;color:#444;line-height:1.6;margin-bottom:20px">${p.description}</p>`:''}
+  <h3>Order of operations — ${steps.length} step${steps.length!==1?'s':''}</h3>
+  ${steps.map((s,i)=>`<div class="step${s.done?' done':''}">
+    <div class="step-num">${s.done?'✓':i+1}</div>
+    <div>
+      <div class="step-title">${s.title}</div>
+      ${s.desc?`<div class="step-desc">${s.desc}</div>`:''}
+      <div class="step-meta">${[s.assignee?'Assigned: '+s.assignee:'',s.due?'Due: '+fmtD(s.due):'',s.done&&s.doneDate?'Completed: '+fmtD(s.doneDate):''].filter(Boolean).join(' &nbsp;·&nbsp; ')}</div>
+    </div>
+  </div>`).join('')}
+  <p style="margin-top:30px;font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:10px">Generated by VPRCA Team Project Tracker · ${new Date().toLocaleDateString()}</p>
+  </body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>win.print(),400);
+};
+
+// ── Export SOP as Word (.docx) ──
+window.exportSopDocx=function(){
+  const p=S.projects.find(x=>x.id===sopSelectedId);if(!p)return;
+  const steps=p.steps||[];
+  // Build a simple RTF that Word can open, or use HTML-based docx via Blob
+  const rows=steps.map((s,i)=>`
+    <tr>
+      <td style="width:5%;text-align:center;font-weight:bold;background:${s.done?'#c8e6c9':'#E8F5E9'};color:#006A4E">${s.done?'✓':i+1}</td>
+      <td style="width:30%;font-weight:bold">${s.title}</td>
+      <td style="width:35%">${s.desc||'—'}</td>
+      <td style="width:15%">${s.assignee||'—'}</td>
+      <td style="width:15%">${s.due?fmtD(s.due):'—'}</td>
+    </tr>`).join('');
+
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:w="urn:schemas-microsoft-com:office:word"
+    xmlns="http://www.w3.org/TR/REC-html40">
+  <head><meta charset="utf-8">
+  <style>
+    body{font-family:Calibri,sans-serif;font-size:11pt;color:#111}
+    h1{font-size:18pt;color:#006A4E;border-bottom:2pt solid #006A4E;padding-bottom:4pt}
+    h2{font-size:12pt;color:#006A4E;text-transform:uppercase;letter-spacing:.05em;margin-top:16pt}
+    table{width:100%;border-collapse:collapse;font-size:10pt}
+    th{background:#006A4E;color:#fff;padding:6pt 8pt;text-align:left;font-weight:bold}
+    td{padding:5pt 8pt;border-bottom:0.5pt solid #ddd;vertical-align:top}
+    tr:nth-child(even) td{background:#f9f9f9}
+    .meta-table td{border:none;padding:3pt 8pt}
+    .meta-label{font-weight:bold;color:#555;font-size:9pt;text-transform:uppercase}
+    p.footer{font-size:8pt;color:#999;border-top:0.5pt solid #ddd;padding-top:6pt;margin-top:20pt}
+  </style></head>
+  <body>
+  <h1>SOP: ${p.name}</h1>
+  ${p.description?`<p>${p.description}</p>`:''}
+  <table class="meta-table"><tr>
+    <td><span class="meta-label">Category</span><br>${p.category||'—'}</td>
+    <td><span class="meta-label">Owner</span><br>${p.owner||'Unassigned'}</td>
+    <td><span class="meta-label">Deadline</span><br>${fmtD(p.due)}</td>
+    <td><span class="meta-label">Progress</span><br>${steps.filter(s=>s.done).length} of ${steps.length} steps complete</td>
+  </tr></table>
+  <h2>Order of Operations — ${steps.length} Step${steps.length!==1?'s':''}</h2>
+  <table>
+    <thead><tr><th>#</th><th>Step</th><th>Description</th><th>Assigned To</th><th>Due Date</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <p class="footer">Generated by VPRCA Team Project Tracker &bull; ${new Date().toLocaleDateString()} &bull; Ohio University Division of Research &amp; Creative Activity</p>
+  </body></html>`;
+
+  const blob=new Blob(['\ufeff'+html],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`SOP_${p.name.replace(/[^a-z0-9]/gi,'_')}.doc`;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url)},100);
+  toast('Word document downloaded.');
+};
+
+// ── Overlay ──
+function showOv(html){document.getElementById('ovr').innerHTML=`<div class="ov" onclick="if(event.target.classList.contains('ov'))closeOv()">${html}</div>`}
+window.closeOv=()=>{document.getElementById('ovr').innerHTML=''};
+
+// ── Inline edit ──
+window.inlineE=async(id,f,v)=>{const p=S.projects.find(x=>x.id===id);if(!p)return;p[f]=v;await saveP(p)};
+window.extD=async(id,days)=>{const p=S.projects.find(x=>x.id===id);if(!p||!p.due)return;const d=new Date(p.due);d.setDate(d.getDate()+days);p.due=d.toISOString().slice(0,10);await saveP(p);S.notifLog.unshift({date:today(),project:p.name,trigger:'Deadline extended +'+days+' days',recipients:'(leadership)',href:null});await saveLog(S.notifLog);toast('Deadline extended +'+days+' days.')};
+
+// ── Complete ──
+window.toggleC=async(id,checked)=>{const p=S.projects.find(x=>x.id===id);if(!p)return;if(!checked){p.completed=false;p.completedDate=null;p.followUp=null;await saveP(p);toast('↩ Marked incomplete.');return}p.completed=true;p.completedDate=today();await saveP(p);showFUModal(id)};
+function showFUModal(id){const p=S.projects.find(x=>x.id===id);if(!p)return;showOv(`<div class="modal" style="max-width:480px;text-align:center"><div style="font-size:40px;margin-bottom:.75rem">🎉</div><h2>Project completed!</h2><p class="msub">Will there be any follow-up required for <strong>${esc(p.name)}</strong>?</p><div style="display:flex;gap:10px;justify-content:center"><button class="btn pri" style="min-width:100px;height:40px" onclick="showFUForm('${id}')"><i class="ti ti-check"></i> Yes</button><button class="btn" style="min-width:100px;height:40px" onclick="completeNoFU('${id}')"><i class="ti ti-x"></i> No</button></div></div>`)}
+window.showFUForm=id=>{const p=S.projects.find(x=>x.id===id);if(!p)return;showOv(`<div class="modal" style="max-width:480px"><button class="ibtn mclose" onclick="cancelC('${id}')"><i class="ti ti-x"></i></button><div style="font-size:30px;margin-bottom:.5rem">📋</div><h2>Follow-up details</h2><p class="msub">Describe follow-up for <strong>${esc(p.name)}</strong> and set a new deadline.</p><div class="fr"><label class="fl">Description</label><textarea id="fu-d" rows="3" style="width:100%" placeholder="What follow-up is needed?"></textarea></div><div class="fr"><label class="fl">New deadline</label><input type="date" id="fu-dt" style="width:100%" value="${p.due||''}"></div><div class="mfoot"><button class="btn gh" onclick="cancelC('${id}')">Cancel</button><button class="btn pri" onclick="saveFU('${id}')"><i class="ti ti-arrow-right"></i> Save &amp; reactivate</button></div></div>`);setTimeout(()=>{const e=document.getElementById('fu-d');if(e)e.focus()},100)};
+window.saveFU=async id=>{const desc=document.getElementById('fu-d').value.trim(),date=document.getElementById('fu-dt').value;if(!desc){toast('Add a description.');return}if(!date){toast('Set a deadline.');return}const p=S.projects.find(x=>x.id===id);if(!p)return;p.completed=false;p.completedDate=null;p.due=date;p.nextStep=desc;p.phase='In Progress';p.followUp={desc,date,addedDate:today()};await saveP(p);closeOv();showOv(`<div class="modal" style="max-width:420px;text-align:center"><div style="font-size:40px;margin-bottom:.75rem">✅</div><h2>Follow-up saved</h2><p class="msub"><strong>${esc(p.name)}</strong> reactivated with new deadline.</p><button class="btn pri" onclick="closeOv()">Got it</button></div>`)};
+window.completeNoFU=id=>{const p=S.projects.find(x=>x.id===id);if(!p)return;closeOv();showOv(`<div class="modal" style="max-width:420px;text-align:center"><div style="font-size:48px;margin-bottom:.75rem">🏆</div><h2>Thank you!</h2><p class="msub" style="font-size:15px;line-height:1.7">Thank you for all your hard work on<br><strong style="color:var(--ou-green);font-size:15px">${esc(p.name)}</strong>.</p><button class="btn pri" onclick="closeOv()">Close</button></div>`)};
+window.cancelC=async id=>{const p=S.projects.find(x=>x.id===id);if(p){p.completed=false;p.completedDate=null;await saveP(p)}closeOv()};
+
+// ── Add/Edit form ──
+window.openAdd=()=>{_ed={id:String(Date.now()),name:'',category:CATEGORIES[0],phase:'Planned',due:'',owner:OWNERS.find(o=>o.name===CU)?CU:'',approvalRequired:false,nextStep:'',flag:false,description:'',completed:false,completedDate:null,followUp:null,notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},visibility:'group',group:GROUPS[0],createdBy:CU};renderForm('add')};
+window.openEdit=id=>{const p=S.projects.find(x=>x.id===id);if(!p)return;_ed=JSON.parse(JSON.stringify(p));closeOv();renderForm('edit')};
+function renderForm(mode){const f=_ed,isE=mode==='edit';showOv(`<div class="modal"><button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+  <h2>${isE?'Edit item':'New item'}</h2><p class="msub">${isE?'Update item details and settings.':'Add a new item with visibility settings.'}</p>
+  <div class="sdiv"><i class="ti ti-file-description"></i> Item details</div>
+  <div class="fr"><label class="fl">Name</label><input type="text" id="f-name" value="${esc(f.name)}" placeholder="Item name"></div>
+  <div class="f2">
+    <div class="fr"><label class="fl">Owner</label><select id="f-owner"><option value="">— Unassigned —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(f.owner||'')===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}</select></div>
+    <div class="fr"><label class="fl">Category</label><select id="f-category">${CATEGORIES.map(c=>`<option value="${c}" ${(f.category||CATEGORIES[0])===c?'selected':''}>${c}</option>`).join('')}</select></div>
+  </div>
+  <div class="f2">
+    <div class="fr"><label class="fl">Phase</label><select id="f-phase">${PHASES.map(p=>`<option value="${p}" ${f.phase===p?'selected':''}>${p}</option>`).join('')}</select></div>
+    <div class="fr"><label class="fl">Deadline</label><input type="date" id="f-due" value="${esc(f.due)}"></div>
+  </div>
+  <div class="fr"><label class="fl">Next step</label><input type="text" id="f-next" value="${esc(f.nextStep||'')}" placeholder="What happens next?"></div>
+  <div class="fr"><label class="fl">Description</label><textarea id="f-desc" rows="2">${esc(f.description)}</textarea></div>
+  <div class="f2">
+    <div class="fr"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:4px"><input type="checkbox" id="f-flag" ${f.flag?'checked':''}> Flag for Eric review</label></div>
+    <div class="fr"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:4px"><input type="checkbox" id="f-appr" ${f.approvalRequired?'checked':''}> Approval required</label></div>
+  </div>
+  <div class="sdiv"><i class="ti ti-eye"></i> Visibility</div>
+  <div class="vis-opts" id="vis-opts">
+    <div class="vopt${(f.visibility||'group')==='private'?' sel-priv':''}" onclick="selVis('private')"><div class="vi">🔒</div><h4>Private</h4><p>Only you can see this project</p></div>
+    <div class="vopt${(f.visibility||'group')==='group'?' sel-grp':''}" onclick="selVis('group')"><div class="vi">👥</div><h4>For the group</h4><p>Visible to all team members</p></div>
+  </div>
+  <div id="grp-row" class="fr" style="display:${(f.visibility||'group')==='group'?'':'none'}">
+    <label class="fl">Group / team</label>
+    <select id="f-grp">${GROUPS.map(g=>`<option value="${esc(g)}" ${(f.group||GROUPS[0])===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
+  </div>
+  <div class="sdiv"><i class="ti ti-users"></i> Notification recipients</div>
+  <div id="rl">${renderRL(f.recipients||[])}</div>
+  ${S.contacts.length?`<div class="fr" style="margin-top:6px"><label class="fl">Add from contacts</label><div style="display:flex;gap:8px"><select id="rc-sel" style="flex:1"><option value="">— Select —</option>${S.contacts.map((c,i)=>`<option value="${i}">${esc(c.name)} — ${esc(c.email)}</option>`).join('')}</select><button class="btn" onclick="addRC()"><i class="ti ti-user-plus"></i> Add</button></div></div>`:''}
+  <div class="f3" style="margin-top:6px">
+    <div><label class="fl">Name</label><input type="text" id="r-n" placeholder="Full name"></div>
+    <div><label class="fl">Email</label><input type="email" id="r-e" placeholder="email@ohio.edu" onkeydown="if(event.key==='Enter'){event.preventDefault();addR()}"></div>
+    <button class="btn" style="margin-top:21px" onclick="addR()"><i class="ti ti-plus"></i> Add</button>
+  </div>
+  <div class="sdiv"><i class="ti ti-bell"></i> Email triggers</div>
+  <div class="tgrid" id="tg">${renderTG(f.triggers||{t30:true,t14:true,t1:false,tc:true})}</div>
+  <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button><button class="btn pri" onclick="submitP('${isE?f.id:'null'}')">${isE?'Save changes':'Add item'}</button></div>
+</div>`)}
+function renderRL(rs){if(!rs.length)return`<p style="font-size:13px;color:var(--text2);margin-bottom:.5rem">No recipients yet.</p>`;return rs.map((r,i)=>`<div class="rrow"><span class="rn">${esc(r.name)}</span><span class="re">${esc(r.email)}</span><button class="btn xs gh" onclick="rmR(${i})"><i class="ti ti-x"></i></button></div>`).join('')}
+function renderTG(t){return TRIGGERS.map(tr=>`<div class="tcard${t[tr.id]?' on':''}" onclick="togT('${tr.id}')"><input type="checkbox" ${t[tr.id]?'checked':''} onclick="event.stopPropagation();togT('${tr.id}')"><div><label style="cursor:pointer;font-weight:600">${tr.l}</label><div class="td">${tr.d}</div></div></div>`).join('')}
+window.selVis=v=>{_ed.visibility=v;const opts=document.querySelectorAll('.vopt');opts[0].className='vopt'+(v==='private'?' sel-priv':'');opts[1].className='vopt'+(v==='group'?' sel-grp':'');document.getElementById('grp-row').style.display=v==='group'?'':'none'};
+window.togT=id=>{_ed.triggers[id]=!_ed.triggers[id];document.getElementById('tg').innerHTML=renderTG(_ed.triggers)};
+window.addRC=()=>{const sel=document.getElementById('rc-sel');if(!sel||!sel.value){toast('Select a contact.');return}const c=S.contacts[+sel.value];if(!c)return;if((_ed.recipients||[]).find(r=>r.email===c.email)){toast(c.name+' already added.');return}if(!_ed.recipients)_ed.recipients=[];_ed.recipients.push({name:c.name,email:c.email});document.getElementById('rl').innerHTML=renderRL(_ed.recipients);sel.value=''};
+window.addR=async()=>{const n=document.getElementById('r-n').value.trim(),e=document.getElementById('r-e').value.trim();if(!n||!e){toast('Enter name and email.');return}if(!_ed.recipients)_ed.recipients=[];if(_ed.recipients.find(r=>r.email===e)){toast(n+' already added.');return}_ed.recipients.push({name:n,email:e});if(!S.contacts.find(c=>c.email===e))await saveC({name:n,email:e});document.getElementById('rl').innerHTML=renderRL(_ed.recipients);document.getElementById('r-n').value='';document.getElementById('r-e').value='';document.getElementById('r-n').focus()};
+window.rmR=i=>{_ed.recipients.splice(i,1);document.getElementById('rl').innerHTML=renderRL(_ed.recipients)};
+window.submitP=async eid=>{
+  const name=document.getElementById('f-name').value.trim();if(!name){toast('Name required.');return}
+  const vis=_ed.visibility||'group',grp=vis==='group'&&document.getElementById('f-grp')?document.getElementById('f-grp').value:GROUPS[0];
+  const obj={..._ed,name,category:document.getElementById('f-category').value,phase:document.getElementById('f-phase').value,owner:document.getElementById('f-owner').value,due:document.getElementById('f-due').value,nextStep:document.getElementById('f-next').value.trim(),description:document.getElementById('f-desc').value.trim(),flag:document.getElementById('f-flag').checked,approvalRequired:document.getElementById('f-appr').checked,visibility:vis,group:vis==='group'?grp:'',triggers:_ed.triggers,recipients:_ed.recipients||[],createdBy:_ed.createdBy||CU};
+  await saveP(obj);closeOv();toast(eid!=='null'?'Item updated.':'Item added.');refreshDash();
+};
+window.doDelP=async id=>{const p=S.projects.find(x=>x.id===id);if(!isAdmin()&&p&&p.createdBy!==CU){toast('You can only delete your own items.');return}if(!confirm('Delete this item?'))return;await delP(id);toast('Deleted.');refreshDash()};
+
+// ── Detail modal ──
+window.openDetail=id=>{
+  const p=S.projects.find(x=>x.id===id);if(!p||!canSee(p))return;
+  const rc=cRisk(p),days=dU(p.due),urg=days<0?'Past due':days===0?'Due today':days===1?'Due tomorrow':`Due in ${days} days`;
+  const uc=days<=14?'var(--red-text)':days<=30?'var(--yellow-text)':'var(--text2)';
+  const at=aTrig(p),ce=isAdmin()||p.createdBy===CU;
+  const allT=[{id:'t30',l:'30-day alert',d:'30 days'},{id:'t14',l:'2-week notice',d:'14 days'},{id:'t1',l:'Day-before',d:'1 day'},{id:'tc',l:'Completion',d:'Complete'}];
+  showOv(`<div class="modal" style="max-width:660px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>${esc(p.name)}</h2>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 1rem">
+      ${rBadge(p)}
+      <span style="background:var(--bg2);border:.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;padding:3px 9px;color:var(--text2)">${esc(p.category||'—')}</span>
+      <span style="background:var(--bg2);border:.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;padding:3px 9px;color:var(--text2)">${esc(p.phase)}</span>
+      ${p.visibility==='private'?`<span class="vbadge vpriv"><i class="ti ti-lock" style="font-size:10px"></i> Private</span>`:`<span class="vbadge vgrp">${esc(p.group||'Group')}</span>`}
+      ${p.flag?`<span class="flag-eric"><i class="ti ti-user" style="font-size:10px"></i> Eric review</span>`:''}
+    </div>
+    ${p.description?`<p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.6">${esc(p.description)}</p>`:''}
+    <div class="sdiv" style="margin-top:0"><i class="ti ti-layout-grid"></i> Overview</div>
+    <div class="dgrid">
+      <div class="di"><div class="dil">Deadline</div><div class="dv">${fmtD(p.due)}</div><div style="font-size:11px;color:${uc};font-weight:700;margin-top:3px">${urg}</div>${(rc==='r'||rc==='b')&&ce?`<button class="btn ext" style="margin-top:6px" onclick="extD('${p.id}',14);closeOv()"><i class="ti ti-clock-plus" style="font-size:11px"></i> Extend +14 days</button>`:''}</div>
+      <div class="di"><div class="dil">Status</div><div class="dv" style="font-size:13px">${p.completed?'✅ Complete':'Active'}</div>${p.completed&&p.completedDate?`<div style="font-size:11px;color:var(--green-text);font-weight:600;margin-top:3px">Completed ${esc(fmtD(p.completedDate))}</div>`:''}</div>
+      <div class="di"><div class="dil">Owner</div><div class="dv" style="font-size:13px">${esc(p.owner||'—')}</div></div>
+      <div class="di"><div class="dil">Next step</div><div class="dv" style="font-size:13px;font-weight:500">${esc(p.nextStep||'—')}</div></div>
+    </div>
+    <div class="sdiv"><i class="ti ti-bell"></i> Email triggers — ${(p.recipients||[]).length} recipient${(p.recipients||[]).length!==1?'s':''}</div>
+    ${!(p.recipients||[]).length?`<p style="font-size:13px;color:var(--text2);margin-bottom:.75rem">No recipients.${ce?` <button class="btn xs" onclick="closeOv();openEdit('${p.id}')">Add</button>`:''}</p>`:`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.85rem">${(p.recipients||[]).map(r=>`<div style="background:var(--bg2);border:.5px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;display:inline-flex;gap:5px"><span style="font-weight:700">${esc(r.name)}</span><span style="color:var(--text2)">${esc(r.email)}</span></div>`).join('')}</div>`}
+    <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.5rem .85rem">
+      ${allT.map(t=>{const en=(p.triggers||{})[t.id]&&(p.recipients||[]).length>0,live=at.find(x=>x.id===t.id),href=en?mailto(p,t.l,t.d):null;return`<div class="etr"><div><div style="font-size:13px;font-weight:600">${t.l}${live?`<span style="font-size:10px;font-weight:800;color:var(--red-text);margin-left:8px;background:var(--red-bg);padding:1px 6px;border-radius:10px">● live</span>`:''}</div><div style="font-size:11px;color:var(--text2)">${t.d}</div></div>${href?`<a href="${href}" style="text-decoration:none"><button class="btn sm eml"><i class="ti ti-mail"></i>${live?'Send now':'Preview'}</button></a>`:`<span style="font-size:12px;color:var(--text2)">${!(p.triggers||{})[t.id]?'Disabled':'No recipients'}</span>`}</div>`}).join('')}
+    </div>
+    <div class="sdiv"><i class="ti ti-notes"></i> Notes &amp; updates</div>
+    <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.75rem">
+      ${!(p.notes||[]).length?`<p style="font-size:13px;color:var(--text2);margin-bottom:8px">No notes yet.</p>`:''}
+      ${(p.notes||[]).map(n=>`<div class="ne"><div class="nm">${esc(n.date)}${n.author?' · '+esc(n.author):''}</div>${esc(n.text)}</div>`).join('')}
+      <div style="display:flex;gap:8px;margin-top:${(p.notes||[]).length?'10px':'0'}">
+        <input type="text" id="ni" placeholder="Add a note…" style="flex:1;height:32px;font-size:13px" onkeydown="if(event.key==='Enter')addNote('${p.id}')">
+        <button class="btn sm" onclick="addNote('${p.id}')"><i class="ti ti-plus"></i> Add</button>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Close</button>${ce?`<button class="btn pri" onclick="closeOv();openEdit('${p.id}')"><i class="ti ti-edit"></i> Edit</button>`:''}</div>
+  </div>`);
+  setTimeout(()=>{const n=document.getElementById('ni');if(n)n.focus()},100);
+};
+window.addNote=async id=>{const el=document.getElementById('ni');const v=el?el.value.trim():'';if(!v)return;const p=S.projects.find(x=>x.id===id);if(!p)return;if(!p.notes)p.notes=[];p.notes.push({date:today(),text:v,author:CU});await saveP(p);openDetail(id);toast('Note saved.')};
+
+// ── Contacts ──
+window.openContacts=()=>{showOv(`<div class="modal" style="max-width:520px">
+  <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+  <h2>Contact directory</h2><p class="msub">Global contacts available in all project notification dropdowns.</p>
+  <div id="cl">${renderCL()}</div>
+  <div class="sdiv"><i class="ti ti-user-plus"></i> Add new contact</div>
+  <div class="f3">
+    <div><label class="fl">Name</label><input type="text" id="nc-n" placeholder="Full name"></div>
+    <div><label class="fl">Email</label><input type="email" id="nc-e" placeholder="email@ohio.edu" onkeydown="if(event.key==='Enter'){event.preventDefault();addGC()}"></div>
+    <button class="btn pri" style="margin-top:21px" onclick="addGC()"><i class="ti ti-plus"></i> Save</button>
+  </div>
+  <div class="mfoot"><button class="btn" onclick="closeOv()">Done</button></div>
+</div>`)};
+function renderCL(){if(!S.contacts.length)return`<div style="text-align:center;padding:1.5rem;color:var(--text2)"><p style="font-size:13px">No contacts yet.</p></div>`;return`<div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.5rem .75rem">${S.contacts.map((c,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:.5rem 0;border-bottom:.5px solid var(--border);${i===S.contacts.length-1?'border-bottom:none':''}"><div style="width:32px;height:32px;border-radius:50%;background:var(--ou-green-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--ou-green);flex-shrink:0">${esc(ini(c.name))}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">${esc(c.name)}</div><div style="font-size:12px;color:var(--text2)">${esc(c.email)}</div></div><a href="mailto:${esc(c.email)}" style="text-decoration:none"><button class="btn xs gh"><i class="ti ti-mail"></i></button></a><button class="btn xs gh" onclick="rmGC('${esc(c.email)}')"><i class="ti ti-trash"></i></button></div>`).join('')}</div>`}
+window.addGC=async()=>{const n=document.getElementById('nc-n').value.trim(),e=document.getElementById('nc-e').value.trim();if(!n||!e){toast('Enter name and email.');return}if(S.contacts.find(c=>c.email===e)){toast('Already in contacts.');return}await saveC({name:n,email:e});document.getElementById('nc-n').value='';document.getElementById('nc-e').value='';document.getElementById('nc-n').focus();document.getElementById('cl').innerHTML=renderCL();toast(n+' saved.')};
+window.rmGC=async email=>{const c=S.contacts.find(x=>x.email===email);if(!confirm('Remove '+(c?c.name:email)+'?'))return;await delC(email);document.getElementById('cl').innerHTML=renderCL();toast('Removed.')};
+
+// ── Notif log ──
+window.openNotifLog=()=>{showOv(`<div class="modal" style="max-width:560px">
+  <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+  <h2>Notification log</h2><p class="msub">History of email triggers across the team.</p>
+  ${!S.notifLog.length?`<div class="empty" style="padding:2rem"><i class="ti ti-bell-off"></i><p>No notifications yet.</p></div>`:`<div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.5rem .85rem">${S.notifLog.map(l=>`<div class="logrow"><div class="ldot" style="background:${l.manual?'#3B82F6':'#22C55E'}"></div><div><div style="font-weight:700">${esc(l.project)}</div><div style="color:var(--text2)">${esc(l.trigger)} · ${esc(l.recipients)} · ${esc(l.date)}</div></div>${l.href?`<a href="${l.href}" style="text-decoration:none;margin-left:auto"><button class="btn xs eml"><i class="ti ti-mail"></i></button></a>`:''}</div>`).join('')}</div>`}
+  <div class="mfoot"><button class="btn dng sm" onclick="S.notifLog=[];saveLog([]).then(()=>openNotifLog())"><i class="ti ti-trash"></i> Clear</button><button class="btn" onclick="closeOv()">Close</button></div>
+</div>`)};
+
+// ── Notify check ──
+async function checkNotify(){const td=today();let ch=false;for(const p of S.projects.filter(canSee)){if(!(p.recipients||[]).length)continue;if(!p.notified)p.notified={};for(const t of aTrig(p)){const k=p.id+'_'+t.id+'_'+td;if(p.notified[k])continue;S.notifLog.unshift({date:td,project:p.name,trigger:t.l,recipients:(p.recipients||[]).map(r=>r.name).join(', '),href:mailto(p,t.l,t.d)});p.notified[k]=true;ch=true}}if(ch)await saveLog(S.notifLog)}
+
+function toast(msg){const el=document.getElementById('toast');el.innerHTML='<i class="ti ti-check"></i> '+msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
+
+bootstrap().catch(e=>{document.getElementById('loading-screen').innerHTML=`<div style="color:#fff;text-align:center;padding:2rem"><div style="font-size:32px;margin-bottom:1rem">⚠️</div><div style="font-weight:700">${e.message}</div></div>`});
+setInterval(checkNotify,60000);
+</script>
+</body>
+</html>
