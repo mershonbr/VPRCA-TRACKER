@@ -189,8 +189,40 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
 .sop-empty i{font-size:32px;display:block;margin:0 auto 10px;color:var(--text3)}
 .add-step-bar{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.85rem 1rem;margin-top:.75rem}
 @media print{.topbar,.tab-bar,.sop-selector,.step-actions,.add-step-bar,.btn,.ibtn{display:none!important}.step-card{break-inside:avoid;border:1px solid #ccc!important;margin-bottom:8px!important}.sop-card{box-shadow:none!important}}
+.gantt-wrap{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
+.gantt-header{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem;border-bottom:.5px solid var(--border);background:var(--bg2);flex-wrap:wrap;gap:.5rem}
+.gantt-header h3{font-size:15px;font-weight:800;color:var(--text)}
+.gantt-selector{min-width:260px;font-size:13px}
+.gantt-grid{overflow-x:auto}
+.gantt-table{width:100%;border-collapse:collapse;min-width:900px}
+.gantt-table th{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;background:var(--bg2);border-bottom:.5px solid var(--border);white-space:nowrap}
+.gantt-table td{padding:7px 10px;border-bottom:.5px solid var(--border);vertical-align:middle;font-size:12px}
+.gantt-table tr:last-child td{border-bottom:none}
+.gantt-table tr:hover td{background:var(--bg2)}
+.gantt-row-label{font-weight:700;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.gantt-row-assign{font-size:11px;color:var(--text2);white-space:nowrap}
+.gantt-bar-cell{position:relative;height:36px;min-width:400px}
+.gantt-today-line{position:absolute;top:0;bottom:0;width:2px;background:#EF4444;z-index:5;opacity:.8}
+.gantt-today-line::after{content:'Today';position:absolute;top:2px;left:4px;font-size:9px;font-weight:700;color:#EF4444;white-space:nowrap}
+.gantt-bar{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:4px;transition:opacity .15s;cursor:default}
+.gantt-bar:hover{opacity:.85;z-index:10}
+.gantt-bar.done{opacity:.5;text-decoration:line-through}
+.gantt-milestone{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:2px;rotate:45deg;z-index:4}
+.gantt-tag-av{display:inline-flex;width:18px;height:18px;border-radius:50%;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff;border:1.5px solid rgba(255,255,255,.5);margin-left:-4px;flex-shrink:0}
+.gantt-tag-av:first-child{margin-left:0}
+.gantt-legend{display:flex;align-items:center;gap:12px;padding:.6rem 1rem;border-top:.5px solid var(--border);flex-wrap:wrap}
+.gantt-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.gantt-legend-dot{width:10px;height:10px;border-radius:2px}
 @media(max-width:960px){.metric-strip{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.main{padding:1rem}.metric-strip{grid-template-columns:1fr 1fr}.f2,.f3,.vis-opts{grid-template-columns:1fr}.tgrid{grid-template-columns:1fr}}
+.presence-wrap{display:flex;align-items:center;gap:4px;margin-right:4px}
+.presence-wrap .plabel{font-size:10px;color:rgba(255,255,255,.45);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+.pav{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ou-green-dark);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;cursor:default;transition:transform .15s;position:relative;margin-left:-8px}
+.pav:first-of-type{margin-left:0}
+.pav:hover{transform:scale(1.15);z-index:10}
+.pav .pav-tip{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;font-size:10px;font-weight:600;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:20}
+.pav:hover .pav-tip{opacity:1}
+.pav.me{border-color:var(--ou-gold);box-shadow:0 0 0 1.5px var(--ou-gold)}
 </style>
 </head>
 <body>
@@ -256,6 +288,7 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
     </div>
     <div class="topbar-right">
       <div class="live-dot"><span></span> Live</div>
+      <div class="presence-wrap" id="presence-wrap"><span class="plabel">Online</span></div>
       <div class="user-chip"><div class="u-av" id="uav"></div><span class="u-name" id="uname"></span></div>
       <button class="btn sm adm" id="admin-btn" style="display:none" onclick="openAdmin()"><i class="ti ti-shield"></i> Admin</button>
       <button class="btn sm gh" onclick="openContacts()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-address-book"></i> Contacts</button>
@@ -268,8 +301,9 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
     <button class="tab-btn" id="tab-sop" onclick="switchTab('sop')"><i class="ti ti-list-check"></i> SOPs</button>
+    <button class="tab-btn" id="tab-gantt" onclick="switchTab('gantt')"><i class="ti ti-chart-gantt"></i> Timeline</button>
   </div>
-  <div class="main"><div id="dash"></div><div id="sop-view" style="display:none"></div></div>
+  <div class="main"><div id="dash"></div><div id="sop-view" style="display:none"></div><div id="gantt-view" style="display:none"></div></div>
 </div>
 <div id="ovr"></div>
 <div id="toast"></div>
@@ -410,9 +444,12 @@ function completeLogin(name){
   document.getElementById('uav').textContent=ini(name);
   document.getElementById('uname').textContent=name;
   if(isAdmin())document.getElementById('admin-btn').style.display='';
+  startPresence();
   startListeners();
 }
 window.doSignOut=function(){
+  clearPresence();
+  if(_presenceInterval)clearInterval(_presenceInterval);
   sessionStorage.removeItem('vprca_user');CU=null;
   document.getElementById('app').style.display='none';
   document.getElementById('login-wrap').className='show';
@@ -485,10 +522,35 @@ window.refreshDash=async function(){
   } catch(e){toast('Refresh failed: '+e.message);}
   finally{if(btn){setTimeout(()=>{btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh"></i> Refresh';},600);}}
 };
+// ── Presence ──
+const PRESENCE_COLORS={'G. Jason Jolley':'#7C3AED','Keith Leffler':'#0369A1','Kim Littlefield':'#B45309','Brian Mershon':'#006A4E','Eric Muth':'#B91C1C'};
+let _presenceInterval=null;
+async function presenceHeartbeat(){if(!CU)return;await setDoc(doc(db,'presence',CU.replace(/\s/g,'_')),{name:CU,ts:Date.now(),active:true});}
+async function clearPresence(){if(!CU)return;try{await setDoc(doc(db,'presence',CU.replace(/\s/g,'_')),{name:CU,ts:0,active:false})}catch(e){}}
+function startPresence(){
+  presenceHeartbeat();
+  _presenceInterval=setInterval(presenceHeartbeat,30000);
+  window.addEventListener('beforeunload',()=>{clearPresence();if(_presenceInterval)clearInterval(_presenceInterval)});
+}
+function renderPresence(snap){
+  const wrap=document.getElementById('presence-wrap');if(!wrap)return;
+  const now=Date.now();
+  const online=snap.docs.map(d=>d.data()).filter(d=>d.active&&d.ts&&(now-d.ts)<90000).sort((a,b)=>a.name===CU?-1:b.name===CU?1:a.name.localeCompare(b.name));
+  let html=`<span class="plabel">Online</span>`;
+  online.forEach(u=>{
+    const color=PRESENCE_COLORS[u.name]||'#555';
+    const isMe=u.name===CU;
+    const iv=u.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    html+=`<div class="pav${isMe?' me':''}" style="background:${color}">${iv}<div class="pav-tip">${esc(u.name)}${isMe?' (you)':''}</div></div>`;
+  });
+  wrap.innerHTML=html;
+}
+
 function startListeners(){
-  onSnapshot(collection(db,'projects'),sn=>{S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));if(currentTab==='dash')renderDash();else renderSOP();checkNotify()});
+  onSnapshot(collection(db,'projects'),sn=>{S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));if(currentTab==='dash')renderDash();else if(currentTab==='sop')renderSOP();else if(currentTab==='gantt')renderGantt();checkNotify()});
   onSnapshot(collection(db,'contacts'),sn=>{S.contacts=sn.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name))});
   onSnapshot(doc(db,'meta','notifLog'),sn=>{if(sn.exists())S.notifLog=sn.data().entries||[]});
+  onSnapshot(collection(db,'presence'),sn=>{renderPresence(sn)});
 }
 
 // ── Render dashboard ──
@@ -574,11 +636,13 @@ window.clearF=()=>{S.fCategory='';S.fPhase='';S.fRisk='';S.fOwner='';S.fGroup=''
 let currentTab='dash';
 window.switchTab=function(tab){
   currentTab=tab;
-  document.getElementById('tab-dash').className='tab-btn'+(tab==='dash'?' active':'');
-  document.getElementById('tab-sop').className='tab-btn'+(tab==='sop'?' active':'');
-  document.getElementById('dash').style.display=tab==='dash'?'':'none';
-  document.getElementById('sop-view').style.display=tab==='sop'?'':'none';
+  ['dash','sop','gantt'].forEach(t=>{
+    document.getElementById('tab-'+t).className='tab-btn'+(tab===t?' active':'');
+    const el=document.getElementById(t==='dash'?'dash':t+'-view');
+    if(el)el.style.display=tab===t?'':'none';
+  });
   if(tab==='sop')renderSOP();
+  if(tab==='gantt')renderGantt();
 };
 
 // ── SOP state ──
@@ -716,19 +780,24 @@ window.dropStep=async(e,pid,targetI)=>{
 
 // ── Add/Edit step modal ──
 window.openAddStep=pid=>{
+  window._fsTags=[];
   showOv(`<div class="modal" style="max-width:500px">
     <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
     <h2>Add step</h2><p class="msub">Add an ordered step to this SOP / session plan.</p>
     <div class="fr"><label class="fl">Step title *</label><input type="text" id="st-title" placeholder="e.g. Book venue" style="width:100%"></div>
-    <div class="fr"><label class="fl">Description</label><textarea id="st-desc" rows="3" placeholder="Details, instructions, or notes for this step…" style="width:100%"></textarea></div>
+    <div class="fr"><label class="fl">Description</label><textarea id="st-desc" rows="3" placeholder="Details, instructions, or notes…" style="width:100%"></textarea></div>
     <div class="f2">
       <div class="fr"><label class="fl">Assigned to</label>
-        <select id="st-assign" style="width:100%">
-          <option value="">— Unassigned —</option>
-          ${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}
-        </select>
+        <select id="st-assign" style="width:100%"><option value="">— Unassigned —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}</select>
       </div>
       <div class="fr"><label class="fl">Due date</label><input type="date" id="st-due" style="width:100%"></div>
+    </div>
+    <div class="fr"><label class="fl">Tag people <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">(notified by email)</span></label>
+      <div id="st-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
+      <div style="display:flex;gap:8px">
+        <select id="st-tag-sel" style="flex:1"><option value="">— Tag a team member —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}</select>
+        <button class="btn" onclick="stAddTag()"><i class="ti ti-tag"></i> Tag</button>
+      </div>
     </div>
     <div class="mfoot">
       <button class="btn gh" onclick="closeOv()">Cancel</button>
@@ -741,6 +810,7 @@ window.openAddStep=pid=>{
 window.openEditStep=(pid,idx)=>{
   const p=S.projects.find(x=>x.id===pid);if(!p)return;
   const s=(p.steps||[])[idx];if(!s)return;
+  window._fsTags=[...(s.tags||[])];
   showOv(`<div class="modal" style="max-width:500px">
     <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
     <h2>Edit step ${idx+1}</h2><p class="msub">Update this step's details.</p>
@@ -748,12 +818,16 @@ window.openEditStep=(pid,idx)=>{
     <div class="fr"><label class="fl">Description</label><textarea id="st-desc" rows="3" style="width:100%">${esc(s.desc||'')}</textarea></div>
     <div class="f2">
       <div class="fr"><label class="fl">Assigned to</label>
-        <select id="st-assign" style="width:100%">
-          <option value="">— Unassigned —</option>
-          ${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(s.assignee||'')===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}
-        </select>
+        <select id="st-assign" style="width:100%"><option value="">— Unassigned —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(s.assignee||'')===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}</select>
       </div>
       <div class="fr"><label class="fl">Due date</label><input type="date" id="st-due" value="${esc(s.due||'')}" style="width:100%"></div>
+    </div>
+    <div class="fr"><label class="fl">Tag people <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">(notified by email)</span></label>
+      <div id="st-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">${(s.tags||[]).map(t=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-bg);color:var(--blue-text);border:.5px solid #90CAF9;border-radius:20px;font-size:11px;font-weight:600;padding:2px 8px">${esc(t)}<button style="background:none;border:none;cursor:pointer;color:inherit;padding:0 0 0 2px;font-size:12px" onclick="stRemoveTag('${esc(t)}')">&times;</button></span>`).join('')}</div>
+      <div style="display:flex;gap:8px">
+        <select id="st-tag-sel" style="flex:1"><option value="">— Tag a team member —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}</select>
+        <button class="btn" onclick="stAddTag()"><i class="ti ti-tag"></i> Tag</button>
+      </div>
     </div>
     <div class="mfoot">
       <button class="btn gh" onclick="closeOv()">Cancel</button>
@@ -762,6 +836,8 @@ window.openEditStep=(pid,idx)=>{
   </div>`);
   setTimeout(()=>{const t=document.getElementById('st-title');if(t)t.focus()},100);
 };
+window.stAddTag=()=>{const sel=document.getElementById('st-tag-sel');if(!sel||!sel.value)return;if(!window._fsTags)window._fsTags=[];if(window._fsTags.includes(sel.value)){toast('Already tagged.');return}window._fsTags.push(sel.value);const c=document.getElementById('st-tags');if(c)c.innerHTML=window._fsTags.map(t=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-bg);color:var(--blue-text);border:.5px solid #90CAF9;border-radius:20px;font-size:11px;font-weight:600;padding:2px 8px">${esc(t)}<button style="background:none;border:none;cursor:pointer;color:inherit;padding:0 0 0 2px;font-size:12px" onclick="stRemoveTag('${esc(t)}')">&times;</button></span>`).join('');sel.value=''};
+window.stRemoveTag=name=>{window._fsTags=(window._fsTags||[]).filter(t=>t!==name);const c=document.getElementById('st-tags');if(c)c.innerHTML=window._fsTags.map(t=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-bg);color:var(--blue-text);border:.5px solid #90CAF9;border-radius:20px;font-size:11px;font-weight:600;padding:2px 8px">${esc(t)}<button style="background:none;border:none;cursor:pointer;color:inherit;padding:0 0 0 2px;font-size:12px" onclick="stRemoveTag('${esc(t)}')">&times;</button></span>`).join('')};
 
 window.saveStep=async(pid,idx)=>{
   const title=document.getElementById('st-title').value.trim();
@@ -769,14 +845,16 @@ window.saveStep=async(pid,idx)=>{
   const desc=document.getElementById('st-desc').value.trim();
   const assignee=document.getElementById('st-assign').value;
   const due=document.getElementById('st-due').value;
+  const tags=window._fsTags||[];
   const p=S.projects.find(x=>x.id===pid);if(!p)return;
   if(!p.steps)p.steps=[];
-  const step={title,desc,assignee,due,done:false,doneDate:null,addedBy:CU,addedDate:today()};
+  const step={title,desc,assignee,due,tags,done:false,doneDate:null,addedBy:CU,addedDate:today()};
   if(idx===null){p.steps.push(step);}
   else{step.done=p.steps[idx].done;step.doneDate=p.steps[idx].doneDate;p.steps[idx]=step;}
   await saveP(p);
-  closeOv();
-  renderSOP();
+  if(tags.length){const tagged=OWNERS.filter(o=>tags.includes(o.name));if(tagged.length){const to=tagged.map(o=>o.email).join(',');const sub=encodeURIComponent('[Step Tagged] '+step.title+' — '+p.name);const body=encodeURIComponent('You have been tagged on a step:\n\nItem: '+p.name+'\nStep: '+step.title+(step.desc?'\nDetails: '+step.desc:'')+(step.assignee?'\nAssigned to: '+step.assignee:'')+(step.due?'\nDue: '+fmtD(step.due):'')+'\n\nVPRCA Team Project Tracker');window.open('mailto:'+to+'?subject='+sub+'&body='+body,'_blank');}}
+  window._fsTags=[];
+  closeOv();renderSOP();
   toast(idx===null?'Step added.':'Step updated.');
 };
 
@@ -917,7 +995,7 @@ window.completeNoFU=id=>{const p=S.projects.find(x=>x.id===id);if(!p)return;clos
 window.cancelC=async id=>{const p=S.projects.find(x=>x.id===id);if(p){p.completed=false;p.completedDate=null;await saveP(p)}closeOv()};
 
 // ── Add/Edit form ──
-window.openAdd=()=>{_ed={id:String(Date.now()),name:'',category:CATEGORIES[0],phase:'Planned',due:'',owner:OWNERS.find(o=>o.name===CU)?CU:'',approvalRequired:false,nextStep:'',flag:false,description:'',completed:false,completedDate:null,followUp:null,notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},visibility:'group',group:GROUPS[0],createdBy:CU};renderForm('add')};
+window.openAdd=()=>{_ed={id:String(Date.now()),name:'',category:CATEGORIES[0],phase:'Planned',due:'',owner:OWNERS.find(o=>o.name===CU)?CU:'',approvalRequired:false,nextStep:'',flag:false,description:'',completed:false,completedDate:null,followUp:null,notes:[],steps:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},visibility:'group',group:GROUPS[0],createdBy:CU};renderForm('add')};
 window.openEdit=id=>{const p=S.projects.find(x=>x.id===id);if(!p)return;_ed=JSON.parse(JSON.stringify(p));closeOv();renderForm('edit')};
 function renderForm(mode){const f=_ed,isE=mode==='edit';showOv(`<div class="modal"><button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
   <h2>${isE?'Edit item':'New item'}</h2><p class="msub">${isE?'Update item details and settings.':'Add a new item with visibility settings.'}</p>
@@ -956,6 +1034,9 @@ function renderForm(mode){const f=_ed,isE=mode==='edit';showOv(`<div class="moda
   </div>
   <div class="sdiv"><i class="ti ti-bell"></i> Email triggers</div>
   <div class="tgrid" id="tg">${renderTG(f.triggers||{t30:true,t14:true,t1:false,tc:true})}</div>
+  <div class="sdiv"><i class="ti ti-list-check"></i> Steps &amp; timeline <span style="font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">— add ordered steps with deadlines and assignments</span></div>
+  <div id="form-steps">${renderFormSteps(f.steps||[])}</div>
+  <button class="btn sm" style="margin-top:6px" onclick="formAddStep()"><i class="ti ti-plus"></i> Add step</button>
   <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button><button class="btn pri" onclick="submitP('${isE?f.id:'null'}')">${isE?'Save changes':'Add item'}</button></div>
 </div>`)}
 function renderRL(rs){if(!rs.length)return`<p style="font-size:13px;color:var(--text2);margin-bottom:.5rem">No recipients yet.</p>`;return rs.map((r,i)=>`<div class="rrow"><span class="rn">${esc(r.name)}</span><span class="re">${esc(r.email)}</span><button class="btn xs gh" onclick="rmR(${i})"><i class="ti ti-x"></i></button></div>`).join('')}
@@ -965,11 +1046,115 @@ window.togT=id=>{_ed.triggers[id]=!_ed.triggers[id];document.getElementById('tg'
 window.addRC=()=>{const sel=document.getElementById('rc-sel');if(!sel||!sel.value){toast('Select a contact.');return}const c=S.contacts[+sel.value];if(!c)return;if((_ed.recipients||[]).find(r=>r.email===c.email)){toast(c.name+' already added.');return}if(!_ed.recipients)_ed.recipients=[];_ed.recipients.push({name:c.name,email:c.email});document.getElementById('rl').innerHTML=renderRL(_ed.recipients);sel.value=''};
 window.addR=async()=>{const n=document.getElementById('r-n').value.trim(),e=document.getElementById('r-e').value.trim();if(!n||!e){toast('Enter name and email.');return}if(!_ed.recipients)_ed.recipients=[];if(_ed.recipients.find(r=>r.email===e)){toast(n+' already added.');return}_ed.recipients.push({name:n,email:e});if(!S.contacts.find(c=>c.email===e))await saveC({name:n,email:e});document.getElementById('rl').innerHTML=renderRL(_ed.recipients);document.getElementById('r-n').value='';document.getElementById('r-e').value='';document.getElementById('r-n').focus()};
 window.rmR=i=>{_ed.recipients.splice(i,1);document.getElementById('rl').innerHTML=renderRL(_ed.recipients)};
+
+// ── Form-inline step management ──
+function renderFormSteps(steps){
+  if(!steps.length)return`<div style="font-size:13px;color:var(--text3);padding:.5rem 0">No steps yet — click "Add step" below to build your timeline.</div>`;
+  return steps.map((s,i)=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:.6rem .75rem;background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px">
+    <div style="width:22px;height:22px;border-radius:50%;background:var(--ou-green);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">${i+1}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(s.title)}</div>
+      ${s.desc?`<div style="font-size:11px;color:var(--text2);margin-top:1px">${esc(s.desc)}</div>`:''}
+      <div style="font-size:11px;color:var(--text3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap">
+        ${s.assignee?`<span>👤 ${esc(s.assignee)}</span>`:''}
+        ${s.due?`<span>📅 ${esc(fmtS(s.due))}</span>`:''}
+        ${(s.tags||[]).length?`<span>🏷 ${s.tags.join(', ')}</span>`:''}
+      </div>
+    </div>
+    <div style="display:flex;gap:3px;flex-shrink:0">
+      <button class="ibtn" style="padding:3px" onclick="formEditStep(${i})"><i class="ti ti-edit" style="font-size:13px"></i></button>
+      <button class="ibtn" style="padding:3px" onclick="formDelStep(${i})"><i class="ti ti-trash" style="font-size:13px"></i></button>
+    </div>
+  </div>`).join('');
+}
+
+function stepModal(idx){
+  const s=idx!==null?(_ed.steps||[])[idx]:null;
+  const title=s?s.title:'', desc=s?s.desc||'':'', assignee=s?s.assignee||'':'', due=s?s.due||'':'';
+  const tags=s?s.tags||[]:[];
+  showOv(`<div class="modal" style="max-width:500px">
+    <button class="ibtn mclose" onclick="${idx===null?'closeOv();renderForm(window._formMode||\'add\')':'closeOv();renderForm(window._formMode||\'edit\')'}"><i class="ti ti-x"></i></button>
+    <h2>${idx===null?'Add step':'Edit step '+(idx+1)}</h2>
+    <p class="msub">Define this step's details, assignment, due date, and who to tag.</p>
+    <div class="fr"><label class="fl">Step title *</label><input type="text" id="fs-title" value="${esc(title)}" placeholder="e.g. Book venue, Send invites…" style="width:100%"></div>
+    <div class="fr"><label class="fl">Description / instructions</label><textarea id="fs-desc" rows="3" style="width:100%" placeholder="Details, instructions, or notes…">${esc(desc)}</textarea></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Assigned to</label>
+        <select id="fs-assign" style="width:100%">
+          <option value="">— Unassigned —</option>
+          ${OWNERS.map(o=>`<option value="${esc(o.name)}" ${assignee===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fr"><label class="fl">Due date</label><input type="date" id="fs-due" value="${esc(due)}" style="width:100%"></div>
+    </div>
+    <div class="fr"><label class="fl">Tag people <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">(notified by email)</span></label>
+      <div id="fs-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">${tags.map(t=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-bg);color:var(--blue-text);border:.5px solid #90CAF9;border-radius:20px;font-size:11px;font-weight:600;padding:2px 8px">${esc(t)}<button style="background:none;border:none;cursor:pointer;color:inherit;padding:0 0 0 2px;font-size:12px" onclick="fsRemoveTag('${esc(t)}')">&times;</button></span>`).join('')}</div>
+      <div style="display:flex;gap:8px">
+        <select id="fs-tag-sel" style="flex:1">
+          <option value="">— Tag a team member —</option>
+          ${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}
+        </select>
+        <button class="btn" onclick="fsAddTag()"><i class="ti ti-tag"></i> Tag</button>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv();renderForm(window._formMode||'add')">Cancel</button>
+      <button class="btn pri" onclick="fsSaveStep(${idx})">${idx===null?'<i class="ti ti-plus"></i> Add step':'<i class="ti ti-check"></i> Save step'}</button>
+    </div>
+  </div>`);
+  window._fsTags=[...tags];
+  setTimeout(()=>{const t=document.getElementById('fs-title');if(t)t.focus()},100);
+}
+
+window.formAddStep=()=>{window._formMode=_ed.id&&S.projects.find(x=>x.id===_ed.id)?'edit':'add';stepModal(null)};
+window.formEditStep=i=>{window._formMode=_ed.id&&S.projects.find(x=>x.id===_ed.id)?'edit':'add';stepModal(i)};
+window.formDelStep=i=>{if(!_ed.steps)return;_ed.steps.splice(i,1);document.getElementById('form-steps').innerHTML=renderFormSteps(_ed.steps)};
+window.fsAddTag=()=>{
+  const sel=document.getElementById('fs-tag-sel');if(!sel||!sel.value)return;
+  if(!window._fsTags)window._fsTags=[];
+  if(window._fsTags.includes(sel.value)){toast('Already tagged.');return}
+  window._fsTags.push(sel.value);
+  refreshFsTags();sel.value='';
+};
+window.fsRemoveTag=name=>{window._fsTags=(window._fsTags||[]).filter(t=>t!==name);refreshFsTags()};
+function refreshFsTags(){
+  const c=document.getElementById('fs-tags');if(!c)return;
+  c.innerHTML=(window._fsTags||[]).map(t=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-bg);color:var(--blue-text);border:.5px solid #90CAF9;border-radius:20px;font-size:11px;font-weight:600;padding:2px 8px">${esc(t)}<button style="background:none;border:none;cursor:pointer;color:inherit;padding:0 0 0 2px;font-size:12px" onclick="fsRemoveTag('${esc(t)}')">&times;</button></span>`).join('');
+}
+window.fsSaveStep=async idx=>{
+  const title=document.getElementById('fs-title').value.trim();
+  if(!title){toast('Step title is required.');return}
+  const step={
+    title,
+    desc:document.getElementById('fs-desc').value.trim(),
+    assignee:document.getElementById('fs-assign').value,
+    due:document.getElementById('fs-due').value,
+    tags:window._fsTags||[],
+    done:false,doneDate:null,
+    addedBy:CU,addedDate:today()
+  };
+  if(!_ed.steps)_ed.steps=[];
+  if(idx===null){_ed.steps.push(step);}
+  else{step.done=_ed.steps[idx].done;step.doneDate=_ed.steps[idx].doneDate;_ed.steps[idx]=step;}
+  // Send tag notification emails
+  if(step.tags&&step.tags.length){
+    const tagged=OWNERS.filter(o=>step.tags.includes(o.name));
+    if(tagged.length){
+      const to=tagged.map(o=>o.email).join(',');
+      const sub=encodeURIComponent('[Step Tagged] '+step.title+' — '+(_ed.name||'New item'));
+      const body=encodeURIComponent('You have been tagged on a step:\n\nItem: '+(_ed.name||'New item')+'\nStep: '+step.title+(step.desc?'\nDetails: '+step.desc:'')+(step.assignee?'\nAssigned to: '+step.assignee:'')+(step.due?'\nDue: '+fmtD(step.due):'')+'\n\nVPRCA Team Project Tracker');
+      window.open('mailto:'+to+'?subject='+sub+'&body='+body,'_blank');
+    }
+  }
+  closeOv();
+  renderForm(window._formMode||'add');
+};
 window.submitP=async eid=>{
   const name=document.getElementById('f-name').value.trim();if(!name){toast('Name required.');return}
   const vis=_ed.visibility||'group',grp=vis==='group'&&document.getElementById('f-grp')?document.getElementById('f-grp').value:GROUPS[0];
   const obj={..._ed,name,category:document.getElementById('f-category').value,phase:document.getElementById('f-phase').value,owner:document.getElementById('f-owner').value,due:document.getElementById('f-due').value,nextStep:document.getElementById('f-next').value.trim(),description:document.getElementById('f-desc').value.trim(),flag:document.getElementById('f-flag').checked,approvalRequired:document.getElementById('f-appr').checked,visibility:vis,group:vis==='group'?grp:'',triggers:_ed.triggers,recipients:_ed.recipients||[],createdBy:_ed.createdBy||CU};
   await saveP(obj);closeOv();toast(eid!=='null'?'Item updated.':'Item added.');refreshDash();
+  if(currentTab==='gantt')renderGantt();
 };
 window.doDelP=async id=>{const p=S.projects.find(x=>x.id===id);if(!isAdmin()&&p&&p.createdBy!==CU){toast('You can only delete your own items.');return}if(!confirm('Delete this item?'))return;await delP(id);toast('Deleted.');refreshDash()};
 
@@ -1043,8 +1228,138 @@ window.openNotifLog=()=>{showOv(`<div class="modal" style="max-width:560px">
   <div class="mfoot"><button class="btn dng sm" onclick="S.notifLog=[];saveLog([]).then(()=>openNotifLog())"><i class="ti ti-trash"></i> Clear</button><button class="btn" onclick="closeOv()">Close</button></div>
 </div>`)};
 
-// ── Notify check ──
-async function checkNotify(){const td=today();let ch=false;for(const p of S.projects.filter(canSee)){if(!(p.recipients||[]).length)continue;if(!p.notified)p.notified={};for(const t of aTrig(p)){const k=p.id+'_'+t.id+'_'+td;if(p.notified[k])continue;S.notifLog.unshift({date:td,project:p.name,trigger:t.l,recipients:(p.recipients||[]).map(r=>r.name).join(', '),href:mailto(p,t.l,t.d)});p.notified[k]=true;ch=true}}if(ch)await saveLog(S.notifLog)}
+// ── Gantt / Timeline renderer ──
+let ganttSelectedId='';
+function renderGantt(){
+  const el=document.getElementById('gantt-view');if(!el)return;
+  const visible=S.projects.filter(canSee).filter(p=>(p.steps||[]).some(s=>s.due));
+  const opts=visible.map(p=>`<option value="${esc(p.id)}" ${ganttSelectedId===p.id?'selected':''}>${esc(p.name)}</option>`).join('');
+
+  let html=`<div class="sop-header">
+    <div><h2><i class="ti ti-chart-gantt" style="font-size:18px;vertical-align:-2px;color:var(--ou-green)"></i> Timeline</h2>
+    <p style="font-size:12px;color:var(--text2);margin-top:3px">Gantt chart view of steps and deadlines per item</p></div>
+    <div class="sop-selector">
+      <select class="gantt-selector" onchange="ganttSelectedId=this.value;renderGantt()">
+        <option value="">— Select an item —</option>${opts}
+      </select>
+    </div>
+  </div>`;
+
+  if(!ganttSelectedId){
+    if(!visible.length){
+      html+=`<div class="sop-empty"><i class="ti ti-chart-gantt"></i><p style="font-size:14px;font-weight:600;margin-bottom:6px">No timeline data yet</p><p style="font-size:13px">Add steps with due dates to an item to see its timeline here.</p></div>`;
+    } else {
+      // Show mini overview of all items
+      html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">`;
+      visible.forEach(p=>{
+        const stepsWithDue=(p.steps||[]).filter(s=>s.due);
+        const dates=stepsWithDue.map(s=>new Date(s.due));
+        const minD=new Date(Math.min(...dates)),maxD=new Date(Math.max(...dates));
+        const done=stepsWithDue.filter(s=>s.done).length;
+        html+=`<div class="sop-card" style="cursor:pointer" onclick="ganttSelectedId='${p.id}';document.querySelector('.gantt-selector').value='${p.id}';renderGantt()">
+          <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px">${esc(p.name)}</div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:.75rem">${stepsWithDue.length} steps · ${fmtS(minD.toISOString().slice(0,10))} → ${fmtS(maxD.toISOString().slice(0,10))}</div>
+          <div style="background:var(--bg3);border-radius:20px;height:6px;overflow:hidden">
+            <div style="height:100%;width:${Math.round(done/stepsWithDue.length*100)}%;background:var(--ou-green);border-radius:20px"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-top:5px">${done} of ${stepsWithDue.length} steps complete</div>
+        </div>`;
+      });
+      html+=`</div>`;
+    }
+    el.innerHTML=html;return;
+  }
+
+  const p=S.projects.find(x=>x.id===ganttSelectedId);
+  if(!p){el.innerHTML=html+`<div class="sop-empty"><i class="ti ti-alert-circle"></i><p>Item not found.</p></div>`;return;}
+  const steps=(p.steps||[]).filter(s=>s.due);
+  if(!steps.length){
+    el.innerHTML=html+`<div class="gantt-wrap"><div class="gantt-header"><h3>${esc(p.name)}</h3></div><div style="padding:2rem;text-align:center;color:var(--text2)"><i class="ti ti-calendar-off" style="font-size:28px;display:block;margin:0 auto 10px;color:var(--text3)"></i>No steps with due dates. Add steps with due dates to see the timeline.</div></div>`;
+    return;
+  }
+
+  // Calculate date range
+  const todayD=new Date();todayD.setHours(0,0,0,0);
+  const dueDates=steps.map(s=>new Date(s.due));
+  let minDate=new Date(Math.min(...dueDates,todayD));
+  let maxDate=new Date(Math.max(...dueDates,todayD));
+  // Pad by 7 days each side
+  minDate=new Date(minDate.getTime()-7*86400000);
+  maxDate=new Date(maxDate.getTime()+7*86400000);
+  const totalDays=Math.ceil((maxDate-minDate)/86400000);
+
+  // Generate month header labels
+  const monthLabels=[];
+  let cur=new Date(minDate);cur.setDate(1);
+  while(cur<=maxDate){
+    const pct=Math.max(0,(cur-minDate)/86400000/totalDays*100);
+    monthLabels.push({label:cur.toLocaleDateString('en-US',{month:'short',year:'2-digit'}),pct});
+    cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);
+  }
+
+  const todayPct=Math.max(0,Math.min(100,(todayD-minDate)/86400000/totalDays*100));
+
+  html+=`<div class="gantt-wrap">
+    <div class="gantt-header">
+      <h3>${esc(p.name)}</h3>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:12px;color:var(--text2)">${steps.filter(s=>s.done).length} of ${steps.length} steps complete</span>
+        <button class="btn sm pri" onclick="openAddStep('${p.id}')"><i class="ti ti-plus"></i> Add step</button>
+      </div>
+    </div>
+    <div class="gantt-grid">
+      <table class="gantt-table">
+        <thead>
+          <tr>
+            <th style="width:180px">Step</th>
+            <th style="width:110px">Assigned</th>
+            <th style="width:80px">Due</th>
+            <th style="position:relative;min-width:400px">
+              <div style="position:relative;height:20px">
+                ${monthLabels.map(m=>`<span style="position:absolute;left:${m.pct}%;font-size:9px;font-weight:700;color:var(--text3);white-space:nowrap">${m.label}</span>`).join('')}
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+  steps.forEach((s,i)=>{
+    const dueD=new Date(s.due);
+    const duePct=Math.max(0,Math.min(99,(dueD-minDate)/86400000/totalDays*100));
+    const color=PRESENCE_COLORS[s.assignee]||'#006A4E';
+    const tagAvatars=(s.tags||[]).map(t=>`<div class="gantt-tag-av" style="background:${PRESENCE_COLORS[t]||'#888'}" title="${t}">${t.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div>`).join('');
+    const barWidth=Math.max(1.5,1);// milestone: single point
+    html+=`<tr>
+      <td><div class="gantt-row-label${s.done?' done':''}" style="${s.done?'text-decoration:line-through;color:var(--text3)':''}">${i+1}. ${esc(s.title)}</div>
+        ${s.desc?`<div style="font-size:10px;color:var(--text3);margin-top:1px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.desc)}</div>`:''}
+      </td>
+      <td>
+        <div class="gantt-row-assign">${esc(s.assignee||'—')}</div>
+        ${tagAvatars?`<div style="display:flex;margin-top:4px">${tagAvatars}</div>`:''}
+      </td>
+      <td style="color:${dueD<todayD&&!s.done?'var(--red-text)':'var(--text)'};font-size:11px;font-weight:${dueD<todayD&&!s.done?'700':'400'}">${fmtS(s.due)}</td>
+      <td class="gantt-bar-cell">
+        <div class="gantt-today-line" style="left:${todayPct}%"></div>
+        <div class="gantt-milestone" style="left:${duePct}%;background:${s.done?'var(--green-border)':color}" title="${esc(s.title)} — Due ${fmtD(s.due)}"></div>
+        <div class="gantt-bar${s.done?' done':''}" style="left:max(0%,calc(${duePct}% - 60px));width:120px;background:${s.done?'var(--green-border)':color};opacity:${s.done?0.5:1}" title="${esc(s.title)}">
+          ${esc(s.title.length>14?s.title.slice(0,14)+'…':s.title)}
+        </div>
+      </td>
+    </tr>`;
+  });
+
+  html+=`</tbody></table></div>
+    <div class="gantt-legend">
+      <span style="font-size:11px;font-weight:700;color:var(--text2);margin-right:4px">Legend:</span>
+      <div class="gantt-legend-item"><div style="width:2px;height:14px;background:#EF4444;border-radius:1px"></div> Today</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--ou-green);rotate:45deg"></div> Step milestone</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--green-border)"></div> Completed</div>
+      ${Object.entries(PRESENCE_COLORS).map(([n,c])=>`<div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:${c};border-radius:50%"></div>${n.split(' ').pop()}</div>`).join('')}
+    </div>
+  </div>`;
+  el.innerHTML=html;
+}
+window.renderGantt=renderGantt;
 
 function toast(msg){const el=document.getElementById('toast');el.innerHTML='<i class="ti ti-check"></i> '+msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
 
