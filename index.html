@@ -651,8 +651,11 @@ window.refreshDash=async function(){
     S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));
     const cs=await getDocs(collection(db,'contacts'));
     S.contacts=cs.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name));
-    renderDash();
-    toast('Dashboard refreshed.');
+    if(currentTab==='dash') renderDash();
+    else if(currentTab==='sop') renderSOP();
+    else if(currentTab==='gantt') renderGantt();
+    else if(currentTab==='msg') renderMessages();
+    toast('Refreshed.');
   } catch(e){toast('Refresh failed: '+e.message);}
   finally{if(btn){setTimeout(()=>{btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh"></i> Refresh';},600);}}
 };
@@ -1086,8 +1089,11 @@ let dragSrc=null;
 // ── SOP render ──
 function renderSOP(){
   const el=document.getElementById('sop-view');
+  if(!el)return;
   const visible=S.projects.filter(canSee);
   const withSteps=visible.filter(p=>(p.steps||[]).length>0);
+  // Validate sopSelectedId still exists and is visible
+  if(sopSelectedId&&!visible.find(p=>p.id===sopSelectedId)) sopSelectedId=null;
 
   // Build selector options — all visible items
   const opts=visible.map(p=>`<option value="${esc(p.id)}" ${sopSelectedId===p.id?'selected':''}>${esc(p.name)}${(p.steps||[]).length?' ('+p.steps.length+' steps)':''}</option>`).join('');
@@ -1193,6 +1199,9 @@ function renderSOP(){
     html+=`</div>`;
   }
   el.innerHTML=html;
+  // Restore dropdown selection after re-render
+  const sel=document.getElementById('sop-sel');
+  if(sel&&sopSelectedId) sel.value=sopSelectedId;
 }
 window.renderSOP=renderSOP;
 
@@ -1863,8 +1872,12 @@ window.openNotifLog=()=>{showOv(`<div class="modal" style="max-width:560px">
 let ganttSelectedId='';
 function renderGantt(){
   const el=document.getElementById('gantt-view');if(!el)return;
+  // Ensure string comparison
+  const gid=String(ganttSelectedId||'');
   const visible=S.projects.filter(canSee).filter(p=>(p.steps||[]).some(s=>s.due));
-  const opts=visible.map(p=>`<option value="${esc(p.id)}" ${ganttSelectedId===p.id?'selected':''}>${esc(p.name)}</option>`).join('');
+  // Validate selection still exists
+  if(gid&&!visible.find(p=>String(p.id)===gid)) ganttSelectedId='';
+  const opts=visible.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===gid?'selected':''}>${esc(p.name)}</option>`).join('');
 
   let html=`<div class="sop-header">
     <div><h2><i class="ti ti-chart-gantt" style="font-size:18px;vertical-align:-2px;color:var(--ou-green)"></i> Timeline</h2>
@@ -1898,14 +1911,20 @@ function renderGantt(){
       });
       html+=`</div>`;
     }
-    el.innerHTML=html;return;
+    el.innerHTML=html;
+    // Restore dropdown
+    const gsel=document.querySelector('.gantt-selector');
+    if(gsel&&ganttSelectedId)gsel.value=ganttSelectedId;
+    return;
   }
 
-  const p=S.projects.find(x=>x.id===ganttSelectedId);
+  const p=S.projects.find(x=>String(x.id)===String(ganttSelectedId));
   if(!p){el.innerHTML=html+`<div class="sop-empty"><i class="ti ti-alert-circle"></i><p>Item not found.</p></div>`;return;}
   const steps=(p.steps||[]).filter(s=>s.due);
   if(!steps.length){
     el.innerHTML=html+`<div class="gantt-wrap"><div class="gantt-header"><h3>${esc(p.name)}</h3></div><div style="padding:2rem;text-align:center;color:var(--text2)"><i class="ti ti-calendar-off" style="font-size:28px;display:block;margin:0 auto 10px;color:var(--text3)"></i>No steps with due dates. Add steps with due dates to see the timeline.</div></div>`;
+    // Restore dropdown
+    setTimeout(()=>{const gsel=document.querySelector('.gantt-selector');if(gsel&&ganttSelectedId)gsel.value=ganttSelectedId;},50);
     return;
   }
 
@@ -1989,6 +2008,8 @@ function renderGantt(){
     </div>
   </div>`;
   el.innerHTML=html;
+  // Restore dropdown selection after re-render
+  setTimeout(()=>{const gsel=document.querySelector('.gantt-selector');if(gsel&&ganttSelectedId)gsel.value=ganttSelectedId;},50);
 }
 window.renderGantt=renderGantt;
 
