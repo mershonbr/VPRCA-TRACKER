@@ -268,6 +268,29 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
 .pav .pav-tip{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;font-size:10px;font-weight:600;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:20}
 .pav:hover .pav-tip{opacity:1}
 .pav.me{border-color:var(--ou-gold);box-shadow:0 0 0 1.5px var(--ou-gold)}
+/* ── Help modal ── */
+.help-modal{max-width:820px;padding:0;overflow:hidden}
+.help-header{background:var(--ou-green-dark);padding:1.5rem 1.75rem;border-bottom:3px solid var(--ou-gold);display:flex;align-items:center;justify-content:space-between}
+.help-header h2{color:#fff;font-size:18px;font-weight:800;margin:0;padding:0}
+.help-header p{color:rgba(255,255,255,.65);font-size:12px;margin-top:3px}
+.help-body{padding:1.5rem 1.75rem;max-height:72vh;overflow-y:auto}
+.help-section{margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:.5px solid var(--border)}
+.help-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.help-section h3{font-size:14px;font-weight:800;color:var(--ou-green);margin-bottom:.6rem;display:flex;align-items:center;gap:7px}
+.help-section h3 i{font-size:16px}
+.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.help-card{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.75rem .9rem}
+.help-card .hc-label{font-size:11px;font-weight:800;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.help-card .hc-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.help-step{display:flex;gap:10px;margin-bottom:.6rem;align-items:flex-start}
+.help-step-num{width:22px;height:22px;border-radius:50%;background:var(--ou-green);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.help-step-text{font-size:12px;color:var(--text);line-height:1.5;flex:1}
+.help-tip{background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius);padding:.6rem .85rem;font-size:12px;color:var(--text);line-height:1.5;margin-top:.5rem}
+.help-tip strong{color:var(--ou-green)}
+.help-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;vertical-align:1px}
+.help-kbd{background:var(--bg3);border:.5px solid var(--border2);border-radius:4px;font-size:10px;font-weight:700;padding:1px 5px;font-family:monospace;color:var(--text)}
+.help-two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:600px){.help-grid,.help-two-col{grid-template-columns:1fr}}
 /* ── Message board ── */
 .msg-wrap{max-width:860px;margin:0 auto}
 .msg-page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem}
@@ -399,6 +422,7 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
       <button class="btn sm gh" onclick="openNotifLog()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-bell"></i> Log</button>
       <button class="btn sm gh" onclick="refreshDash()" id="refresh-btn" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Refresh dashboard"><i class="ti ti-refresh"></i> Refresh</button>
       <button class="btn gld sm" onclick="openAdd()"><i class="ti ti-plus"></i> Add item</button>
+      <button class="btn sm gh" onclick="openHelp()" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Help & getting started"><i class="ti ti-help-circle"></i> Help</button>
       <button class="btn sm gh" onclick="doSignOut()" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.15)" title="Sign out"><i class="ti ti-logout"></i></button>
     </div>
   </div>
@@ -1391,6 +1415,203 @@ window.exportSopDocx=function(){
 // ── Overlay ──
 function showOv(html){document.getElementById('ovr').innerHTML=`<div class="ov" onclick="if(event.target.classList.contains('ov'))closeOv()">${html}</div>`}
 window.closeOv=()=>{document.getElementById('ovr').innerHTML=''};
+
+// ── In-app help ──
+window.openHelp=function(){
+  showOv(`<div class="modal help-modal">
+    <div class="help-header">
+      <div>
+        <h2><i class="ti ti-help-circle" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>Getting Started — Quick Reference</h2>
+        <p>VPRCA Team Project Tracker &nbsp;·&nbsp; Ohio University</p>
+      </div>
+      <button class="ibtn mclose" onclick="closeOv()" style="color:rgba(255,255,255,.7);top:.85rem;right:.85rem"><i class="ti ti-x" style="font-size:18px"></i></button>
+    </div>
+    <div class="help-body">
+
+      <!-- Signing in -->
+      <div class="help-section">
+        <h3><i class="ti ti-login"></i> Signing In</h3>
+        <div class="help-two-col">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">First time</div>
+            <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Select your name from the dropdown</div></div>
+            <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Create a password (min 4 characters) and confirm it</div></div>
+            <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Click <strong>Sign in</strong> — your password is saved</div></div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">Forgot password</div>
+            <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Click <strong>Forgot password?</strong> on the login screen</div></div>
+            <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Select your name and click <strong>Send reset request</strong></div></div>
+            <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Brian (Admin) will reset it and let you know</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="help-section">
+        <h3><i class="ti ti-layout-navbar"></i> Navigation</h3>
+        <div class="help-grid">
+          <div class="help-card">
+            <div class="hc-label"><i class="ti ti-layout-dashboard" style="color:var(--ou-green)"></i> Dashboard</div>
+            <div class="hc-desc">Main view — all items, metrics, filters, and your to-do alert panel</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label"><i class="ti ti-list-check" style="color:var(--ou-green)"></i> SOPs</div>
+            <div class="hc-desc">Step-by-step procedures for each item. Print or export to Word</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label"><i class="ti ti-chart-gantt" style="color:var(--ou-green)"></i> Timeline</div>
+            <div class="hc-desc">Gantt chart of all steps with due dates, milestones, and today marker</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label"><i class="ti ti-messages" style="color:var(--ou-green)"></i> Messages</div>
+            <div class="hc-desc">Team, group, or direct messages. Red badge = unread messages</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard -->
+      <div class="help-section">
+        <h3><i class="ti ti-layout-dashboard"></i> Dashboard — Key Features</h3>
+        <div class="help-two-col">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Category tabs</div>
+            <div class="hc-desc" style="margin-bottom:.6rem">Click <strong>All · Event · Policies/Procedures · Major Initiative · Personal</strong> to filter instantly. Count shows next to each tab.</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Risk colors</div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:12px">🟢 <strong>On Track</strong> — due in 30+ days</div>
+              <div style="font-size:12px">🟡 <strong>Caution</strong> — due within 30 days</div>
+              <div style="font-size:12px">🔴 <strong>High Risk</strong> — due within 14 days</div>
+              <div style="font-size:12px">⚫ <strong>Past Due</strong> — deadline passed</div>
+              <div style="font-size:12px">✅ <strong>Complete</strong> — marked done</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Filters</div>
+            <div class="hc-desc" style="margin-bottom:.5rem">Use the labeled dropdowns to filter by Visibility, Group, Owner, Phase, or Risk. Active filters turn <strong style="color:var(--ou-green)">green</strong>. Click <strong>Clear filters</strong> to reset.</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Inline editing</div>
+            <div class="hc-desc">Click Owner, Phase, Deadline, or Next Step directly in the table row to edit without opening the full form. Only item creators and Brian can edit.</div>
+          </div>
+        </div>
+        <div class="help-tip"><strong>To-do alerts:</strong> When you have to-dos due within 7 days, a panel appears at the top of the Dashboard. Click any row to jump to your Personal tab.</div>
+      </div>
+
+      <!-- Adding items -->
+      <div class="help-section">
+        <h3><i class="ti ti-plus"></i> Adding &amp; Editing Items</h3>
+        <div class="help-two-col">
+          <div>
+            <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Click the gold <strong>Add item</strong> button in the topbar</div></div>
+            <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Fill in Name, Owner, Category, Phase, Deadline, Next Step</div></div>
+            <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Choose <strong>🔒 Private</strong> (only you + Brian) or <strong>👥 Group</strong> (select a team group)</div></div>
+            <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Optionally add steps, recipients, and email triggers</div></div>
+            <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Click <strong>Add item</strong> to save</div></div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Email triggers</div>
+            <div class="hc-desc" style="margin-bottom:.5rem">Set automatic email alerts: 30-day, 2-week, day-before, or completion. Opens your email client with a pre-composed message.</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Completing an item</div>
+            <div class="hc-desc">Check the <strong>Done</strong> checkbox in the table. You'll be asked if follow-up is needed — Yes reactivates with new deadline, No shows a completion message.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOPs & Timeline -->
+      <div class="help-section">
+        <h3><i class="ti ti-list-check"></i> SOPs &amp; Timeline</h3>
+        <div class="help-two-col">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Building a SOP</div>
+            <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Go to the <strong>SOPs</strong> tab and select an item</div></div>
+            <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Click <strong>Add step</strong> — enter title, description, assignee, due date, and tag people</div></div>
+            <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Drag the <i class="ti ti-grip-vertical" style="font-size:11px"></i> handle to reorder steps</div></div>
+            <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Click <strong>Print</strong> or <strong>Export Word</strong> to share</div></div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Timeline (Gantt)</div>
+            <div class="hc-desc" style="margin-bottom:.5rem">The <strong>Timeline</strong> tab shows a Gantt chart for any item with steps that have due dates. Each step is a row — the red vertical line is today.</div>
+            <div class="help-tip" style="margin-top:0"><strong>Tagging people on a step</strong> opens your email client to notify them automatically when the step is saved.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- To-do & Messages -->
+      <div class="help-section">
+        <h3><i class="ti ti-checkbox"></i> Personal To-Do List</h3>
+        <div class="help-two-col">
+          <div>
+            <div class="hc-desc" style="margin-bottom:.5rem">Click the <strong>👤 Personal</strong> tab to access your private to-do list. Only you can see it — not even Brian.</div>
+            <div class="hc-desc">Type a task, set priority and due date, press <span class="help-kbd">Enter</span> or click <strong>Add</strong>. Completed to-dos move to the bottom automatically.</div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">Add to your to-do from Messages</div>
+            <div class="hc-desc">On any message or reply, click <strong><i class="ti ti-checkbox" style="font-size:11px;color:var(--ou-green)"></i> Add to my to-do</strong> to save it as a personal task — pre-filled with the message text.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="help-section">
+        <h3><i class="ti ti-messages"></i> Message Board</h3>
+        <div class="help-grid">
+          <div class="help-card">
+            <div class="hc-label">📢 Team message</div>
+            <div class="hc-desc">Visible to all 5 team members</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label">👥 Group message</div>
+            <div class="hc-desc">Visible to sender, people you select, and Brian</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label">👤 Direct message</div>
+            <div class="hc-desc">Private — only sender, selected people, and Brian</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label"><i class="ti ti-checkbox" style="color:var(--ou-green)"></i> Assign as to-do</div>
+            <div class="hc-desc">Toggle when composing to auto-add the message to recipients' to-do lists on send</div>
+          </div>
+        </div>
+        <div class="help-tip" style="margin-top:.75rem"><strong>Deleting:</strong> Only the message author (and Brian) can delete a message. Deleted messages show a placeholder — "This message was deleted" — so the conversation thread stays intact.</div>
+      </div>
+
+      <!-- Quick tips -->
+      <div class="help-section">
+        <h3><i class="ti ti-bulb"></i> Quick Tips</h3>
+        <div class="help-grid">
+          <div class="help-card">
+            <div class="hc-label">🟡 Who is online</div>
+            <div class="hc-desc">Colored initials avatars in the topbar show who is currently in the app. Your avatar has a gold ring.</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label">🔄 Refresh button</div>
+            <div class="hc-desc">Click <strong>Refresh</strong> in the topbar to pull the latest data from the database manually.</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label">⭐ Eric review flag</div>
+            <div class="hc-desc">Check "Flag for Eric review" on any item to surface it as the #1 priority at the top of the dashboard.</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label">🔒 Private vs Group</div>
+            <div class="hc-desc">Private items are visible only to you and Brian. Group items are visible to the whole team.</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label">+14d extend button</div>
+            <div class="hc-desc">Appears on High Risk and Past Due items. Extends the deadline by 14 days with one click.</div>
+          </div>
+          <div class="help-card">
+            <div class="hc-label">🛡 Admin (Brian only)</div>
+            <div class="hc-desc">Brian sees all private items, resets passwords, and can delete any message or item.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div style="padding:.85rem 1.75rem;border-top:.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--bg2)">
+      <span style="font-size:11px;color:var(--text3)">Ohio University · VPRCA Team Project Tracker · June 2026</span>
+      <button class="btn pri" onclick="closeOv()">Got it</button>
+    </div>
+  </div>`);
+};
 
 // ── Inline edit ──
 window.inlineE=async(id,f,v)=>{const p=S.projects.find(x=>x.id===id);if(!p)return;p[f]=v;await saveP(p)};
