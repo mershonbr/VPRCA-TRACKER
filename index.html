@@ -268,6 +268,65 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
 .pav .pav-tip{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;font-size:10px;font-weight:600;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:20}
 .pav:hover .pav-tip{opacity:1}
 .pav.me{border-color:var(--ou-gold);box-shadow:0 0 0 1.5px var(--ou-gold)}
+/* ── Message board ── */
+.msg-wrap{max-width:860px;margin:0 auto}
+.msg-page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem}
+.msg-page-header h2{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.msg-compose{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.msg-type-row{display:flex;gap:8px;margin-bottom:1rem}
+.msg-type-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 14px;height:32px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+.msg-type-btn:hover{background:var(--bg2)}
+.msg-type-btn.sel-team{background:#E8F5E9;color:#1B5E20;border-color:#81C784}
+.msg-type-btn.sel-group{background:var(--blue-bg);color:var(--blue-text);border-color:#90CAF9}
+.msg-type-btn.sel-direct{background:#F3E8FF;color:#6B21A8;border-color:#C084FC}
+.msg-recipients{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.85rem}
+.msg-rec-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 8px 3px 6px;border-radius:20px;background:var(--bg2);border:.5px solid var(--border2);cursor:pointer;transition:all .15s;user-select:none}
+.msg-rec-chip:hover{background:var(--bg3)}
+.msg-rec-chip.sel{border-color:var(--ou-green);background:var(--ou-green-light)}
+.msg-rec-chip .rc-av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff;flex-shrink:0}
+.msg-textarea{width:100%;min-height:80px;resize:vertical;font-size:13px;line-height:1.6;padding:.65rem .85rem;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit;outline:none;transition:border-color .15s}
+.msg-textarea:focus{border-color:var(--ou-green)}
+.msg-send-row{display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;flex-wrap:wrap;gap:.5rem}
+.msg-send-row .type-hint{font-size:12px;color:var(--text3)}
+.msg-list{display:flex;flex-direction:column;gap:12px}
+.msg-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow);transition:box-shadow .15s}
+.msg-card.unread{border-left:3px solid var(--ou-green)}
+.msg-card:hover{box-shadow:var(--shadow-md)}
+.msg-card-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:.6rem}
+.msg-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0}
+.msg-meta{flex:1;min-width:0}
+.msg-author{font-size:13px;font-weight:800;color:var(--text)}
+.msg-time{font-size:11px;color:var(--text3);margin-left:6px}
+.msg-type-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px}
+.mtb-team{background:#E8F5E9;color:#1B5E20}
+.mtb-group{background:var(--blue-bg);color:var(--blue-text)}
+.mtb-direct{background:#F3E8FF;color:#6B21A8}
+.msg-body{font-size:13px;color:var(--text);line-height:1.65;margin-bottom:.65rem;word-break:break-word}
+.msg-to-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:.65rem}
+.msg-to-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.msg-to-chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:var(--bg2);color:var(--text2);border:.5px solid var(--border)}
+.msg-actions{display:flex;align-items:center;gap:8px}
+.msg-reply-btn{background:none;border:none;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border-radius:var(--radius);font-family:inherit;transition:all .15s}
+.msg-reply-btn:hover{background:var(--bg2);color:var(--text)}
+.msg-thread{border-top:.5px solid var(--border);margin-top:.75rem;padding-top:.75rem}
+.msg-reply{display:flex;gap:8px;padding:.5rem 0;border-bottom:.5px solid var(--border)}
+.msg-reply:last-child{border-bottom:none}
+.msg-reply-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;flex-shrink:0;margin-top:1px}
+.msg-reply-body{flex:1;min-width:0}
+.msg-reply-author{font-size:12px;font-weight:700;color:var(--text)}
+.msg-reply-time{font-size:10px;color:var(--text3);margin-left:5px}
+.msg-reply-text{font-size:12px;color:var(--text);line-height:1.55;margin-top:2px}
+.msg-reply-input{display:flex;gap:8px;margin-top:.75rem;align-items:flex-end}
+.msg-reply-input textarea{flex:1;min-height:36px;max-height:100px;resize:none;font-size:12px;padding:.4rem .65rem;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit;outline:none;transition:border-color .15s;line-height:1.5}
+.msg-reply-input textarea:focus{border-color:var(--ou-green)}
+.msg-empty{text-align:center;padding:4rem 1rem;color:var(--text2)}
+.msg-empty i{font-size:40px;display:block;margin:0 auto 12px;color:var(--text3)}
+.msg-add-todo-form{background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius);padding:.75rem .9rem;margin-top:.6rem;display:none}
+.msg-add-todo-form.open{display:block}
+.msg-add-todo-form .form-row-inline{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:.5rem}
+.msg-deleted{font-size:12px;color:var(--text3);font-style:italic;padding:.35rem 0}
+.assign-toggle{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none;padding:4px 0}
+.assign-toggle input{accent-color:var(--ou-green);width:14px;height:14px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -347,8 +406,9 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
     <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
     <button class="tab-btn" id="tab-sop" onclick="switchTab('sop')"><i class="ti ti-list-check"></i> SOPs</button>
     <button class="tab-btn" id="tab-gantt" onclick="switchTab('gantt')"><i class="ti ti-chart-gantt"></i> Timeline</button>
+    <button class="tab-btn" id="tab-msg" onclick="switchTab('msg')"><i class="ti ti-messages"></i> Messages <span id="msg-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:3px;vertical-align:1px"></span></button>
   </div>
-  <div class="main"><div id="dash"></div><div id="sop-view" style="display:none"></div><div id="gantt-view" style="display:none"></div></div>
+  <div class="main"><div id="dash"></div><div id="sop-view" style="display:none"></div><div id="gantt-view" style="display:none"></div><div id="msg-view" style="display:none"></div></div>
 </div>
 <div id="ovr"></div>
 <div id="toast"></div>
@@ -491,12 +551,14 @@ function completeLogin(name){
   if(isAdmin())document.getElementById('admin-btn').style.display='';
   startPresence();
   startTodoListener();
+  startMsgListener();
   startListeners();
 }
 window.doSignOut=function(){
   clearPresence();
   if(_presenceInterval)clearInterval(_presenceInterval);
   if(_unsubTodos){_unsubTodos();_unsubTodos=null;}
+  if(_unsubMsgs){_unsubMsgs();_unsubMsgs=null;}
   _todos=[];_todosLoaded=false;
   sessionStorage.removeItem('vprca_user');CU=null;
   document.getElementById('app').style.display='none';
@@ -982,13 +1044,15 @@ window.saveTodoEdit=async id=>{
 let currentTab='dash';
 window.switchTab=function(tab){
   currentTab=tab;
-  ['dash','sop','gantt'].forEach(t=>{
-    document.getElementById('tab-'+t).className='tab-btn'+(tab===t?' active':'');
+  ['dash','sop','gantt','msg'].forEach(t=>{
+    const btn=document.getElementById('tab-'+t);
+    if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById(t==='dash'?'dash':t+'-view');
     if(el)el.style.display=tab===t?'':'none';
   });
   if(tab==='sop')renderSOP();
   if(tab==='gantt')renderGantt();
+  if(tab==='msg'){markMsgsRead();renderMessages();}
 };
 
 // ── SOP state ──
@@ -1708,6 +1772,334 @@ function renderGantt(){
 window.renderGantt=renderGantt;
 
 function toast(msg){const el=document.getElementById('toast');el.innerHTML='<i class="ti ti-check"></i> '+msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
+
+// ── Message board ──────────────────────────────────────────────────────────
+let _messages=[];
+let _msgReadKey=()=>'msgread_'+(CU||'').replace(/\s/g,'_');
+let _unsubMsgs=null;
+let _msgAssignTodo=false;
+
+function canSeeMsgRecord(m){
+  if(m.type==='team') return true;
+  if(m.author===CU) return true;
+  if(CU===ADMIN) return true;
+  if((m.to||[]).includes(CU)) return true;
+  return false;
+}
+function canDeleteMsg(m){return m.author===CU||CU===ADMIN;}
+function canDeleteReply(r){return r.author===CU||CU===ADMIN;}
+
+function msgTimestamp(ts){
+  const d=new Date(ts),now=new Date(),diff=Math.floor((now-d)/1000);
+  if(diff<60)return'Just now';
+  if(diff<3600)return Math.floor(diff/60)+'m ago';
+  if(diff<86400)return Math.floor(diff/3600)+'h ago';
+  const days=Math.floor(diff/86400);
+  if(days===1)return'Yesterday';
+  if(days<7)return days+'d ago';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+function getReadSet(){try{return new Set(JSON.parse(localStorage.getItem(_msgReadKey())||'[]'));}catch(e){return new Set();}}
+function saveReadSet(s){try{localStorage.setItem(_msgReadKey(),JSON.stringify([...s]));}catch(e){}}
+
+function markMsgsRead(){
+  const read=getReadSet();
+  _messages.filter(canSeeMsgRecord).forEach(m=>read.add(m.id));
+  saveReadSet(read);updateMsgBadge();
+}
+function updateMsgBadge(){
+  const badge=document.getElementById('msg-badge');if(!badge)return;
+  const read=getReadSet();
+  const unread=_messages.filter(canSeeMsgRecord).filter(m=>!read.has(m.id)).length;
+  if(unread>0){badge.textContent=unread>9?'9+':unread;badge.style.display='';}
+  else{badge.style.display='none';}
+}
+
+function startMsgListener(){
+  if(_unsubMsgs)_unsubMsgs();
+  _unsubMsgs=onSnapshot(collection(db,'messages'),sn=>{
+    _messages=sn.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>b.ts-a.ts);
+    updateMsgBadge();
+    if(currentTab==='msg')renderMessages();
+  });
+}
+async function saveMsg(msg){await setDoc(doc(db,'messages',msg.id),msg);}
+async function delMsg(id){await deleteDoc(doc(db,'messages',id));}
+
+// ── Compose state ──
+let _msgType='team';
+let _msgTo=[];
+
+function renderMessages(){
+  const el=document.getElementById('msg-view');if(!el)return;
+  const read=getReadSet();
+  const visible=_messages.filter(canSeeMsgRecord);
+  const typeHints={
+    team:'📢 Visible to all 5 team members',
+    group:'👥 Visible to sender, selected members, and Brian',
+    direct:'👤 Visible only to sender, selected members, and Brian'
+  };
+
+  const recpHTML=(_msgType==='group'||_msgType==='direct')?`
+    <div style="margin-bottom:.85rem">
+      <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Select recipients</div>
+      <div class="msg-recipients">
+        ${OWNERS.filter(o=>o.name!==CU).map(o=>{
+          const sel=_msgTo.includes(o.name);
+          const color=PRESENCE_COLORS[o.name]||'#555';
+          return`<div class="msg-rec-chip${sel?' sel':''}" onclick="toggleMsgTo('${esc(o.name)}')" style="${sel?'border-color:var(--ou-green)':''}">
+            <div class="rc-av" style="background:${color}">${ini(o.name)}</div>
+            ${esc(o.name.split(' ').pop())}${o.name===ADMIN?' (Admin)':''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:'';
+
+  let html=`<div class="msg-wrap">
+    <div class="msg-page-header">
+      <h2><i class="ti ti-messages" style="color:var(--ou-green)"></i> Message Board</h2>
+      <span style="font-size:12px;color:var(--text2)">${visible.length} message${visible.length!==1?'s':''} visible to you</span>
+    </div>
+    <div class="msg-compose">
+      <div style="font-size:11px;font-weight:800;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem">New message</div>
+      <div class="msg-type-row">
+        <button class="msg-type-btn${_msgType==='team'?' sel-team':''}" onclick="setMsgType('team')">📢 Team</button>
+        <button class="msg-type-btn${_msgType==='group'?' sel-group':''}" onclick="setMsgType('group')">👥 Group</button>
+        <button class="msg-type-btn${_msgType==='direct'?' sel-direct':''}" onclick="setMsgType('direct')">👤 Direct</button>
+      </div>
+      ${recpHTML}
+      <textarea class="msg-textarea" id="msg-body" placeholder="Write your message…"></textarea>
+      <div style="margin-top:.6rem">
+        <label class="assign-toggle">
+          <input type="checkbox" id="msg-assign-todo" ${_msgAssignTodo?'checked':''} onchange="_msgAssignTodo=this.checked">
+          <i class="ti ti-checkbox" style="font-size:13px;color:var(--ou-green)"></i>
+          <span>Add this message to recipients' to-do lists automatically when sent</span>
+        </label>
+      </div>
+      <div class="msg-send-row">
+        <span class="type-hint"><i class="ti ti-info-circle" style="font-size:11px;vertical-align:-1px"></i> ${typeHints[_msgType]}</span>
+        <button class="btn pri" onclick="sendMsg()"><i class="ti ti-send"></i> Send message</button>
+      </div>
+    </div>`;
+
+  if(!visible.length){
+    html+=`<div class="msg-empty"><i class="ti ti-messages"></i><p style="font-size:14px;font-weight:600;margin-bottom:6px">No messages yet</p><p style="font-size:13px">Send the first message above.</p></div>`;
+  } else {
+    html+=`<div class="msg-list">`;
+    visible.forEach(m=>{
+      const isUnread=!read.has(m.id);
+      const color=PRESENCE_COLORS[m.author]||'#555';
+      const typeBadge={
+        team:`<span class="msg-type-badge mtb-team">📢 Team</span>`,
+        group:`<span class="msg-type-badge mtb-group">👥 Group</span>`,
+        direct:`<span class="msg-type-badge mtb-direct">👤 Direct</span>`
+      }[m.type]||'';
+      const toRow=(m.type!=='team'&&(m.to||[]).length)?`
+        <div class="msg-to-row">
+          <span class="msg-to-label">To:</span>
+          ${[m.author,...(m.to||[])].filter((v,i,a)=>a.indexOf(v)===i).map(n=>`<span class="msg-to-chip"><div style="width:12px;height:12px;border-radius:50%;background:${PRESENCE_COLORS[n]||'#555'};display:inline-block;vertical-align:-2px;margin-right:3px"></div>${esc(n.split(' ').pop())}</span>`).join('')}
+        </div>`:'';
+      const replies=(m.replies||[]).filter(r=>!r.deleted);
+      const replyCount=replies.length;
+      const canDel=canDeleteMsg(m);
+      const msgBody=m.deleted
+        ?`<div class="msg-deleted"><i class="ti ti-message-off" style="font-size:11px;vertical-align:-1px"></i> This message was deleted</div>`
+        :`<div class="msg-body">${esc(m.body).replace(/\n/g,'<br>')}</div>`;
+
+      html+=`<div class="msg-card${isUnread?' unread':''}" id="msgcard-${m.id}">
+        <div class="msg-card-head">
+          <div class="msg-av" style="background:${color}">${ini(m.author)}</div>
+          <div class="msg-meta">
+            <span class="msg-author">${esc(m.author)}</span>
+            <span class="msg-time">${msgTimestamp(m.ts)}</span>
+            ${typeBadge}
+            ${isUnread?`<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ou-green);margin-left:6px;vertical-align:1px"></span>`:''}
+            ${m.assignedTodo?`<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--ou-green-light);color:var(--ou-green);margin-left:5px"><i class="ti ti-checkbox" style="font-size:9px"></i> Added to to-dos</span>`:''}
+          </div>
+          ${canDel&&!m.deleted?`<button class="ibtn" onclick="deleteMsgCard('${m.id}')" title="Delete message" style="padding:4px;margin-left:auto;flex-shrink:0"><i class="ti ti-trash" style="font-size:13px"></i></button>`:'<div style="margin-left:auto"></div>'}
+        </div>
+        ${toRow}
+        ${msgBody}
+        ${!m.deleted?`
+        <div class="msg-actions">
+          <button class="msg-reply-btn" onclick="toggleReplyThread('${m.id}')">
+            <i class="ti ti-message-reply" style="font-size:12px"></i>
+            ${replyCount>0?`${replyCount} repl${replyCount===1?'y':'ies'}`:'Reply'}
+          </button>
+          <button class="msg-reply-btn" onclick="toggleAddTodoForm('msg','${m.id}','')">
+            <i class="ti ti-checkbox" style="font-size:12px;color:var(--ou-green)"></i> Add to my to-do
+          </button>
+        </div>
+        <div class="msg-add-todo-form" id="todo-form-msg-${m.id}">
+          <div style="font-size:11px;font-weight:700;color:var(--ou-green);margin-bottom:.5rem"><i class="ti ti-checkbox"></i> Add to my to-do list</div>
+          <input type="text" id="todo-text-msg-${m.id}" value="${esc((m.body||'').slice(0,80))}" style="width:100%;margin-bottom:6px" placeholder="Task description">
+          <div class="form-row-inline">
+            <select id="todo-pri-msg-${m.id}" style="height:30px;font-size:12px">
+              <option value="medium">⚡ Medium</option>
+              <option value="high">🔴 High</option>
+              <option value="low">🟢 Low</option>
+            </select>
+            <input type="date" id="todo-due-msg-${m.id}" style="height:30px;font-size:12px">
+            <button class="btn sm pri" onclick="saveTodoFromMsg('msg','${m.id}','')"><i class="ti ti-check"></i> Save</button>
+            <button class="btn sm gh" onclick="toggleAddTodoForm('msg','${m.id}','')">Cancel</button>
+          </div>
+        </div>`:'' }
+        <div id="thread-${m.id}" style="display:none">
+          <div class="msg-thread">
+            ${replies.map(r=>{
+              const rc=PRESENCE_COLORS[r.author]||'#555';
+              const canDelR=canDeleteReply(r);
+              const replyBody=r.deleted
+                ?`<div class="msg-deleted"><i class="ti ti-message-off" style="font-size:10px;vertical-align:-1px"></i> This reply was deleted</div>`
+                :`<div class="msg-reply-text">${esc(r.text).replace(/\n/g,'<br>')}</div>`;
+              return`<div class="msg-reply">
+                <div class="msg-reply-av" style="background:${rc}">${ini(r.author)}</div>
+                <div class="msg-reply-body" style="flex:1;min-width:0">
+                  <div><span class="msg-reply-author">${esc(r.author)}</span><span class="msg-reply-time">${msgTimestamp(r.ts)}</span></div>
+                  ${replyBody}
+                  ${!r.deleted?`<div style="margin-top:3px">
+                    <button class="msg-reply-btn" style="font-size:11px" onclick="toggleAddTodoForm('reply','${m.id}','${r.ts}')">
+                      <i class="ti ti-checkbox" style="font-size:11px;color:var(--ou-green)"></i> Add to my to-do
+                    </button>
+                  </div>
+                  <div class="msg-add-todo-form" id="todo-form-reply-${m.id}-${r.ts}">
+                    <div style="font-size:11px;font-weight:700;color:var(--ou-green);margin-bottom:.5rem"><i class="ti ti-checkbox"></i> Add to my to-do list</div>
+                    <input type="text" id="todo-text-reply-${m.id}-${r.ts}" value="${esc((r.text||'').slice(0,80))}" style="width:100%;margin-bottom:6px">
+                    <div class="form-row-inline">
+                      <select id="todo-pri-reply-${m.id}-${r.ts}" style="height:30px;font-size:12px">
+                        <option value="medium">⚡ Medium</option>
+                        <option value="high">🔴 High</option>
+                        <option value="low">🟢 Low</option>
+                      </select>
+                      <input type="date" id="todo-due-reply-${m.id}-${r.ts}" style="height:30px;font-size:12px">
+                      <button class="btn sm pri" onclick="saveTodoFromMsg('reply','${m.id}','${r.ts}')"><i class="ti ti-check"></i> Save</button>
+                      <button class="btn sm gh" onclick="toggleAddTodoForm('reply','${m.id}','${r.ts}')">Cancel</button>
+                    </div>
+                  </div>`:''}
+                </div>
+                ${canDelR&&!r.deleted?`<button class="ibtn" onclick="deleteReply('${m.id}',${r.ts})" style="padding:3px;flex-shrink:0"><i class="ti ti-trash" style="font-size:11px"></i></button>`:''}
+              </div>`;
+            }).join('')}
+            <div class="msg-reply-input">
+              <textarea id="reply-inp-${m.id}" placeholder="Write a reply… (Enter to send)" rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendReply('${m.id}')}"></textarea>
+              <button class="btn sm pri" onclick="sendReply('${m.id}')"><i class="ti ti-send" style="font-size:12px"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+window.renderMessages=renderMessages;
+
+window.setMsgType=type=>{
+  _msgType=type;_msgTo=[];
+  renderMessages();
+  setTimeout(()=>{const t=document.getElementById('msg-body');if(t)t.focus();},80);
+};
+
+window.toggleMsgTo=name=>{
+  if(_msgTo.includes(name)){_msgTo=_msgTo.filter(n=>n!==name);}
+  else{_msgTo.push(name);}
+  renderMessages();
+};
+
+window.sendMsg=async()=>{
+  const body=document.getElementById('msg-body')?.value.trim();
+  if(!body){toast('Write a message first.');return;}
+  if((_msgType==='group'||_msgType==='direct')&&_msgTo.length===0){toast('Select at least one recipient.');return;}
+  const assignTodo=_msgAssignTodo;
+  const recipients=_msgType==='team'?OWNERS.map(o=>o.name).filter(n=>n!==CU):_msgTo;
+  const msg={id:String(Date.now()),author:CU,type:_msgType,to:_msgType==='team'?[]:_msgTo,body,ts:Date.now(),replies:[],assignedTodo:assignTodo,deleted:false};
+  await saveMsg(msg);
+
+  // Auto-assign to recipients' to-do lists
+  if(assignTodo&&recipients.length){
+    for(const recip of recipients){
+      const tkey='todos_'+recip.replace(/\s/g,'_');
+      try{
+        const sn=await getDocs(collection(db,'meta'));
+        const ud=sn.docs.find(d=>d.id===tkey);
+        const items=ud?ud.data().items||[]:[];
+        items.push({id:String(Date.now()+Math.random()),text:body.slice(0,120)+(body.length>120?'…':''),priority:'medium',due:'',done:false,doneDate:null,createdDate:today(),fromMsg:true,msgFrom:CU});
+        await setDoc(doc(db,'meta',tkey),{items,owner:recip,updated:today()});
+      }catch(e){console.warn('Could not assign to-do for',recip,e);}
+    }
+    toast('Message sent & added to '+recipients.length+' to-do list'+(recipients.length>1?'s':'')+'.');
+  } else {
+    toast('Message sent.');
+  }
+  _msgTo=[];_msgAssignTodo=false;
+  renderMessages();
+};
+
+window.deleteMsgCard=async id=>{
+  const m=_messages.find(x=>x.id===id);
+  if(!m||!canDeleteMsg(m)){toast('You can only delete your own messages.');return;}
+  if(!confirm('Delete this message? It will show as "deleted" for everyone.'))return;
+  m.deleted=true;m.body='';
+  await saveMsg(m);
+  toast('Message deleted.');
+};
+
+window.toggleReplyThread=id=>{
+  const t=document.getElementById('thread-'+id);if(!t)return;
+  const isOpen=t.style.display!=='none';
+  t.style.display=isOpen?'none':'';
+  if(!isOpen){setTimeout(()=>{const inp=document.getElementById('reply-inp-'+id);if(inp)inp.focus();},80);}
+};
+
+window.sendReply=async id=>{
+  const inp=document.getElementById('reply-inp-'+id);
+  const text=inp?.value.trim();
+  if(!text){toast('Write a reply first.');return;}
+  const m=_messages.find(x=>x.id===id);if(!m)return;
+  if(!m.replies)m.replies=[];
+  m.replies.push({author:CU,text,ts:Date.now(),deleted:false});
+  await saveMsg(m);
+  inp.value='';
+  toast('Reply sent.');
+};
+
+window.deleteReply=async(msgId,replyTs)=>{
+  const m=_messages.find(x=>x.id===msgId);if(!m)return;
+  const r=m.replies?.find(x=>x.ts===replyTs);
+  if(!r||!canDeleteReply(r)){toast('You can only delete your own replies.');return;}
+  if(!confirm('Delete this reply?'))return;
+  r.deleted=true;r.text='';
+  await saveMsg(m);
+  toast('Reply deleted.');
+};
+
+// ── Add to my to-do from message/reply ──
+window.toggleAddTodoForm=(type,msgId,replyTs)=>{
+  const key=type==='msg'?`todo-form-msg-${msgId}`:`todo-form-reply-${msgId}-${replyTs}`;
+  const el=document.getElementById(key);if(!el)return;
+  el.classList.toggle('open');
+  if(el.classList.contains('open')){
+    const inp=document.getElementById(key.replace('todo-form-','todo-text-'));
+    if(inp){inp.focus();inp.select();}
+  }
+};
+
+window.saveTodoFromMsg=async(type,msgId,replyTs)=>{
+  const key=type==='msg'?`todo-form-msg-${msgId}`:`todo-form-reply-${msgId}-${replyTs}`;
+  const textEl=document.getElementById(key.replace('todo-form-','todo-text-'));
+  const priEl =document.getElementById(key.replace('todo-form-','todo-pri-'));
+  const dueEl =document.getElementById(key.replace('todo-form-','todo-due-'));
+  const text=textEl?.value.trim();
+  if(!text){toast('Enter a task description.');return;}
+  const item={id:String(Date.now()),text,priority:priEl?.value||'medium',due:dueEl?.value||'',done:false,doneDate:null,createdDate:today(),fromMsg:true,msgFrom:type==='msg'?(_messages.find(x=>x.id===msgId)?.author||''):'reply'};
+  _todos.push(item);
+  await saveTodos();
+  const formEl=document.getElementById(key);if(formEl)formEl.classList.remove('open');
+  toast('✅ Added to your to-do list!');
+};
 
 bootstrap().catch(e=>{document.getElementById('loading-screen').innerHTML=`<div style="color:#fff;text-align:center;padding:2rem"><div style="font-size:32px;margin-bottom:1rem">⚠️</div><div style="font-weight:700">${e.message}</div></div>`});
 setInterval(checkNotify,60000);
