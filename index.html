@@ -428,11 +428,9 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
   </div>
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
-    <button class="tab-btn" id="tab-sop" onclick="switchTab('sop')"><i class="ti ti-list-check"></i> SOPs</button>
-    <button class="tab-btn" id="tab-gantt" onclick="switchTab('gantt')"><i class="ti ti-chart-gantt"></i> Timeline</button>
     <button class="tab-btn" id="tab-msg" onclick="switchTab('msg')"><i class="ti ti-messages"></i> Messages <span id="msg-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:3px;vertical-align:1px"></span></button>
   </div>
-  <div class="main"><div id="dash"></div><div id="sop-view" style="display:none"></div><div id="gantt-view" style="display:none"></div><div id="msg-view" style="display:none"></div></div>
+  <div class="main"><div id="dash"></div><div id="msg-view" style="display:none"></div></div>
 </div>
 <div id="ovr"></div>
 <div id="toast"></div>
@@ -652,8 +650,6 @@ window.refreshDash=async function(){
     const cs=await getDocs(collection(db,'contacts'));
     S.contacts=cs.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name));
     if(currentTab==='dash') renderDash();
-    else if(currentTab==='sop') renderSOP();
-    else if(currentTab==='gantt') renderGantt();
     else if(currentTab==='msg') renderMessages();
     toast('Refreshed.');
   } catch(e){toast('Refresh failed: '+e.message);}
@@ -684,7 +680,7 @@ function renderPresence(snap){
 }
 
 function startListeners(){
-  onSnapshot(collection(db,'projects'),sn=>{S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));if(currentTab==='dash')renderDash();else if(currentTab==='sop')renderSOP();else if(currentTab==='gantt')renderGantt();checkNotify()});
+  onSnapshot(collection(db,'projects'),sn=>{S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));if(currentTab==='dash')renderDash();checkNotify()});
   onSnapshot(collection(db,'contacts'),sn=>{S.contacts=sn.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name))});
   onSnapshot(doc(db,'meta','notifLog'),sn=>{if(sn.exists())S.notifLog=sn.data().entries||[]});
   onSnapshot(collection(db,'presence'),sn=>{renderPresence(sn)});
@@ -1071,14 +1067,12 @@ window.saveTodoEdit=async id=>{
 let currentTab='dash';
 window.switchTab=function(tab){
   currentTab=tab;
-  ['dash','sop','gantt','msg'].forEach(t=>{
+  ['dash','msg'].forEach(t=>{
     const btn=document.getElementById('tab-'+t);
     if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById(t==='dash'?'dash':t+'-view');
     if(el)el.style.display=tab===t?'':'none';
   });
-  if(tab==='sop')renderSOP();
-  if(tab==='gantt')renderGantt();
   if(tab==='msg'){markMsgsRead();renderMessages();}
 };
 
@@ -1465,14 +1459,6 @@ window.openHelp=function(){
             <div class="hc-desc">Main view — all items, metrics, filters, and your to-do alert panel</div>
           </div>
           <div class="help-card">
-            <div class="hc-label"><i class="ti ti-list-check" style="color:var(--ou-green)"></i> SOPs</div>
-            <div class="hc-desc">Step-by-step procedures for each item. Print or export to Word</div>
-          </div>
-          <div class="help-card">
-            <div class="hc-label"><i class="ti ti-chart-gantt" style="color:var(--ou-green)"></i> Timeline</div>
-            <div class="hc-desc">Gantt chart of all steps with due dates, milestones, and today marker</div>
-          </div>
-          <div class="help-card">
             <div class="hc-label"><i class="ti ti-messages" style="color:var(--ou-green)"></i> Messages</div>
             <div class="hc-desc">Team, group, or direct messages. Red badge = unread messages</div>
           </div>
@@ -1521,25 +1507,6 @@ window.openHelp=function(){
             <div class="hc-desc" style="margin-bottom:.5rem">Set automatic email alerts: 30-day, 2-week, day-before, or completion. Opens your email client with a pre-composed message.</div>
             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Completing an item</div>
             <div class="hc-desc">Check the <strong>Done</strong> checkbox in the table. You'll be asked if follow-up is needed — Yes reactivates with new deadline, No shows a completion message.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SOPs & Timeline -->
-      <div class="help-section">
-        <h3><i class="ti ti-list-check"></i> SOPs &amp; Timeline</h3>
-        <div class="help-two-col">
-          <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Building a SOP</div>
-            <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Go to the <strong>SOPs</strong> tab and select an item</div></div>
-            <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Click <strong>Add step</strong> — enter title, description, assignee, due date, and tag people</div></div>
-            <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Drag the <i class="ti ti-grip-vertical" style="font-size:11px"></i> handle to reorder steps</div></div>
-            <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Click <strong>Print</strong> or <strong>Export Word</strong> to share</div></div>
-          </div>
-          <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Timeline (Gantt)</div>
-            <div class="hc-desc" style="margin-bottom:.5rem">The <strong>Timeline</strong> tab shows a Gantt chart for any item with steps that have due dates. Each step is a row — the red vertical line is today.</div>
-            <div class="help-tip" style="margin-top:0"><strong>Tagging people on a step</strong> opens your email client to notify them automatically when the step is saved.</div>
           </div>
         </div>
       </div>
@@ -1794,7 +1761,6 @@ window.submitP=async eid=>{
   const vis=_ed.visibility||'group',grp=vis==='group'&&document.getElementById('f-grp')?document.getElementById('f-grp').value:GROUPS[0];
   const obj={..._ed,name,category:document.getElementById('f-category').value,phase:document.getElementById('f-phase').value,owner:document.getElementById('f-owner').value,due:document.getElementById('f-due').value,nextStep:document.getElementById('f-next').value.trim(),description:document.getElementById('f-desc').value.trim(),flag:document.getElementById('f-flag').checked,approvalRequired:document.getElementById('f-appr').checked,visibility:vis,group:vis==='group'?grp:'',triggers:_ed.triggers,recipients:_ed.recipients||[],createdBy:_ed.createdBy||CU};
   await saveP(obj);closeOv();toast(eid!=='null'?'Item updated.':'Item added.');refreshDash();
-  if(currentTab==='gantt')renderGantt();
 };
 window.doDelP=async id=>{const p=S.projects.find(x=>x.id===id);if(!isAdmin()&&p&&p.createdBy!==CU){toast('You can only delete your own items.');return}if(!confirm('Delete this item?'))return;await delP(id);toast('Deleted.');refreshDash()};
 
