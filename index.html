@@ -1955,134 +1955,73 @@ window.deleteTask=async(pid,taskId)=>{
 // ── Performer dashboard ──────────────────────────────────────────────────────
 function renderPerformerDash(){
   const el=document.getElementById('perf-dash');if(!el)return;
-  const myTasks=getMyTasks();
-  const activeTasks=myTasks.filter(t=>t.type==='action'?!t.completions?.[CU]:!t.reviews?.[CU]);
-  const doneTasks=myTasks.filter(t=>t.type==='action'?t.completions?.[CU]:t.reviews?.[CU]);
-  const myProjects=S.projects.filter(canSee).filter(p=>(p.assignees||[]).includes(CU)||(p.tasks||[]).some(t=>(t.assignees||[]).includes(CU)));
-  const allVisible=S.projects.filter(canSee);
-  const onTrack=allVisible.filter(p=>!p.completed&&cRisk(p)==='g').length;
-  const atRisk=allVisible.filter(p=>!p.completed&&(cRisk(p)==='r'||cRisk(p)==='y'||cRisk(p)==='b')).length;
-
-  const now=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-
+  const viewAs=_previewingAs||CU;
+  const isPreview=!!_previewingAs;
+  const myTasks=[];
+  S.projects.filter(p=>!p.completed).forEach(p=>{
+    (p.tasks||[]).forEach(t=>{
+      if((t.assignees||[]).includes(viewAs)) myTasks.push({...t,projectId:p.id,projectName:p.name});
+    });
+  });
+  myTasks.sort((a,b)=>{
+    const da=a.dueDate?new Date(a.dueDate):new Date('2099-01-01');
+    const db2=b.dueDate?new Date(b.dueDate):new Date('2099-01-01');
+    return da-db2;
+  });
+  const activeTasks=myTasks.filter(t=>t.type==='action'?!t.completions?.[viewAs]:!t.reviews?.[viewAs]);
+  const doneTasks=myTasks.filter(t=>t.type==='action'?t.completions?.[viewAs]:t.reviews?.[viewAs]);
+  const atRisk=S.projects.filter(canSee).filter(p=>!p.completed&&(cRisk(p)==='r'||cRisk(p)==='b')).length;
+  const now=new Date();const hour=now.getHours();
+  const greet=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
   let html=`<div class="perf-wrap">
     <div class="perf-header">
-      <h2>Good ${new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, ${esc(CU.split(' ')[0])} 👋</h2>
-      <p>${now} &nbsp;·&nbsp; VPRCA Team Project Tracker</p>
+      <h2>${greet}, ${esc(viewAs.split(' ')[0])} 👋</h2>
+      <p style="font-size:13px;color:var(--text2);margin-top:4px">${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
     </div>
-
-    <div class="perf-metrics">
-      <div class="perf-mc">
-        <div class="pml">My queue</div>
-        <div class="pmv" style="color:${activeTasks.length>0?'var(--red-text)':'var(--green-text)'}">${activeTasks.length}</div>
-        <div class="pms">${activeTasks.length===1?'item needs attention':'items need attention'}</div>
+    <div style="display:flex;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap">
+      <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:.75rem 1.25rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px">
+        <span style="font-size:28px;font-weight:800;color:${activeTasks.length>0?'var(--red-text)':'var(--green-text)'}">${activeTasks.length}</span>
+        <span style="font-size:13px;color:var(--text2)">${activeTasks.length===1?'item in your queue':'items in your queue'}</span>
       </div>
-      <div class="perf-mc">
-        <div class="pml">On track</div>
-        <div class="pmv" style="color:var(--green-text)">${onTrack}</div>
-        <div class="pms">active projects</div>
-      </div>
-      <div class="perf-mc">
-        <div class="pml">At risk</div>
-        <div class="pmv" style="color:${atRisk>0?'var(--red-text)':'var(--text)'}">${atRisk}</div>
-        <div class="pms">need attention</div>
-      </div>
-    </div>`;
-
-  // ── My Queue ──
-  html+=`<div class="perf-section">
-    <div class="perf-section-title"><i class="ti ti-clipboard-list" style="font-size:16px;color:var(--ou-green)"></i> My Queue <span>${activeTasks.length}</span></div>`;
-
+      ${atRisk>0?`<div style="background:var(--red-bg);border:.5px solid var(--red-border);border-radius:var(--radius-lg);padding:.75rem 1.25rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px"><span style="font-size:28px;font-weight:800;color:var(--red-text)">${atRisk}</span><span style="font-size:13px;color:var(--red-text)">project${atRisk!==1?'s':''} at risk</span></div>`:''}
+    </div>
+    <div class="perf-section">
+      <div class="perf-section-title"><i class="ti ti-clipboard-list" style="font-size:16px;color:var(--ou-green)"></i> Your queue ${activeTasks.length?`<span>${activeTasks.length}</span>`:''}</div>`;
   if(!activeTasks.length){
-    html+=`<div class="perf-empty"><i class="ti ti-circle-check" style="color:var(--green-text)"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px;color:var(--green-text)">All caught up!</p><p style="font-size:13px">No tasks or reviews pending right now.</p></div>`;
+    html+=`<div class="perf-empty"><i class="ti ti-circle-check" style="color:var(--green-text);font-size:36px"></i><p style="font-size:15px;font-weight:700;margin-bottom:4px;color:var(--green-text)">Nothing pending</p><p style="font-size:13px">Brian will assign tasks here when something needs your attention.</p></div>`;
   } else {
     activeTasks.forEach(t=>{
-      const urg=taskUrgency(t.dueDate,false);
       const daysLeft=t.dueDate?Math.ceil((new Date(t.dueDate)-new Date())/86400000):null;
+      const urg=daysLeft!==null?(daysLeft<0?'overdue':daysLeft<=3?'due-soon':'normal'):'normal';
       const dueColor=urg==='overdue'?'var(--red-text)':urg==='due-soon'?'var(--ou-gold)':'var(--text2)';
-      const dueLabel=t.dueDate?(daysLeft<0?`${Math.abs(daysLeft)}d overdue`:daysLeft===0?'Due today':daysLeft===1?'Due tomorrow':`Due in ${daysLeft}d`):'No due date';
-
-      // For review tasks show who else has/hasn't reviewed
+      const dueLabel=!t.dueDate?'No due date':daysLeft<0?`${Math.abs(daysLeft)}d overdue`:daysLeft===0?'Due today':daysLeft===1?'Due tomorrow':`Due in ${daysLeft}d`;
       let reviewStatus='';
       if(t.type==='review'){
-        const allAssignees=t.assignees||[];
-        const reviewed=allAssignees.filter(n=>t.reviews?.[n]);
-        const pending=allAssignees.filter(n=>!t.reviews?.[n]);
-        reviewStatus=`<div class="task-review-status">
-          <div class="rs-title">Review status (${reviewed.length}/${allAssignees.length} confirmed)</div>
-          ${allAssignees.map(n=>`<span class="task-reviewer ${t.reviews?.[n]?'done':'pending'}">
-            ${t.reviews?.[n]?'✅':'⏳'} ${esc(n.split(' ').pop())} ${t.reviews?.[n]?'<span style="font-size:10px;color:var(--text3)">'+fmtS(t.reviews[n])+'</span>':''}
-          </span>`).join('')}
-        </div>`;
+        const allA=t.assignees||[];
+        reviewStatus=`<div class="task-review-status" style="margin-bottom:.65rem"><div class="rs-title">Review status — ${allA.filter(n=>t.reviews?.[n]).length} of ${allA.length} confirmed</div>${allA.map(n=>`<span class="task-reviewer ${t.reviews?.[n]?'done':'pending'}">${t.reviews?.[n]?'✅':'⏳'} ${esc(n.split(' ').pop())}</span>`).join('')}</div>`;
       }
-
       html+=`<div class="task-card ${urg==='overdue'?'overdue':urg==='due-soon'?'due-soon':''}">
-        <div class="task-card-head">
-          <div class="task-card-title">${esc(t.title)}</div>
-          <span class="task-type ${t.type==='review'?'task-type-review':'task-type-action'}">${t.type==='review'?'👁 Review':'✅ Action'}</span>
-        </div>
+        <div class="task-card-head"><div class="task-card-title">${esc(t.title)}</div>
+        <span class="task-type ${t.type==='review'?'task-type-review':'task-type-action'}">${t.type==='review'?'👁 Review':'✅ Action'}</span></div>
         <div class="task-project"><i class="ti ti-folder" style="font-size:11px"></i> ${esc(t.projectName)}</div>
         ${t.desc?`<div style="font-size:13px;color:var(--text2);margin-bottom:.5rem;line-height:1.5">${esc(t.desc)}</div>`:''}
-        <div class="task-meta">
+        <div class="task-meta" style="margin-bottom:.75rem">
           <span class="task-due" style="color:${dueColor}"><i class="ti ti-calendar" style="font-size:11px;vertical-align:-1px"></i> ${dueLabel}</span>
-          <span style="font-size:11px;color:var(--text3)">Assigned by ${esc(t.createdBy.split(' ').pop())}</span>
+          <span style="font-size:11px;color:var(--text3)">From ${esc(t.createdBy.split(' ').pop())}</span>
         </div>
         ${reviewStatus}
         <div class="task-actions">
-          ${t.type==='review'&&!t.reviews?.[CU]
-            ?`<button class="btn pri" onclick="markTaskReviewed('${t.projectId}','${t.id}')"><i class="ti ti-eye-check"></i> Review &amp; confirm</button>`
-            :''}
-          ${t.type==='action'&&!t.completions?.[CU]
-            ?`<button class="btn pri" onclick="markTaskDone('${t.projectId}','${t.id}')"><i class="ti ti-check"></i> Mark complete</button>`
-            :''}
+          ${t.type==='review'&&!t.reviews?.[viewAs]&&!isPreview?`<button class="btn pri" style="font-size:13px;height:38px;padding:0 18px" onclick="markTaskReviewed('${t.projectId}','${t.id}')"><i class="ti ti-eye-check"></i> Confirm review</button>`:''}
+          ${t.type==='action'&&!t.completions?.[viewAs]&&!isPreview?`<button class="btn pri" style="font-size:13px;height:38px;padding:0 18px" onclick="markTaskDone('${t.projectId}','${t.id}')"><i class="ti ti-check"></i> Mark complete</button>`:''}
+          ${isPreview?`<span style="font-size:12px;color:var(--text3);font-style:italic">Preview mode — buttons disabled</span>`:''}
         </div>
       </div>`;
     });
   }
   html+=`</div>`;
-
-  // ── Completed/reviewed tasks ──
-  if(doneTasks.length){
-    html+=`<div class="perf-section">
-      <div class="perf-section-title" style="border-bottom-color:var(--green-border)"><i class="ti ti-checks" style="font-size:16px;color:var(--green-text)"></i> Recently completed <span style="background:var(--green-border)">${doneTasks.length}</span></div>`;
-    doneTasks.slice(0,5).forEach(t=>{
-      const doneDate=t.type==='review'?t.reviews?.[CU]:t.completions?.[CU];
-      html+=`<div class="task-card done-card">
-        <div class="task-card-head">
-          <div class="task-card-title">${esc(t.title)}</div>
-          <span class="task-type ${t.type==='review'?'task-type-review':'task-type-action'}">${t.type==='review'?'👁 Review':'✅ Action'}</span>
-        </div>
-        <div class="task-project"><i class="ti ti-folder" style="font-size:11px"></i> ${esc(t.projectName)}</div>
-        <div class="task-meta">
-          <span style="font-size:12px;color:var(--green-text);font-weight:600"><i class="ti ti-check" style="font-size:11px"></i> ${t.type==='review'?'Reviewed':'Completed'} ${doneDate?fmtS(doneDate):''}</span>
-        </div>
-      </div>`;
-    });
-    html+=`</div>`;
+  if(doneTasks.length&&!isPreview){
+    html+=`<div class="perf-section"><div class="perf-section-title" style="border-bottom-color:var(--green-border);cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><i class="ti ti-checks" style="font-size:16px;color:var(--green-text)"></i> Recently completed <span style="background:var(--green-border)">${doneTasks.length}</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">click to expand</span></div><div style="display:none">${doneTasks.slice(0,5).map(t=>`<div class="task-card done-card"><div class="task-card-head"><div class="task-card-title">${esc(t.title)}</div></div><div class="task-project"><i class="ti ti-folder" style="font-size:11px"></i> ${esc(t.projectName)}</div></div>`).join('')}</div></div>`;
   }
-
-  // ── Projects I'm involved in ──
-  const involvedProjects=S.projects.filter(canSee).filter(p=>
-    (p.tasks||[]).some(t=>(t.assignees||[]).includes(CU))
-  );
-  if(involvedProjects.length){
-    html+=`<div class="perf-section">
-      <div class="perf-section-title" style="border-bottom-color:var(--border)"><i class="ti ti-folder" style="font-size:16px;color:var(--text2)"></i> Projects I'm involved in <span style="background:var(--bg3);color:var(--text3)">${involvedProjects.length}</span></div>`;
-    involvedProjects.forEach(p=>{
-      const r=cRisk(p);
-      const rColor=r==='g'?'var(--green-text)':r==='y'?'var(--ou-gold)':r==='r'||r==='b'?'var(--red-text)':'var(--text3)';
-      html+=`<div class="perf-project-row">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(p.name)}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(p.category||'—')} · ${esc(p.phase||'—')}</div>
-        </div>
-        <div style="font-size:12px;font-weight:700;color:${rColor};white-space:nowrap">${p.due?fmtS(p.due):'No deadline'}</div>
-        <div style="font-size:11px;color:var(--text2);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nextStep||'')}</div>
-      </div>`;
-    });
-    html+=`</div>`;
-  }
-
   html+=`</div>`;
   el.innerHTML=html;
 }
