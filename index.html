@@ -883,8 +883,8 @@ function renderMyTasks(){
     return h;
   };
 
-  // ── To-do section (moved from dashboard) ──
-  const todoHTML=()=>`<div class="tasks-section" style="grid-column:1/-1">${renderTodoPanel()}</div>`;
+  // ── To-do section (full width, original style) ──
+  const todoHTML=()=>renderTodoPanel();
 
   el.innerHTML=`<div class="tasks-wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
@@ -1877,7 +1877,7 @@ window.openAssignTask=pid=>{
     </div>
     <div class="fr"><label class="fl">Assign to (select all that apply)</label>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="task-assignees">
-        ${OWNERS.filter(o=>o.name!==ADMIN).map(o=>`
+        ${OWNERS.map(o=>`
           <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2)">
             <input type="checkbox" value="${esc(o.name)}" style="accent-color:var(--ou-green);width:14px;height:14px">
             <div class="pav" style="width:22px;height:22px;border-radius:50%;background:${PRESENCE_COLORS[o.name]||'#555'};font-size:9px;font-weight:900;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${ini(o.name)}</div>
