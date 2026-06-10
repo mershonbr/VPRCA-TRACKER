@@ -606,7 +606,7 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
       <button class="btn sm gh" onclick="doSignOut()" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.15)" title="Sign out"><i class="ti ti-logout"></i></button>
     </div>
   </div>
-  <div id="tab-bar-wrap">
+  <div id="preview-banner" style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:.6rem 1.5rem;background:#7C3AED;color:#fff;border-bottom:2px solid #5B21B6;position:sticky;top:64px;z-index:90;flex-wrap:wrap"></div>
     <div class="tab-bar">
       <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
       <button class="tab-btn" id="tab-tasks" onclick="switchTab('tasks')"><i class="ti ti-checkbox"></i> My Tasks <span id="tasks-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:3px;vertical-align:1px"></span></button>
@@ -2281,17 +2281,77 @@ window.openAdmin=async function(){
   let rHTML=resets.length?resets.map(r=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:.5px solid var(--border);gap:8px"><div><div style="font-size:13px;font-weight:700">${esc(r.userName)}</div><div style="font-size:11px;color:var(--text2)">Requested ${esc(r.requestDate)}</div></div><button class="btn sm pri" onclick="adminReset('${esc(r.userName)}')"><i class="ti ti-key"></i> Reset password</button></div>`).join(''):'<p style="font-size:13px;color:var(--text2)">No pending reset requests.</p>';
   let uHTML=OWNERS.map(o=>{const k=o.name.replace(/\s/g,'_'),u=users[k];return`<div class="aur"><div class="auav">${ini(o.name)}</div><div style="flex:1"><div style="font-size:13px;font-weight:700">${esc(o.name)}${o.name===ADMIN?` <span class="flag-eric">Admin</span>`:''}</div><div style="font-size:11px;color:var(--text2)">${u?'Account created '+esc(u.created):'Not yet signed in'}</div></div>${u&&o.name!==ADMIN?`<button class="btn xs dng" onclick="adminReset('${esc(o.name)}')"><i class="ti ti-key"></i> Reset</button>`:''}</div>`}).join('');
   let privHTML=S.projects.filter(p=>p.visibility==='private').length===0?'<p style="font-size:13px;color:var(--text2)">No private projects.</p>':S.projects.filter(p=>p.visibility==='private').map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.4rem 0;border-bottom:.5px solid var(--border)"><span style="font-size:13px;font-weight:600">${esc(p.name)}</span><span style="font-size:11px;color:var(--text2)">🔒 ${esc(p.createdBy)}</span></div>`).join('');
+
+  // Preview as section
+  const performers=OWNERS.filter(o=>o.name!==ADMIN);
+  const previewHTML=performers.map(o=>{
+    const color=PRESENCE_COLORS[o.name]||'#555';
+    const taskCount=S.projects.reduce((n,p)=>{
+      return n+(p.tasks||[]).filter(t=>(t.assignees||[]).includes(o.name)&&!(t.type==='review'?t.reviews?.[o.name]:t.completions?.[o.name])).length;
+    },0);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:.6rem 0;border-bottom:.5px solid var(--border)">
+      <div style="width:32px;height:32px;border-radius:50%;background:${color};color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini(o.name)}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(o.name)}</div>
+        <div style="font-size:11px;color:var(--text2)">${taskCount} pending task${taskCount!==1?'s':''}</div>
+      </div>
+      <button class="btn sm" onclick="closeOv();previewAs('${esc(o.name)}')" style="background:${color};color:#fff;border-color:${color}">
+        <i class="ti ti-eye" style="font-size:12px"></i> Preview
+      </button>
+    </div>`;
+  }).join('');
+
   showOv(`<div class="modal" style="max-width:560px">
     <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
     <h2><i class="ti ti-shield" style="font-size:18px;vertical-align:-2px;color:#4F46E5"></i> Admin Panel</h2>
-    <p class="msub">Manage team accounts, reset passwords, and view all private projects.</p>
+    <p class="msub">Manage team accounts, reset passwords, preview member views, and see all private projects.</p>
     ${resets.length?`<div style="background:var(--red-bg);border:.5px solid var(--red-border);border-radius:var(--radius);padding:.75rem .85rem;margin-bottom:1rem"><div style="font-size:11px;font-weight:800;color:var(--red-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">⚠️ Pending reset requests (${resets.length})</div>${rHTML}</div>`:''}
+    <div class="sdiv"><i class="ti ti-eye"></i> Preview as team member</div>
+    <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.25rem .85rem">${previewHTML}</div>
     <div class="sdiv"><i class="ti ti-users"></i> Team accounts</div>
     <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.25rem .85rem">${uHTML}</div>
-    <div class="sdiv"><i class="ti ti-eye"></i> All private projects</div>
+    <div class="sdiv"><i class="ti ti-eye-off"></i> All private projects</div>
     <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.5rem .85rem">${privHTML}</div>
     <div class="mfoot"><button class="btn" onclick="closeOv()">Close</button></div>
   </div>`);
+};
+
+// ── Preview as another user ──
+let _previewingAs=null;
+
+window.previewAs=function(name){
+  _previewingAs=name;
+  // Show preview banner
+  const banner=document.getElementById('preview-banner');
+  if(banner){
+    banner.style.display='flex';
+    banner.innerHTML=`
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div style="width:26px;height:26px;border-radius:50%;background:${PRESENCE_COLORS[name]||'#555'};color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini(name)}</div>
+        <span style="font-size:13px;font-weight:700">Previewing as <strong>${esc(name)}</strong> — this is what they see when they log in</span>
+      </div>
+      <button class="btn sm" onclick="exitPreview()" style="background:#fff;color:#7C3AED;border-color:#fff;font-weight:700"><i class="ti ti-x" style="font-size:12px"></i> Exit preview</button>`;
+  }
+  // Show performer view with that user's perspective
+  document.getElementById('tab-bar-wrap').style.display='none';
+  document.getElementById('perf-app').style.display='block';
+  // Temporarily set CU to preview user for rendering
+  const realCU=CU;
+  CU=name;
+  renderPerformerDash();
+  CU=realCU;
+};
+
+window.exitPreview=function(){
+  _previewingAs=null;
+  const banner=document.getElementById('preview-banner');
+  if(banner)banner.style.display='none';
+  // Restore Brian's view
+  document.getElementById('tab-bar-wrap').style.display='';
+  document.getElementById('perf-app').style.display='none';
+  // Go back to dashboard
+  switchTab('dash');
+  toast('Back to your admin view.');
 };
 window.adminReset=async function(name){
   const pw=prompt('Set a new temporary password for '+name+':');
