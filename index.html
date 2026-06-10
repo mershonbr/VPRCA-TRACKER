@@ -371,6 +371,144 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
 .msg-deleted{font-size:12px;color:var(--text3);font-style:italic;padding:.35rem 0}
 .assign-toggle{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none;padding:4px 0}
 .assign-toggle input{accent-color:var(--ou-green);width:14px;height:14px;cursor:pointer}
+/* ── Memberships tab ── */
+.mem-wrap{max-width:1100px;margin:0 auto}
+.mem-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem}
+.mem-header h2{font-size:20px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
+.mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.mem-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.mem-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.mem-card.status-g::before{background:var(--ou-green)}
+.mem-card.status-y::before{background:var(--ou-gold)}
+.mem-card.status-r::before{background:#EF4444}
+.mem-card.status-x::before{background:var(--text3)}
+.mem-card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.75rem}
+.mem-card-name{font-size:15px;font-weight:800;color:var(--text);line-height:1.3}
+.mem-card-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:.85rem}
+.mem-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.85rem}
+.mem-meta-item .mml{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.mem-meta-item .mmv{font-size:13px;font-weight:700;color:var(--text)}
+.mem-renewal-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:.75rem}
+.mem-actions{display:flex;gap:6px;flex-wrap:wrap}
+/* ── Policies tab ── */
+.pol-wrap{max-width:1100px;margin:0 auto}
+.pol-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem}
+.pol-header h2{font-size:20px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
+.pol-table-wrap{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
+.pol-table{width:100%;border-collapse:collapse}
+.pol-table th{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;padding:9px 12px;background:var(--bg2);border-bottom:.5px solid var(--border);text-align:left;white-space:nowrap}
+.pol-table td{font-size:13px;padding:10px 12px;border-bottom:.5px solid var(--border);vertical-align:top;color:var(--text)}
+.pol-table tr:last-child td{border-bottom:none}
+.pol-table tr:hover td{background:var(--bg2);cursor:pointer}
+.pol-status{display:inline-flex;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.pol-s-active{background:#E8F5E9;color:#1B5E20}
+.pol-s-draft{background:#FFF8E1;color:#7B5800}
+.pol-s-review{background:var(--blue-bg);color:var(--blue-text)}
+.pol-s-archived{background:var(--bg3);color:var(--text3)}
+.pol-history{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem;margin-top:.5rem}
+.pol-history-entry{display:flex;gap:10px;padding:.4rem 0;border-bottom:.5px solid var(--border);font-size:12px}
+.pol-history-entry:last-child{border-bottom:none}
+.pol-history-date{font-weight:700;color:var(--text);white-space:nowrap;min-width:80px}
+.pol-history-author{color:var(--text3);white-space:nowrap;min-width:100px}
+.pol-history-note{color:var(--text2);flex:1}
+/* ── My Tasks tab ── */
+.tasks-wrap{max-width:900px;margin:0 auto}
+.tasks-col-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.tasks-section{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;box-shadow:var(--shadow)}
+.tasks-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.tasks-section-head h3{font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px}
+.reminder-item{display:flex;align-items:center;gap:10px;padding:.55rem .65rem;border-radius:var(--radius);border:.5px solid var(--border);margin-bottom:6px;background:var(--bg2);transition:background .12s}
+.reminder-item:hover{background:var(--bg3)}
+.reminder-item.due-today{background:var(--yellow-bg);border-color:var(--ou-gold)}
+.reminder-item.overdue-rem{background:var(--red-bg);border-color:var(--red-border)}
+.rem-text{flex:1;font-size:13px;color:var(--text);font-weight:500}
+.rem-date{font-size:11px;font-weight:700;white-space:nowrap}
+.lookahead-item{display:flex;align-items:center;gap:10px;padding:.5rem .65rem;border-bottom:.5px solid var(--border);font-size:12px}
+.lookahead-item:last-child{border-bottom:none}
+.lookahead-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.lookahead-name{flex:1;font-weight:600;color:var(--text)}
+.lookahead-type{font-size:10px;color:var(--text3);font-weight:600}
+.lookahead-date{font-size:11px;font-weight:700;white-space:nowrap}
+/* ── Finance tab ── */
+.fin-wrap{max-width:1100px;margin:0 auto}
+.fin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem}
+.fin-header h2{font-size:20px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem}
+.fin-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;box-shadow:var(--shadow)}
+.fin-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.fin-card-head h3{font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px}
+.cc-row{display:flex;align-items:center;gap:10px;padding:.65rem .75rem;border-.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;background:var(--bg2);cursor:pointer;transition:background .12s}
+.cc-row:hover{background:var(--bg3)}
+.cc-row.due-soon-cc{background:var(--red-bg);border:.5px solid var(--red-border)}
+.cc-name{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.cc-last4{font-size:11px;color:var(--text3);font-weight:600}
+.cc-due{font-size:12px;font-weight:700;white-space:nowrap}
+.cc-amount{font-size:12px;color:var(--text2);white-space:nowrap}
+.pay-history{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.65rem .85rem;margin-top:.5rem}
+.pay-entry{display:flex;gap:10px;padding:.35rem 0;border-bottom:.5px solid var(--border);font-size:12px;align-items:center}
+.pay-entry:last-child{border-bottom:none}
+.pay-date{font-weight:700;color:var(--text);white-space:nowrap;min-width:75px}
+.pay-amount{font-weight:700;color:var(--ou-green);white-space:nowrap;min-width:70px}
+.pay-note{color:var(--text2);flex:1}
+/* ── Agenda Builder tab ── */
+.agenda-wrap{max-width:900px;margin:0 auto}
+.agenda-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem}
+.agenda-header h2{font-size:20px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
+.agenda-meta{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:1.25rem;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow)}
+.agenda-items{display:flex;flex-direction:column;gap:8px}
+.agenda-item-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);transition:box-shadow .12s;position:relative}
+.agenda-item-card:hover{box-shadow:var(--shadow-md)}
+.agenda-item-card.discussed{opacity:.55;background:var(--bg2)}
+.agenda-drag{cursor:grab;color:var(--text3);font-size:16px;flex-shrink:0}
+.agenda-drag:active{cursor:grabbing}
+.agenda-num{width:26px;height:26px;border-radius:50%;background:var(--ou-green);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.agenda-item-card.discussed .agenda-num{background:var(--green-border)}
+.agenda-item-body{flex:1;min-width:0}
+.agenda-item-title{font-size:13px;font-weight:700;color:var(--text)}
+.agenda-item-card.discussed .agenda-item-title{text-decoration:line-through;color:var(--text3)}
+.agenda-item-meta{font-size:11px;color:var(--text3);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.agenda-item-notes{font-size:12px;color:var(--text2);margin-top:4px;font-style:italic}
+.agenda-actions{display:flex;gap:4px;flex-shrink:0;align-items:center}
+.agenda-time{width:55px;font-size:12px;text-align:center;height:28px;padding:0 4px}
+.agenda-preview{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;font-family:monospace;font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text);max-height:350px;overflow-y:auto}
+@media(max-width:700px){.fin-grid,.tasks-col-grid{grid-template-columns:1fr}}
+/* ── Performer view ── */
+.perf-wrap{max-width:860px;margin:0 auto}
+.perf-header{margin-bottom:1.5rem}
+.perf-header h2{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.perf-header p{font-size:13px;color:var(--text2);margin-top:4px}
+.perf-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
+.perf-mc{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow);text-align:center}
+.perf-mc .pml{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.perf-mc .pmv{font-size:28px;font-weight:800;color:var(--text);line-height:1}
+.perf-mc .pms{font-size:12px;color:var(--text2);margin-top:4px}
+.perf-section{margin-bottom:1.5rem}
+.perf-section-title{font-size:13px;font-weight:800;color:var(--text);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.85rem;display:flex;align-items:center;gap:8px;padding-bottom:.5rem;border-bottom:2px solid var(--ou-green)}
+.perf-section-title span{background:var(--ou-green);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:10px}
+.task-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:10px;box-shadow:var(--shadow);border-left:4px solid var(--ou-green);transition:box-shadow .15s}
+.task-card:hover{box-shadow:var(--shadow-md)}
+.task-card.overdue{border-left-color:#EF4444;background:var(--red-bg)}
+.task-card.due-soon{border-left-color:var(--ou-gold);background:var(--yellow-bg)}
+.task-card.done-card{border-left-color:var(--green-border);opacity:.65}
+.task-card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.5rem;gap:10px}
+.task-card-title{font-size:14px;font-weight:800;color:var(--text);flex:1}
+.task-card.done-card .task-card-title{text-decoration:line-through;color:var(--text3)}
+.task-project{font-size:11px;color:var(--text3);margin-bottom:.5rem;display:flex;align-items:center;gap:4px}
+.task-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:.75rem}
+.task-due{font-size:12px;font-weight:700}
+.task-type{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px}
+.task-type-review{background:#EDE9FE;color:#5B21B6}
+.task-type-action{background:var(--ou-green-light);color:var(--ou-green)}
+.task-actions{display:flex;gap:8px;flex-wrap:wrap}
+.task-review-status{margin-top:.6rem;padding:.5rem .75rem;background:var(--bg2);border-radius:var(--radius);border:.5px solid var(--border)}
+.task-review-status .rs-title{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.task-reviewer{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;margin-right:8px;margin-bottom:3px}
+.task-reviewer.done{color:var(--green-text)}
+.task-reviewer.pending{color:var(--text3)}
+.perf-project-row{display:flex;align-items:center;gap:12px;padding:.75rem 1rem;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow)}
+.perf-project-row:hover{background:var(--bg2)}
+.perf-empty{text-align:center;padding:2.5rem 1rem;color:var(--text2);background:var(--bg2);border:.5px dashed var(--border2);border-radius:var(--radius-lg)}
+.perf-empty i{font-size:28px;display:block;margin:0 auto 8px;color:var(--text3)}
 /* ── Design Log ── */
 .log-wrap{max-width:860px;margin:0 auto}
 .log-page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem}
@@ -462,18 +600,24 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
       <button class="btn sm adm" id="admin-btn" style="display:none" onclick="openAdmin()"><i class="ti ti-shield"></i> Admin</button>
       <button class="btn sm gh" onclick="openContacts()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-address-book"></i> Contacts</button>
       <button class="btn sm gh" onclick="openNotifLog()" style="color:#fff;border-color:rgba(255,255,255,.25)" id="notif-log-btn"><i class="ti ti-bell"></i> Log <span id="notif-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:2px;vertical-align:1px"></span></button>
-      <button class="btn sm gh" onclick="refreshDash()" id="refresh-btn" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Refresh dashboard"><i class="ti ti-refresh"></i> Refresh</button>
-      <button class="btn gld sm" onclick="openAdd()"><i class="ti ti-plus"></i> Add item</button>
+      <button class="btn sm gh" onclick="refreshDash()" id="refresh-btn" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Refresh"><i class="ti ti-refresh"></i> Refresh</button>
+      <button class="btn gld sm" id="add-item-btn" onclick="openAdd()" style="display:none"><i class="ti ti-plus"></i> Add item</button>
       <button class="btn sm gh" onclick="openHelp()" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Help & getting started"><i class="ti ti-help-circle"></i> Help</button>
       <button class="btn sm gh" onclick="doSignOut()" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.15)" title="Sign out"><i class="ti ti-logout"></i></button>
     </div>
   </div>
-  <div class="tab-bar">
-    <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
-    <button class="tab-btn" id="tab-msg" onclick="switchTab('msg')"><i class="ti ti-messages"></i> Messages <span id="msg-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:3px;vertical-align:1px"></span></button>
-    <button class="tab-btn" id="tab-log" onclick="switchTab('log')"><i class="ti ti-history"></i> Design Log</button>
+  <div id="tab-bar-wrap">
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+      <button class="tab-btn" id="tab-tasks" onclick="switchTab('tasks')"><i class="ti ti-checkbox"></i> My Tasks <span id="tasks-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:3px;vertical-align:1px"></span></button>
+      <button class="tab-btn" id="tab-fin" onclick="switchTab('fin')"><i class="ti ti-credit-card"></i> Finance</button>
+      <button class="tab-btn" id="tab-agenda" onclick="switchTab('agenda')"><i class="ti ti-calendar-event"></i> Agenda</button>
+      <button class="tab-btn" id="tab-pol" onclick="switchTab('pol')"><i class="ti ti-file-certificate"></i> Policies</button>
+      <button class="tab-btn" id="tab-log" onclick="switchTab('log')"><i class="ti ti-history"></i> Design Log</button>
+    </div>
+    <div class="main"><div id="dash"></div><div id="tasks-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div><div id="pol-view" style="display:none"></div><div id="log-view" style="display:none"></div></div>
   </div>
-  <div class="main"><div id="dash"></div><div id="msg-view" style="display:none"></div><div id="log-view" style="display:none"></div></div>
+  <div id="perf-app" style="display:none" class="main"><div id="perf-dash"></div></div>
 </div>
 <div id="ovr"></div>
 <div id="toast"></div>
@@ -487,7 +631,7 @@ const db=getFirestore(_app);
 const storage=getStorage(_app);
 
 const PHASES=['Not Started','Planned','In Progress','Complete'];
-const CATEGORIES=['Events','Policies/Procedures','Major Initiatives','Personal','Memberships'];
+const CATEGORIES=['Events','Policies/Procedures','Major Initiatives','Mine','Memberships'];
 const GROUPS=['VPRCA Leadership Team','OSP','Research Compliance','Research Development','LAR','Other'];
 const TRIGGERS=[{id:'t30',l:'30-day deadline alert',d:'30 days before due date'},{id:'t14',l:'2-week notice',d:'14 days before due date'},{id:'t1',l:'Day-before reminder',d:'1 day before due date'},{id:'tc',l:'Completion notice',d:'When marked Complete'}];
 const OWNERS=[{name:'G. Jason Jolley',email:'jolleyg1@ohio.edu'},{name:'Keith Leffler',email:'leffler@ohio.edu'},{name:'Kim Littlefield',email:'kplittle@ohio.edu'},{name:'Brian Mershon',email:'mershon@ohio.edu'},{name:'Eric Muth',email:'vprca@ohio.edu'}];
@@ -625,6 +769,1329 @@ function renderDesignLog(){
 }
 window.renderDesignLog=renderDesignLog;
 
+// ── My Tasks tab ────────────────────────────────────────────────────────────
+// Reminders stored in meta/reminders_{userKey}
+let _reminders=[];
+let _unsubRem=null;
+function remKey(){return'reminders_'+(CU||'').replace(/\s/g,'_');}
+function startRemListener(){
+  if(_unsubRem)_unsubRem();
+  _unsubRem=onSnapshot(doc(db,'meta',remKey()),sn=>{
+    _reminders=sn.exists()?(sn.data().items||[]):[];
+    updateTasksBadge();
+    if(currentTab==='tasks')renderMyTasks();
+  });
+}
+async function saveReminders(){await setDoc(doc(db,'meta',remKey()),{items:_reminders,owner:CU,updated:today()});}
+
+function updateTasksBadge(){
+  const badge=document.getElementById('tasks-badge');if(!badge)return;
+  const td=today();
+  const due=_reminders.filter(r=>!r.done&&r.date&&r.date<=td).length
+           +_todos.filter(t=>!t.done&&t.due&&t.due<=td).length;
+  if(due>0){badge.textContent=due>9?'9+':due;badge.style.display='';}
+  else{badge.style.display='none';}
+}
+
+function renderMyTasks(){
+  const el=document.getElementById('tasks-view');if(!el)return;
+  const td=today();
+
+  // ── Reminders ──
+  const activeRem=_reminders.filter(r=>!r.done).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
+  const doneRem=_reminders.filter(r=>r.done);
+
+  const remHTML=()=>{
+    let h=`<div class="tasks-section">
+      <div class="tasks-section-head">
+        <h3><i class="ti ti-bell" style="color:var(--ou-gold)"></i> Reminders</h3>
+        <button class="btn xs pri" onclick="openAddReminder()"><i class="ti ti-plus" style="font-size:11px"></i> Add</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:.85rem">
+        <input type="text" id="rem-quick" placeholder="Quick reminder…" style="flex:1;height:32px;font-size:12px" onkeydown="if(event.key==='Enter')quickAddReminder()">
+        <input type="date" id="rem-quick-date" style="height:32px;font-size:12px;width:130px">
+        <button class="btn sm" onclick="quickAddReminder()"><i class="ti ti-check"></i></button>
+      </div>`;
+    if(!activeRem.length){
+      h+=`<div style="text-align:center;padding:1rem;color:var(--text3);font-size:13px">No reminders set.</div>`;
+    } else {
+      activeRem.forEach(r=>{
+        const days=r.date?Math.ceil((new Date(r.date)-new Date())/86400000):null;
+        const isToday=r.date===td;
+        const isOverdue=r.date&&r.date<td;
+        const cls=isOverdue?'overdue-rem':isToday?'due-today':'';
+        const dateLabel=!r.date?'No date':isOverdue?`${Math.abs(days)}d overdue`:isToday?'Today':days===1?'Tomorrow':`${fmtS(r.date)}`;
+        const dateColor=isOverdue||isToday?'var(--red-text)':'var(--text3)';
+        h+=`<div class="reminder-item ${cls}">
+          <input type="checkbox" style="accent-color:var(--ou-green);width:15px;height:15px;cursor:pointer;flex-shrink:0" onchange="doneReminder('${r.id}',this.checked)">
+          <span class="rem-text">${esc(r.text)}</span>
+          <span class="rem-date" style="color:${dateColor}">${dateLabel}</span>
+          <button class="ibtn" onclick="deleteReminder('${r.id}')" style="padding:3px"><i class="ti ti-x" style="font-size:12px"></i></button>
+        </div>`;
+      });
+    }
+    if(doneRem.length){
+      h+=`<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:.75rem 0 .4rem">Done (${doneRem.length}) <button class="btn xs dng" style="margin-left:6px" onclick="clearDoneReminders()">Clear</button></div>`;
+      doneRem.slice(0,3).forEach(r=>{
+        h+=`<div class="reminder-item" style="opacity:.5"><span style="font-size:11px;color:var(--text3);margin-right:4px">✅</span><span class="rem-text" style="text-decoration:line-through">${esc(r.text)}</span></div>`;
+      });
+    }
+    h+=`</div>`;
+    return h;
+  };
+
+  // ── 30-day lookahead ──
+  const lookaheadItems=[];
+  const in30=new Date();in30.setDate(in30.getDate()+30);
+  S.projects.filter(p=>!p.completed&&p.due&&new Date(p.due)<=in30).forEach(p=>{
+    lookaheadItems.push({name:p.name,date:p.due,type:'Project',color:'var(--ou-green)'});
+  });
+  _memberships.filter(m=>m.renewalDate&&new Date(m.renewalDate)<=in30).forEach(m=>{
+    lookaheadItems.push({name:m.name+' renewal',date:m.renewalDate,type:'Membership',color:'var(--ou-gold)'});
+  });
+  _cards.filter(c=>{
+    if(!c.dueDay)return false;
+    const now=new Date();
+    const due=new Date(now.getFullYear(),now.getMonth(),parseInt(c.dueDay));
+    if(due<now)due.setMonth(due.getMonth()+1);
+    const diff=Math.ceil((due-now)/86400000);
+    c._nextDue=due.toISOString().slice(0,10);
+    return diff<=30;
+  }).forEach(c=>{
+    lookaheadItems.push({name:c.name+' payment',date:c._nextDue,type:'Credit card',color:'#EF4444'});
+  });
+  lookaheadItems.sort((a,b)=>a.date.localeCompare(b.date));
+
+  const lookaheadHTML=()=>{
+    let h=`<div class="tasks-section">
+      <div class="tasks-section-head"><h3><i class="ti ti-calendar" style="color:var(--ou-green)"></i> 30-day lookahead</h3></div>`;
+    if(!lookaheadItems.length){
+      h+=`<div style="text-align:center;padding:1rem;color:var(--text3);font-size:13px">Nothing due in the next 30 days.</div>`;
+    } else {
+      lookaheadItems.forEach(item=>{
+        const days=Math.ceil((new Date(item.date)-new Date())/86400000);
+        const color=days<=3?'var(--red-text)':days<=14?'var(--ou-gold)':'var(--text2)';
+        h+=`<div class="lookahead-item">
+          <div class="lookahead-dot" style="background:${item.color}"></div>
+          <span class="lookahead-name">${esc(item.name)}</span>
+          <span class="lookahead-type">${item.type}</span>
+          <span class="lookahead-date" style="color:${color}">${days===0?'Today':days===1?'Tomorrow':fmtS(item.date)}</span>
+        </div>`;
+      });
+    }
+    h+=`</div>`;
+    return h;
+  };
+
+  // ── To-do section (moved from dashboard) ──
+  const todoHTML=()=>`<div class="tasks-section" style="grid-column:1/-1">${renderTodoPanel()}</div>`;
+
+  el.innerHTML=`<div class="tasks-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+      <h2 style="font-size:20px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px"><i class="ti ti-checkbox" style="color:var(--ou-green)"></i> My Tasks</h2>
+    </div>
+    <div class="tasks-col-grid" style="margin-bottom:1.25rem">
+      ${remHTML()}
+      ${lookaheadHTML()}
+    </div>
+    ${todoHTML()}
+  </div>`;
+}
+window.renderMyTasks=renderMyTasks;
+
+window.quickAddReminder=async()=>{
+  const inp=document.getElementById('rem-quick');
+  const text=inp?.value.trim();if(!text){toast('Enter a reminder.');return;}
+  const date=document.getElementById('rem-quick-date')?.value||'';
+  _reminders.push({id:String(Date.now()),text,date,done:false,createdDate:today()});
+  await saveReminders();
+  if(inp)inp.value='';
+  const rd=document.getElementById('rem-quick-date');if(rd)rd.value='';
+  updateTasksBadge();
+  renderMyTasks();toast('Reminder added.');
+};
+
+window.openAddReminder=()=>{
+  showOv(`<div class="modal" style="max-width:440px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Add reminder</h2><p class="msub">Set a reminder to check on something later.</p>
+    <div class="fr"><label class="fl">Reminder text *</label><input type="text" id="rem-text" placeholder="e.g. Follow up with Jason on retreat" style="width:100%"></div>
+    <div class="fr"><label class="fl">Remind me on</label><input type="date" id="rem-date" style="width:100%"></div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button>
+    <button class="btn pri" onclick="saveReminder()"><i class="ti ti-check"></i> Save</button></div>
+  </div>`);
+  setTimeout(()=>document.getElementById('rem-text')?.focus(),80);
+};
+window.saveReminder=async()=>{
+  const text=document.getElementById('rem-text')?.value.trim();if(!text){toast('Reminder text required.');return;}
+  const date=document.getElementById('rem-date')?.value||'';
+  _reminders.push({id:String(Date.now()),text,date,done:false,createdDate:today()});
+  await saveReminders();closeOv();updateTasksBadge();renderMyTasks();toast('Reminder saved.');
+};
+window.doneReminder=async(id,checked)=>{
+  const r=_reminders.find(x=>x.id===id);if(!r)return;
+  r.done=checked;r.doneDate=checked?today():null;
+  await saveReminders();updateTasksBadge();renderMyTasks();
+};
+window.deleteReminder=async id=>{
+  _reminders=_reminders.filter(x=>x.id!==id);
+  await saveReminders();updateTasksBadge();renderMyTasks();toast('Reminder deleted.');
+};
+window.clearDoneReminders=async()=>{
+  _reminders=_reminders.filter(x=>!x.done);
+  await saveReminders();renderMyTasks();toast('Done reminders cleared.');
+};
+
+// ── Finance tab ─────────────────────────────────────────────────────────────
+let _cards=[];
+let _unsubCards=null;
+function startCardsListener(){
+  if(_unsubCards)_unsubCards();
+  _unsubCards=onSnapshot(doc(db,'meta','cards_'+(CU||'').replace(/\s/g,'_')),sn=>{
+    _cards=sn.exists()?(sn.data().cards||[]):[];
+    if(currentTab==='fin')renderFinance();
+  });
+}
+async function saveCards(){await setDoc(doc(db,'meta','cards_'+(CU||'').replace(/\s/g,'_')),{cards:_cards,owner:CU,updated:today()});}
+
+function renderFinance(){
+  const el=document.getElementById('fin-view');if(!el)return;
+  const now=new Date();
+
+  // Calculate next due date for each card
+  const cardsWithDue=_cards.map(c=>{
+    if(!c.dueDay)return{...c,nextDue:null,daysUntil:null};
+    const d=new Date(now.getFullYear(),now.getMonth(),parseInt(c.dueDay));
+    if(d<=now)d.setMonth(d.getMonth()+1);
+    const days=Math.ceil((d-now)/86400000);
+    return{...c,nextDue:d.toISOString().slice(0,10),daysUntil:days};
+  }).sort((a,b)=>(a.daysUntil||999)-(b.daysUntil||999));
+
+  let html=`<div class="fin-wrap">
+    <div class="fin-header">
+      <h2><i class="ti ti-credit-card" style="color:var(--ou-green)"></i> Finance</h2>
+    </div>
+    <div class="fin-grid">
+
+      <div class="fin-card">
+        <div class="fin-card-head">
+          <h3><i class="ti ti-credit-card" style="color:var(--ou-green)"></i> Credit cards</h3>
+          <button class="btn xs pri" onclick="openAddCard()"><i class="ti ti-plus" style="font-size:11px"></i> Add card</button>
+        </div>`;
+
+  if(!cardsWithDue.length){
+    html+=`<div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:13px">No cards tracked yet.</div>`;
+  } else {
+    cardsWithDue.forEach(c=>{
+      const urgent=c.daysUntil!==null&&c.daysUntil<=5;
+      const lastPay=(c.payments||[]).slice(-1)[0];
+      html+=`<div class="cc-row${urgent?' due-soon-cc':''}" onclick="openCardDetail('${c.id}')">
+        <div style="flex:1;min-width:0">
+          <div class="cc-name">${esc(c.name)} ${c.last4?`<span class="cc-last4">···${esc(c.last4)}</span>`:''}
+          ${urgent?`<span style="font-size:10px;font-weight:700;color:var(--red-text);margin-left:5px">⚠ Due soon</span>`:''}
+          </div>
+          ${lastPay?`<div style="font-size:11px;color:var(--text3);margin-top:1px">Last paid: ${fmtS(lastPay.date)} · $${esc(String(lastPay.amount))}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="cc-due" style="color:${urgent?'var(--red-text)':'var(--text)'}">${c.nextDue?fmtS(c.nextDue):'—'}</div>
+          ${c.typicalAmount?`<div class="cc-amount">~$${esc(c.typicalAmount)}</div>`:''}
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;margin-left:6px">
+          <button class="ibtn" onclick="event.stopPropagation();logPayment('${c.id}')" title="Log payment" style="padding:4px"><i class="ti ti-cash" style="font-size:13px;color:var(--ou-green)"></i></button>
+          <button class="ibtn" onclick="event.stopPropagation();openEditCard('${c.id}')" style="padding:4px"><i class="ti ti-edit" style="font-size:13px"></i></button>
+          <button class="ibtn" onclick="event.stopPropagation();deleteCard('${c.id}')" style="padding:4px"><i class="ti ti-trash" style="font-size:13px"></i></button>
+        </div>
+      </div>`;
+    });
+  }
+  html+=`</div>`;
+
+  // Memberships in right column
+  html+=`<div class="fin-card">
+    <div class="fin-card-head">
+      <h3><i class="ti ti-id-badge" style="color:var(--ou-green)"></i> Memberships</h3>
+      <button class="btn xs pri" onclick="openAddMem()"><i class="ti ti-plus" style="font-size:11px"></i> Add</button>
+    </div>`;
+  if(!_memberships.length){
+    html+=`<div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:13px">No memberships tracked yet.</div>`;
+  } else {
+    _memberships.forEach(m=>{
+      const st=memRenewalStatus(m.renewalDate);
+      html+=`<div class="cc-row" onclick="openEditMem('${m.id}')">
+        <div style="flex:1;min-width:0">
+          <div class="cc-name">${esc(m.name)} ${m.annual?'<span style="font-size:10px;color:var(--ou-green);font-weight:700">🔄 Annual</span>':''}</div>
+          ${m.owner?`<div style="font-size:11px;color:var(--text3);margin-top:1px">Owner: ${esc(m.owner.split(' ').pop())}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:12px;font-weight:700;color:${st.cls==='status-r'?'var(--red-text)':st.cls==='status-y'?'var(--ou-gold)':'var(--text)'}">${m.renewalDate?fmtS(m.renewalDate):'—'}</div>
+          ${m.amount?`<div class="cc-amount">$${esc(m.amount)}</div>`:''}
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;margin-left:6px">
+          <button class="ibtn" onclick="event.stopPropagation();openEditMem('${m.id}')" style="padding:4px"><i class="ti ti-edit" style="font-size:13px"></i></button>
+          <button class="ibtn" onclick="event.stopPropagation();doDelMem('${m.id}')" style="padding:4px"><i class="ti ti-trash" style="font-size:13px"></i></button>
+        </div>
+      </div>`;
+    });
+  }
+  html+=`</div></div></div>`;
+  el.innerHTML=html;
+}
+window.renderFinance=renderFinance;
+
+window.openAddCard=()=>{
+  showOv(`<div class="modal" style="max-width:460px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Add credit card</h2><p class="msub">Track payment due dates and history.</p>
+    <div class="fr"><label class="fl">Card name *</label><input type="text" id="cc-name" placeholder="e.g. Chase Visa, OU Mastercard" style="width:100%"></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Last 4 digits</label><input type="text" id="cc-last4" placeholder="1234" maxlength="4" style="width:100%"></div>
+      <div class="fr"><label class="fl">Due day of month</label><input type="number" id="cc-due" placeholder="e.g. 15" min="1" max="31" style="width:100%"></div>
+    </div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Typical amount ($)</label><input type="text" id="cc-amt" placeholder="e.g. 250" style="width:100%"></div>
+      <div class="fr"><label class="fl">Notes</label><input type="text" id="cc-notes" placeholder="Optional notes" style="width:100%"></div>
+    </div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button>
+    <button class="btn pri" onclick="saveCard(null)"><i class="ti ti-check"></i> Save card</button></div>
+  </div>`);
+  setTimeout(()=>document.getElementById('cc-name')?.focus(),80);
+};
+
+window.openEditCard=id=>{
+  const c=_cards.find(x=>x.id===id);if(!c)return;
+  showOv(`<div class="modal" style="max-width:460px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Edit card</h2>
+    <div class="fr"><label class="fl">Card name *</label><input type="text" id="cc-name" value="${esc(c.name)}" style="width:100%"></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Last 4 digits</label><input type="text" id="cc-last4" value="${esc(c.last4||'')}" maxlength="4" style="width:100%"></div>
+      <div class="fr"><label class="fl">Due day of month</label><input type="number" id="cc-due" value="${esc(c.dueDay||'')}" min="1" max="31" style="width:100%"></div>
+    </div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Typical amount ($)</label><input type="text" id="cc-amt" value="${esc(c.typicalAmount||'')}" style="width:100%"></div>
+      <div class="fr"><label class="fl">Notes</label><input type="text" id="cc-notes" value="${esc(c.notes||'')}" style="width:100%"></div>
+    </div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button>
+    <button class="btn pri" onclick="saveCard('${id}')"><i class="ti ti-check"></i> Save</button></div>
+  </div>`);
+};
+
+window.saveCard=async id=>{
+  const name=document.getElementById('cc-name')?.value.trim();if(!name){toast('Card name required.');return;}
+  const card={
+    id:id||String(Date.now()),name,
+    last4:document.getElementById('cc-last4')?.value.trim()||'',
+    dueDay:document.getElementById('cc-due')?.value||'',
+    typicalAmount:document.getElementById('cc-amt')?.value.trim()||'',
+    notes:document.getElementById('cc-notes')?.value.trim()||'',
+    payments:id?(_cards.find(x=>x.id===id)?.payments||[]):[]
+  };
+  if(id){const idx=_cards.findIndex(x=>x.id===id);if(idx>=0)_cards[idx]=card;else _cards.push(card);}
+  else{_cards.push(card);}
+  await saveCards();closeOv();renderFinance();toast(id?'Card updated.':'Card added.');
+};
+
+window.deleteCard=async id=>{
+  if(!confirm('Delete this card and all payment history?'))return;
+  _cards=_cards.filter(x=>x.id!==id);
+  await saveCards();renderFinance();toast('Card deleted.');
+};
+
+window.logPayment=id=>{
+  const c=_cards.find(x=>x.id===id);if(!c)return;
+  showOv(`<div class="modal" style="max-width:400px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Log payment</h2><p class="msub">${esc(c.name)}${c.last4?' ···'+esc(c.last4):''}</p>
+    <div class="f2">
+      <div class="fr"><label class="fl">Payment date</label><input type="date" id="pay-date" value="${today()}" style="width:100%"></div>
+      <div class="fr"><label class="fl">Amount ($) *</label><input type="text" id="pay-amount" placeholder="${c.typicalAmount||'0.00'}" style="width:100%"></div>
+    </div>
+    <div class="fr"><label class="fl">Note (optional)</label><input type="text" id="pay-note" placeholder="e.g. Paid online" style="width:100%"></div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button>
+    <button class="btn pri" onclick="savePayment('${id}')"><i class="ti ti-cash"></i> Log payment</button></div>
+  </div>`);
+  setTimeout(()=>document.getElementById('pay-amount')?.focus(),80);
+};
+
+window.savePayment=async id=>{
+  const amount=document.getElementById('pay-amount')?.value.trim();if(!amount){toast('Enter the payment amount.');return;}
+  const date=document.getElementById('pay-date')?.value||today();
+  const note=document.getElementById('pay-note')?.value.trim()||'';
+  const c=_cards.find(x=>x.id===id);if(!c)return;
+  if(!c.payments)c.payments=[];
+  c.payments.push({id:String(Date.now()),date,amount,note});
+  await saveCards();closeOv();renderFinance();toast('Payment logged!');
+};
+
+window.openCardDetail=id=>{
+  const c=_cards.find(x=>x.id===id);if(!c)return;
+  const pays=(c.payments||[]).slice().reverse();
+  const total=pays.reduce((s,p)=>s+parseFloat(p.amount||0),0);
+  showOv(`<div class="modal" style="max-width:500px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>${esc(c.name)}${c.last4?' ···'+esc(c.last4):''}</h2>
+    <p class="msub">Due day: ${c.dueDay||'—'} · Typical: ${c.typicalAmount?'$'+esc(c.typicalAmount):'—'} · ${pays.length} payment${pays.length!==1?'s':''} logged · Total: $${total.toFixed(2)}</p>
+    <div class="sdiv"><i class="ti ti-history"></i> Payment history</div>
+    ${!pays.length?`<p style="font-size:13px;color:var(--text3)">No payments logged yet.</p>`:`
+    <div class="pay-history">
+      ${pays.map(p=>`<div class="pay-entry">
+        <div class="pay-date">${fmtS(p.date)}</div>
+        <div class="pay-amount">$${esc(String(p.amount))}</div>
+        <div class="pay-note">${esc(p.note||'')}</div>
+        <button class="ibtn" onclick="deletePayment('${id}','${p.id}')" style="padding:2px"><i class="ti ti-x" style="font-size:11px"></i></button>
+      </div>`).join('')}
+    </div>`}
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Close</button>
+      <button class="btn pri" onclick="closeOv();logPayment('${id}')"><i class="ti ti-cash"></i> Log payment</button>
+    </div>
+  </div>`);
+};
+
+window.deletePayment=async(cardId,payId)=>{
+  const c=_cards.find(x=>x.id===cardId);if(!c)return;
+  c.payments=(c.payments||[]).filter(p=>p.id!==payId);
+  await saveCards();openCardDetail(cardId);toast('Payment removed.');
+};
+
+// ── Agenda Builder tab ───────────────────────────────────────────────────────
+let _agendaItems=[];
+let _agendaDragSrc=null;
+let _agendaMeetingDate='';
+let _agendaMeetingTitle='VPRCA Leadership Meeting';
+
+function buildAgendaSuggestions(){
+  const items=[];
+  S.projects.filter(canSee).filter(p=>!p.completed).forEach(p=>{
+    let reason='';
+    const days=dU(p.due);
+    if(p.flag)reason='Eric decision required';
+    else if(days<=0)reason='Past due';
+    else if(days<=14)reason='Due in '+days+'d — High Risk';
+    else if(days<=30)reason='Due in '+days+'d — Caution';
+    else if(p.agendaFlag)reason='Flagged for discussion';
+    if(reason){
+      items.push({
+        id:'proj_'+p.id,
+        title:p.name,
+        reason,
+        type:'project',
+        dueDate:p.due,
+        minutes:5,
+        notes:'',
+        discussed:p.discussed||false
+      });
+    }
+  });
+  return items.sort((a,b)=>{
+    const order={'Eric decision required':0,'Past due':1,'Flagged for discussion':2};
+    return(order[a.reason]||3)-(order[b.reason]||3);
+  });
+}
+
+function renderAgenda(){
+  const el=document.getElementById('agenda-view');if(!el)return;
+  const suggestions=buildAgendaSuggestions();
+
+  // Merge suggestions into _agendaItems (add new ones not already there)
+  suggestions.forEach(s=>{
+    if(!_agendaItems.find(x=>x.id===s.id)){
+      _agendaItems.push({...s});
+    }
+  });
+
+  const active=_agendaItems.filter(x=>!x.discussed);
+  const discussed=_agendaItems.filter(x=>x.discussed);
+  const totalMins=active.reduce((s,i)=>s+(parseInt(i.minutes)||5),0);
+
+  let html=`<div class="agenda-wrap">
+    <div class="agenda-header">
+      <h2><i class="ti ti-calendar-event" style="color:var(--ou-green)"></i> Agenda Builder</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="openAddAgendaItem()"><i class="ti ti-plus"></i> Add item</button>
+        <button class="btn" onclick="clearDiscussed()"><i class="ti ti-eraser"></i> Clear discussed</button>
+        <button class="btn pri" onclick="previewAgenda()"><i class="ti ti-eye"></i> Preview</button>
+        <button class="btn pri" onclick="exportAgendaWord()"><i class="ti ti-file-word"></i> Export Word</button>
+      </div>
+    </div>
+
+    <div class="agenda-meta">
+      <div class="fr" style="margin:0;flex:1;min-width:200px">
+        <label class="fl">Meeting title</label>
+        <input type="text" id="agenda-title" value="${esc(_agendaMeetingTitle)}" style="width:100%" onchange="_agendaMeetingTitle=this.value">
+      </div>
+      <div class="fr" style="margin:0">
+        <label class="fl">Meeting date</label>
+        <input type="date" id="agenda-date" value="${esc(_agendaMeetingDate)}" style="width:160px" onchange="_agendaMeetingDate=this.value">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+        <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Total time</span>
+        <span style="font-size:20px;font-weight:800;color:var(--ou-green)">${totalMins} min</span>
+      </div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">
+      Agenda items (${active.length}) — drag to reorder
+    </div>
+    <div class="agenda-items" id="agenda-items-list">`;
+
+  active.forEach((item,i)=>{
+    html+=`<div class="agenda-item-card" draggable="true"
+      ondragstart="agendaDragStart(event,${i})"
+      ondragover="agendaDragOver(event,${i})"
+      ondrop="agendaDrop(event,${i})"
+      ondragleave="this.style.borderColor=''"
+      id="agenda-item-${i}">
+      <div class="agenda-drag"><i class="ti ti-grip-vertical"></i></div>
+      <div class="agenda-num">${i+1}</div>
+      <div class="agenda-item-body">
+        <div class="agenda-item-title">${esc(item.title)}</div>
+        <div class="agenda-item-meta">
+          <span style="color:${item.reason.includes('Past due')||item.reason.includes('decision')?'var(--red-text)':'var(--ou-gold)'}">${esc(item.reason)}</span>
+          ${item.dueDate?`<span>Deadline: ${fmtS(item.dueDate)}</span>`:''}
+        </div>
+        ${item.notes?`<div class="agenda-item-notes">${esc(item.notes)}</div>`:''}
+      </div>
+      <div class="agenda-actions">
+        <input type="number" class="agenda-time ie" value="${item.minutes||5}" min="1" max="120"
+          title="Minutes" onchange="updateAgendaItem('${item.id}','minutes',this.value)">
+        <span style="font-size:10px;color:var(--text3)">min</span>
+        <button class="ibtn" onclick="editAgendaNotes('${item.id}')" title="Add talking points" style="padding:4px"><i class="ti ti-notes" style="font-size:13px"></i></button>
+        <button class="ibtn" onclick="markDiscussed('${item.id}')" title="Mark discussed" style="padding:4px"><i class="ti ti-check" style="font-size:13px;color:var(--ou-green)"></i></button>
+        <button class="ibtn" onclick="removeAgendaItem('${item.id}')" title="Remove" style="padding:4px"><i class="ti ti-x" style="font-size:13px"></i></button>
+      </div>
+    </div>`;
+  });
+
+  if(!active.length){
+    html+=`<div class="perf-empty"><i class="ti ti-calendar-off"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px">No agenda items</p><p style="font-size:13px">Items with approaching deadlines or Eric flags are suggested automatically. Click "Add item" to add manually.</p></div>`;
+  }
+
+  html+=`</div>`;
+
+  if(discussed.length){
+    html+=`<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 .6rem">Discussed (${discussed.length})</div>`;
+    discussed.forEach(item=>{
+      html+=`<div class="agenda-item-card discussed">
+        <div class="agenda-num"><i class="ti ti-check" style="font-size:11px"></i></div>
+        <div class="agenda-item-body">
+          <div class="agenda-item-title">${esc(item.title)}</div>
+          ${item.discussedDate?`<div style="font-size:11px;color:var(--text3)">Discussed ${fmtS(item.discussedDate)}</div>`:''}
+        </div>
+        <button class="ibtn" onclick="undiscuss('${item.id}')" title="Move back to active" style="padding:4px"><i class="ti ti-arrow-back-up" style="font-size:13px"></i></button>
+      </div>`;
+    });
+  }
+
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+window.renderAgenda=renderAgenda;
+
+window.agendaDragStart=(e,i)=>{_agendaDragSrc=i;e.dataTransfer.effectAllowed='move';};
+window.agendaDragOver=(e,i)=>{e.preventDefault();e.dataTransfer.dropEffect='move';const c=document.getElementById('agenda-item-'+i);if(c)c.style.borderColor='var(--ou-green)';};
+window.agendaDrop=(e,targetI)=>{
+  e.preventDefault();
+  if(_agendaDragSrc===null||_agendaDragSrc===targetI)return;
+  const active=_agendaItems.filter(x=>!x.discussed);
+  const discussed=_agendaItems.filter(x=>x.discussed);
+  const [moved]=active.splice(_agendaDragSrc,1);
+  active.splice(targetI,0,moved);
+  _agendaItems=[...active,...discussed];
+  _agendaDragSrc=null;
+  renderAgenda();
+};
+
+window.updateAgendaItem=(id,field,val)=>{
+  const item=_agendaItems.find(x=>x.id===id);if(!item)return;
+  item[field]=val;
+};
+
+window.markDiscussed=id=>{
+  const item=_agendaItems.find(x=>x.id===id);if(!item)return;
+  item.discussed=true;item.discussedDate=today();
+  renderAgenda();toast('Marked as discussed.');
+};
+
+window.undiscuss=id=>{
+  const item=_agendaItems.find(x=>x.id===id);if(!item)return;
+  item.discussed=false;item.discussedDate=null;
+  renderAgenda();
+};
+
+window.clearDiscussed=()=>{
+  if(!_agendaItems.some(x=>x.discussed))return toast('No discussed items to clear.');
+  _agendaItems=_agendaItems.filter(x=>!x.discussed);
+  renderAgenda();toast('Discussed items cleared.');
+};
+
+window.removeAgendaItem=id=>{
+  _agendaItems=_agendaItems.filter(x=>x.id!==id);
+  renderAgenda();
+};
+
+window.editAgendaNotes=id=>{
+  const item=_agendaItems.find(x=>x.id===id);if(!item)return;
+  showOv(`<div class="modal" style="max-width:460px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Talking points</h2><p class="msub">${esc(item.title)}</p>
+    <div class="fr"><label class="fl">Notes / talking points</label>
+      <textarea id="agenda-notes" rows="4" style="width:100%" placeholder="Key points to discuss…">${esc(item.notes||'')}</textarea>
+    </div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button>
+    <button class="btn pri" onclick="saveAgendaNotes('${id}')"><i class="ti ti-check"></i> Save</button></div>
+  </div>`);
+  setTimeout(()=>document.getElementById('agenda-notes')?.focus(),80);
+};
+window.saveAgendaNotes=id=>{
+  const item=_agendaItems.find(x=>x.id===id);if(!item)return;
+  item.notes=document.getElementById('agenda-notes')?.value.trim()||'';
+  closeOv();renderAgenda();
+};
+
+window.openAddAgendaItem=()=>{
+  showOv(`<div class="modal" style="max-width:460px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Add agenda item</h2><p class="msub">Add a custom item to this meeting's agenda.</p>
+    <div class="fr"><label class="fl">Item title *</label><input type="text" id="ag-title" placeholder="e.g. Budget review, Staff update…" style="width:100%"></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Time (minutes)</label><input type="number" id="ag-mins" value="5" min="1" max="120" style="width:100%"></div>
+      <div class="fr"><label class="fl">Type</label>
+        <select id="ag-type" style="width:100%"><option value="custom">General</option><option value="decision">Decision needed</option><option value="update">Update</option></select>
+      </div>
+    </div>
+    <div class="fr"><label class="fl">Talking points</label><textarea id="ag-notes" rows="2" style="width:100%"></textarea></div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button>
+    <button class="btn pri" onclick="addCustomAgendaItem()"><i class="ti ti-plus"></i> Add</button></div>
+  </div>`);
+  setTimeout(()=>document.getElementById('ag-title')?.focus(),80);
+};
+window.addCustomAgendaItem=()=>{
+  const title=document.getElementById('ag-title')?.value.trim();if(!title){toast('Title required.');return;}
+  _agendaItems.push({
+    id:'custom_'+String(Date.now()),title,
+    reason:document.getElementById('ag-type')?.value==='decision'?'Decision needed':document.getElementById('ag-type')?.value==='update'?'Update':'General item',
+    type:'custom',minutes:parseInt(document.getElementById('ag-mins')?.value)||5,
+    notes:document.getElementById('ag-notes')?.value.trim()||'',
+    discussed:false
+  });
+  closeOv();renderAgenda();
+};
+
+function buildAgendaText(){
+  const title=_agendaMeetingTitle||'VPRCA Leadership Meeting';
+  const dateStr=_agendaMeetingDate?fmtD(_agendaMeetingDate):new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const active=_agendaItems.filter(x=>!x.discussed);
+  const totalMins=active.reduce((s,i)=>s+(parseInt(i.minutes)||5),0);
+  let text=`${title}\n${dateStr}\n${'─'.repeat(50)}\n\n`;
+  active.forEach((item,i)=>{
+    text+=`${i+1}. ${item.title} (${item.minutes||5} min)\n`;
+    if(item.reason)text+=`   → ${item.reason}\n`;
+    if(item.notes)text+=`   Notes: ${item.notes}\n`;
+    text+='\n';
+  });
+  text+=`${'─'.repeat(50)}\nTotal meeting time: ${totalMins} minutes\n`;
+  return text;
+}
+
+window.previewAgenda=()=>{
+  const text=buildAgendaText();
+  showOv(`<div class="modal" style="max-width:620px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Agenda preview</h2>
+    <div class="agenda-preview">${esc(text)}</div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Close</button>
+      <button class="btn" onclick="navigator.clipboard.writeText(${JSON.stringify(text)}).then(()=>toast('Copied to clipboard!'))"><i class="ti ti-copy"></i> Copy to clipboard</button>
+      <button class="btn pri" onclick="exportAgendaWord()"><i class="ti ti-file-word"></i> Export Word</button>
+    </div>
+  </div>`);
+};
+
+window.exportAgendaWord=()=>{
+  const title=_agendaMeetingTitle||'VPRCA Leadership Meeting';
+  const dateStr=_agendaMeetingDate?fmtD(_agendaMeetingDate):new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const active=_agendaItems.filter(x=>!x.discussed);
+  const totalMins=active.reduce((s,i)=>s+(parseInt(i.minutes)||5),0);
+  const rows=active.map((item,i)=>`<tr>
+    <td style="width:5%;text-align:center;font-weight:bold">${i+1}</td>
+    <td style="width:40%;font-weight:bold">${item.title}</td>
+    <td style="width:35%;color:#555;font-size:10pt">${item.reason||''}${item.notes?'<br><em>'+item.notes+'</em>':''}</td>
+    <td style="width:10%;text-align:center">${item.minutes||5} min</td>
+    <td style="width:10%"></td>
+  </tr>`).join('');
+
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+  <head><meta charset="utf-8">
+  <style>body{font-family:Calibri,sans-serif;font-size:11pt}h1{font-size:16pt;color:#006A4E;border-bottom:2pt solid #C5962B;padding-bottom:4pt}h2{font-size:11pt;color:#666;font-weight:400;margin-top:0}table{width:100%;border-collapse:collapse;font-size:10pt}th{background:#006A4E;color:#fff;padding:5pt 7pt;text-align:left;font-weight:bold}td{padding:5pt 7pt;border-bottom:0.5pt solid #ddd;vertical-align:top}p.footer{font-size:8pt;color:#999;border-top:0.5pt solid #ddd;padding-top:6pt;margin-top:16pt}</style>
+  </head><body>
+  <h1>${title}</h1>
+  <h2>${dateStr}</h2>
+  <table><thead><tr><th>#</th><th>Topic</th><th>Notes</th><th>Time</th><th>Action / Owner</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <p style="font-size:10pt;color:#555;margin-top:12pt"><strong>Total meeting time: ${totalMins} minutes</strong></p>
+  <p class="footer">VPRCA Team · Ohio University · Generated ${new Date().toLocaleDateString()}</p>
+  </body></html>`;
+
+  const blob=new Blob(['\ufeff'+html],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`Agenda_${(title).replace(/[^a-z0-9]/gi,'_')}_${_agendaMeetingDate||today()}.doc`;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+  toast('Agenda exported to Word.');
+};
+let _memberships=[];
+let _unsubMem=null;
+function startMemListener(){
+  if(_unsubMem)_unsubMem();
+  _unsubMem=onSnapshot(collection(db,'memberships'),sn=>{
+    _memberships=sn.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>a.name.localeCompare(b.name));
+    if(currentTab==='mem')renderMemberships();
+    checkMemRenewals();
+  });
+}
+async function saveMem(m){await setDoc(doc(db,'memberships',m.id),m);}
+async function delMem(id){await deleteDoc(doc(db,'memberships',id));}
+
+function memRenewalStatus(renewalDate){
+  if(!renewalDate)return{cls:'status-x',label:'No renewal date',color:'var(--text3)'};
+  const days=Math.ceil((new Date(renewalDate)-new Date())/86400000);
+  if(days<0) return{cls:'status-r',label:`Expired ${Math.abs(days)}d ago`,color:'var(--red-text)'};
+  if(days<=30)return{cls:'status-r',label:`Renews in ${days}d`,color:'var(--red-text)'};
+  if(days<=90)return{cls:'status-y',label:`Renews in ${days}d`,color:'var(--ou-gold)'};
+  return{cls:'status-g',label:`Renews in ${days}d`,color:'var(--green-text)'};
+}
+
+function checkMemRenewals(){
+  const td=today();
+  _memberships.forEach(async m=>{
+    if(!m.annual||!m.renewalDate)return;
+    if(!m.reminderNotified)m.reminderNotified={};
+    const days=Math.ceil((new Date(m.renewalDate)-new Date())/86400000);
+    const key=`mem_${m.id}_${td}`;
+    if(days<=30&&days>=0&&!m.reminderNotified[key]){
+      // Post team message
+      const msgBody=`🔔 Membership renewal reminder: "${m.name}" renews in ${days} day${days!==1?'s':''} (${fmtD(m.renewalDate)}). Please review and discuss before renewing.`;
+      const msg={id:'mem_'+String(Date.now()),author:'System',type:'team',to:[],body:msgBody,ts:Date.now(),replies:[],assignedTodo:false,deleted:false,system:true};
+      await setDoc(doc(db,'messages',msg.id),msg);
+      // Log entry
+      S.notifLog.unshift({id:key,date:td,project:m.name,trigger:'Membership renewal in '+days+' days',daysLeft:days,recipients:'All team',href:null});
+      await saveLog(S.notifLog);
+      m.reminderNotified[key]=true;
+      await saveMem(m);
+      updateNotifBadge();
+    }
+  });
+}
+
+function renderMemberships(){
+  const el=document.getElementById('mem-view');if(!el)return;
+  const ce=isAdmin();
+  let html=`<div class="mem-wrap">
+    <div class="mem-header">
+      <div><h2><i class="ti ti-id-badge" style="color:var(--ou-green)"></i> Memberships</h2>
+      <p style="font-size:12px;color:var(--text2);margin-top:3px">${_memberships.length} membership${_memberships.length!==1?'s':''} · Renewals tracked automatically</p></div>
+      <button class="btn pri" onclick="openAddMem()"><i class="ti ti-plus"></i> Add membership</button>
+    </div>`;
+
+  if(!_memberships.length){
+    html+=`<div class="sop-empty"><i class="ti ti-id-badge"></i><p style="font-size:14px;font-weight:600;margin-bottom:6px">No memberships yet</p><p style="font-size:13px">Click "Add membership" to track your first one.</p></div>`;
+  } else {
+    html+=`<div class="mem-grid">`;
+    _memberships.forEach(m=>{
+      const st=memRenewalStatus(m.renewalDate);
+      html+=`<div class="mem-card ${st.cls}">
+        <div class="mem-card-head">
+          <div>
+            <div class="mem-card-name">${esc(m.name)}</div>
+            ${m.annual?`<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:var(--ou-green-light);color:var(--ou-green);margin-top:3px;display:inline-block">🔄 Annual</span>`:''}
+          </div>
+          <div style="display:flex;gap:4px">
+            <button class="ibtn" onclick="openEditMem('${m.id}')" style="padding:4px"><i class="ti ti-edit" style="font-size:13px"></i></button>
+            <button class="ibtn" onclick="doDelMem('${m.id}')" style="padding:4px"><i class="ti ti-trash" style="font-size:13px"></i></button>
+          </div>
+        </div>
+        ${m.description?`<div class="mem-card-desc">${esc(m.description)}</div>`:''}
+        <div class="mem-meta-grid">
+          <div class="mem-meta-item"><div class="mml">Date paid</div><div class="mmv">${m.datePaid?fmtD(m.datePaid):'—'}</div></div>
+          <div class="mem-meta-item"><div class="mml">Amount</div><div class="mmv">${m.amount?'$'+esc(m.amount):'—'}</div></div>
+          <div class="mem-meta-item"><div class="mml">Owner</div><div class="mmv">${esc(m.owner||'—')}</div></div>
+          <div class="mem-meta-item"><div class="mml">Renewal date</div><div class="mmv" style="color:${st.color}">${m.renewalDate?fmtD(m.renewalDate):'—'}</div></div>
+        </div>
+        ${m.renewalDate?`<div class="mem-renewal-badge" style="background:${st.cls==='status-g'?'var(--green-bg)':st.cls==='status-y'?'var(--yellow-bg)':'var(--red-bg)'};color:${st.color}"><i class="ti ti-clock" style="font-size:11px"></i>${st.label}</div>`:''}
+        ${m.annual&&m.renewalDate&&Math.ceil((new Date(m.renewalDate)-new Date())/86400000)<=30?`
+        <button class="btn sm pri" onclick="renewMembership('${m.id}')" style="width:100%;margin-top:4px"><i class="ti ti-refresh"></i> Renew for another year</button>`:''}
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+window.renderMemberships=renderMemberships;
+
+window.openAddMem=()=>{
+  showOv(`<div class="modal" style="max-width:500px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Add membership</h2><p class="msub">Track a new membership or subscription.</p>
+    <div class="fr"><label class="fl">Membership name *</label><input type="text" id="mem-name" placeholder="e.g. UIPD Annual Membership" style="width:100%"></div>
+    <div class="fr"><label class="fl">Description</label><textarea id="mem-desc" rows="2" placeholder="Brief description of what this membership provides…" style="width:100%"></textarea></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Owner / responsible person</label>
+        <select id="mem-owner" style="width:100%"><option value="">— Select —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}</select>
+      </div>
+      <div class="fr"><label class="fl">Amount paid ($)</label><input type="text" id="mem-amount" placeholder="e.g. 500" style="width:100%"></div>
+    </div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Date paid</label><input type="date" id="mem-datepaid" style="width:100%"></div>
+      <div class="fr"><label class="fl">Renewal date</label><input type="date" id="mem-renewal" style="width:100%"></div>
+    </div>
+    <div class="fr">
+      <label class="assign-toggle" style="margin-top:4px">
+        <input type="checkbox" id="mem-annual" onchange="toggleMemAnnual(this.checked)">
+        <i class="ti ti-refresh" style="font-size:13px;color:var(--ou-green)"></i>
+        <span>This is an annual subscription — auto-set renewal reminder 30 days before renewal</span>
+      </label>
+    </div>
+    <div id="mem-annual-info" style="display:none;margin-top:.5rem">
+      ${tip_html('🔔 Renewal reminder','When this membership is within 30 days of renewal, the whole team will be notified via a team message and the notification log.')}
+    </div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="saveMembership(null)"><i class="ti ti-check"></i> Save membership</button>
+    </div>
+  </div>`);
+  setTimeout(()=>{document.getElementById('mem-name')?.focus();},80);
+};
+
+window.toggleMemAnnual=checked=>{
+  const info=document.getElementById('mem-annual-info');
+  if(info)info.style.display=checked?'':'none';
+  // Auto-calculate renewal date if date paid is set
+  if(checked){
+    const dp=document.getElementById('mem-datepaid')?.value;
+    if(dp){
+      const d=new Date(dp);d.setFullYear(d.getFullYear()+1);
+      const rEl=document.getElementById('mem-renewal');
+      if(rEl&&!rEl.value)rEl.value=d.toISOString().slice(0,10);
+    }
+  }
+};
+
+window.openEditMem=id=>{
+  const m=_memberships.find(x=>x.id===id);if(!m)return;
+  showOv(`<div class="modal" style="max-width:500px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Edit membership</h2><p class="msub">Update this membership's details.</p>
+    <div class="fr"><label class="fl">Membership name *</label><input type="text" id="mem-name" value="${esc(m.name)}" style="width:100%"></div>
+    <div class="fr"><label class="fl">Description</label><textarea id="mem-desc" rows="2" style="width:100%">${esc(m.description||'')}</textarea></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Owner</label>
+        <select id="mem-owner" style="width:100%"><option value="">— Select —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}" ${m.owner===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}</select>
+      </div>
+      <div class="fr"><label class="fl">Amount paid ($)</label><input type="text" id="mem-amount" value="${esc(m.amount||'')}" style="width:100%"></div>
+    </div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Date paid</label><input type="date" id="mem-datepaid" value="${esc(m.datePaid||'')}" style="width:100%"></div>
+      <div class="fr"><label class="fl">Renewal date</label><input type="date" id="mem-renewal" value="${esc(m.renewalDate||'')}" style="width:100%"></div>
+    </div>
+    <div class="fr">
+      <label class="assign-toggle" style="margin-top:4px">
+        <input type="checkbox" id="mem-annual" ${m.annual?'checked':''} onchange="toggleMemAnnual(this.checked)">
+        <i class="ti ti-refresh" style="font-size:13px;color:var(--ou-green)"></i>
+        <span>Annual subscription — auto renewal reminder</span>
+      </label>
+    </div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="saveMembership('${id}')"><i class="ti ti-check"></i> Save changes</button>
+    </div>
+  </div>`);
+};
+
+window.saveMembership=async id=>{
+  const name=document.getElementById('mem-name')?.value.trim();
+  if(!name){toast('Membership name is required.');return;}
+  const m={
+    id:id||String(Date.now()),
+    name,
+    description:document.getElementById('mem-desc')?.value.trim()||'',
+    owner:document.getElementById('mem-owner')?.value||'',
+    amount:document.getElementById('mem-amount')?.value.trim()||'',
+    datePaid:document.getElementById('mem-datepaid')?.value||'',
+    renewalDate:document.getElementById('mem-renewal')?.value||'',
+    annual:document.getElementById('mem-annual')?.checked||false,
+    reminderNotified:{},
+    createdBy:CU,updatedBy:CU,updatedDate:today()
+  };
+  if(id){const old=_memberships.find(x=>x.id===id);if(old)m.reminderNotified=old.reminderNotified||{};}
+  await saveMem(m);
+  closeOv();
+  toast(id?'Membership updated.':'Membership added.');
+  if(currentTab==='mem')renderMemberships();
+};
+
+window.doDelMem=async id=>{
+  if(!confirm('Delete this membership?'))return;
+  await delMem(id);
+  toast('Membership deleted.');
+};
+
+window.renewMembership=async id=>{
+  const m=_memberships.find(x=>x.id===id);if(!m||!m.renewalDate)return;
+  if(!confirm(`Renew "${m.name}" for another year?`))return;
+  const oldRenewal=m.renewalDate;
+  const d=new Date(m.renewalDate);d.setFullYear(d.getFullYear()+1);
+  m.renewalDate=d.toISOString().slice(0,10);
+  m.datePaid=today();
+  m.reminderNotified={};
+  m.updatedBy=CU;m.updatedDate=today();
+  if(!m.notes)m.notes=[];
+  m.notes.push({date:today(),text:`Renewed by ${CU}. Previous renewal: ${fmtD(oldRenewal)}. New renewal: ${fmtD(m.renewalDate)}.`,author:CU});
+  await saveMem(m);
+  toast(`Renewed! Next renewal: ${fmtD(m.renewalDate)}`);
+};
+
+// ── Policies & Procedures ───────────────────────────────────────────────────
+let _policies=[];
+let _unsubPol=null;
+const POL_STATUSES=['Active','Draft','Under Review','Archived'];
+
+function startPolListener(){
+  if(_unsubPol)_unsubPol();
+  _unsubPol=onSnapshot(collection(db,'policies'),sn=>{
+    _policies=sn.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>a.name.localeCompare(b.name));
+    if(currentTab==='pol')renderPolicies();
+  });
+}
+async function savePol(p){await setDoc(doc(db,'policies',p.id),p);}
+async function delPol(id){await deleteDoc(doc(db,'policies',id));}
+
+function polStatusCls(s){
+  return{Active:'pol-s-active',Draft:'pol-s-draft','Under Review':'pol-s-review',Archived:'pol-s-archived'}[s]||'pol-s-draft';
+}
+
+function renderPolicies(){
+  const el=document.getElementById('pol-view');if(!el)return;
+  let html=`<div class="pol-wrap">
+    <div class="pol-header">
+      <div><h2><i class="ti ti-file-certificate" style="color:var(--ou-green)"></i> Policies &amp; Procedures</h2>
+      <p style="font-size:12px;color:var(--text2);margin-top:3px">${_policies.length} polic${_policies.length!==1?'ies':'y'} · Full revision history tracked</p></div>
+      <button class="btn pri" onclick="openAddPol()"><i class="ti ti-plus"></i> Add policy</button>
+    </div>`;
+
+  if(!_policies.length){
+    html+=`<div class="sop-empty"><i class="ti ti-file-certificate"></i><p style="font-size:14px;font-weight:600;margin-bottom:6px">No policies yet</p><p style="font-size:13px">Click "Add policy" to track your first one.</p></div>`;
+  } else {
+    html+=`<div class="pol-table-wrap"><table class="pol-table">
+      <thead><tr>
+        <th style="width:22%">Policy name</th>
+        <th style="width:10%">Status</th>
+        <th style="width:11%">Last revised</th>
+        <th style="width:11%">Owner</th>
+        <th style="width:35%">Description</th>
+        <th style="width:11%"></th>
+      </tr></thead><tbody>`;
+
+    _policies.forEach(p=>{
+      const lastRev=(p.history||[]).length?p.history[p.history.length-1]:null;
+      html+=`<tr onclick="openPolDetail('${p.id}')">
+        <td><div style="font-weight:700">${esc(p.name)}</div>
+          ${(p.history||[]).length>1?`<div style="font-size:10px;color:var(--text3);margin-top:1px">${p.history.length} revision${p.history.length!==1?'s':''}</div>`:''}
+        </td>
+        <td><span class="pol-status ${polStatusCls(p.status)}">${esc(p.status||'Draft')}</span></td>
+        <td style="font-size:12px;color:var(--text2)">${lastRev?fmtD(lastRev.date):'—'}</td>
+        <td style="font-size:12px;color:var(--text2)">${esc((p.owner||'—').split(' ').pop())}</td>
+        <td style="font-size:12px;color:var(--text2)">${esc((p.description||'').slice(0,120))}${(p.description||'').length>120?'…':''}</td>
+        <td onclick="event.stopPropagation()" style="white-space:nowrap">
+          <button class="ibtn" onclick="openEditPol('${p.id}')" style="padding:4px"><i class="ti ti-edit" style="font-size:13px"></i></button>
+          <button class="ibtn" onclick="doDelPol('${p.id}')" style="padding:4px"><i class="ti ti-trash" style="font-size:13px"></i></button>
+        </td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+window.renderPolicies=renderPolicies;
+
+window.openPolDetail=id=>{
+  const p=_policies.find(x=>x.id===id);if(!p)return;
+  const history=(p.history||[]).slice().reverse();
+  showOv(`<div class="modal" style="max-width:620px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>${esc(p.name)}</h2>
+    <p class="msub"><span class="pol-status ${polStatusCls(p.status)}">${esc(p.status||'Draft')}</span> &nbsp;·&nbsp; Owner: ${esc(p.owner||'—')}</p>
+    ${p.description?`<p style="font-size:13px;color:var(--text2);line-height:1.6;margin:.75rem 0">${esc(p.description)}</p>`:''}
+    <div class="sdiv" style="margin-top:1rem"><i class="ti ti-history"></i> Revision history (${history.length})</div>
+    ${!history.length?`<p style="font-size:13px;color:var(--text3);padding:.5rem 0">No revisions recorded yet.</p>`:`
+    <div class="pol-history">
+      ${history.map(r=>`<div class="pol-history-entry">
+        <div class="pol-history-date">${fmtD(r.date)}</div>
+        <div class="pol-history-author">${esc((r.author||'').split(' ').pop())}</div>
+        <div class="pol-history-note">${esc(r.note||'Revision recorded.')}</div>
+      </div>`).join('')}
+    </div>`}
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Close</button>
+      <button class="btn pri" onclick="closeOv();openEditPol('${p.id}')"><i class="ti ti-edit"></i> Edit</button>
+    </div>
+  </div>`);
+};
+
+window.openAddPol=()=>{
+  showOv(`<div class="modal" style="max-width:520px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Add policy</h2><p class="msub">Add a new policy or procedure to track.</p>
+    <div class="fr"><label class="fl">Policy name *</label><input type="text" id="pol-name" placeholder="e.g. Research Misconduct Policy" style="width:100%"></div>
+    <div class="fr"><label class="fl">Description / explanation</label><textarea id="pol-desc" rows="3" placeholder="Brief explanation of what this policy covers and its purpose…" style="width:100%"></textarea></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Status</label>
+        <select id="pol-status" style="width:100%">${POL_STATUSES.map(s=>`<option value="${s}">${s}</option>`).join('')}</select>
+      </div>
+      <div class="fr"><label class="fl">Owner</label>
+        <select id="pol-owner" style="width:100%"><option value="">— Select —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="fr"><label class="fl">Revision date</label><input type="date" id="pol-revdate" style="width:100%"></div>
+    <div class="fr"><label class="fl">Revision notes</label><input type="text" id="pol-revnote" placeholder="e.g. Initial policy creation" style="width:100%"></div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="savePolicy(null)"><i class="ti ti-check"></i> Save policy</button>
+    </div>
+  </div>`);
+  setTimeout(()=>document.getElementById('pol-name')?.focus(),80);
+};
+
+window.openEditPol=id=>{
+  const p=_policies.find(x=>x.id===id);if(!p)return;
+  showOv(`<div class="modal" style="max-width:520px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Edit policy</h2><p class="msub">Updates will be added to the revision history.</p>
+    <div class="fr"><label class="fl">Policy name *</label><input type="text" id="pol-name" value="${esc(p.name)}" style="width:100%"></div>
+    <div class="fr"><label class="fl">Description / explanation</label><textarea id="pol-desc" rows="3" style="width:100%">${esc(p.description||'')}</textarea></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Status</label>
+        <select id="pol-status" style="width:100%">${POL_STATUSES.map(s=>`<option value="${s}" ${p.status===s?'selected':''}>${s}</option>`).join('')}</select>
+      </div>
+      <div class="fr"><label class="fl">Owner</label>
+        <select id="pol-owner" style="width:100%"><option value="">— Select —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}" ${p.owner===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="fr"><label class="fl">Revision date *</label><input type="date" id="pol-revdate" style="width:100%"></div>
+    <div class="fr"><label class="fl">What changed? (revision notes)</label><input type="text" id="pol-revnote" placeholder="Describe what was revised…" style="width:100%"></div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="savePolicy('${id}')"><i class="ti ti-check"></i> Save &amp; log revision</button>
+    </div>
+  </div>`);
+};
+
+window.savePolicy=async id=>{
+  const name=document.getElementById('pol-name')?.value.trim();
+  if(!name){toast('Policy name is required.');return;}
+  const revDate=document.getElementById('pol-revdate')?.value||today();
+  const revNote=document.getElementById('pol-revnote')?.value.trim()||'Revision recorded.';
+  const existing=id?_policies.find(x=>x.id===id):null;
+  const history=[...(existing?.history||[]),{date:revDate,note:revNote,author:CU}];
+  const pol={
+    id:id||String(Date.now()),
+    name,
+    description:document.getElementById('pol-desc')?.value.trim()||'',
+    status:document.getElementById('pol-status')?.value||'Draft',
+    owner:document.getElementById('pol-owner')?.value||'',
+    history,
+    createdBy:existing?.createdBy||CU,
+    updatedBy:CU,updatedDate:today()
+  };
+  await savePol(pol);
+  closeOv();
+  toast(id?'Policy updated & revision logged.':'Policy added.');
+  if(currentTab==='pol')renderPolicies();
+};
+
+window.doDelPol=async id=>{
+  if(!confirm('Delete this policy and all its revision history?'))return;
+  await delPol(id);
+  toast('Policy deleted.');
+};
+
+// ── Task assignment system ──────────────────────────────────────────────────
+// Tasks are stored on projects as tasks[] array
+// Each task: {id, title, desc, assignees:[], dueDate, type:'action'|'review',
+//             createdBy, createdDate, reviews:{name:date}, completions:{name:date}}
+
+async function saveTask(projectId, tasks){
+  const p=S.projects.find(x=>x.id===projectId);
+  if(!p)return;
+  p.tasks=tasks;
+  await saveP(p);
+}
+
+function getMyTasks(){
+  // Get all tasks assigned to CU across all visible projects
+  const result=[];
+  S.projects.filter(canSee).forEach(p=>{
+    (p.tasks||[]).forEach(t=>{
+      if((t.assignees||[]).includes(CU)){
+        result.push({...t,projectId:p.id,projectName:p.name});
+      }
+    });
+  });
+  return result.sort((a,b)=>{
+    // Overdue first, then by due date
+    const da=a.dueDate?new Date(a.dueDate):new Date('2099-01-01');
+    const db=b.dueDate?new Date(b.dueDate):new Date('2099-01-01');
+    return da-db;
+  });
+}
+
+function taskUrgency(dueDate,done){
+  if(done)return'done';
+  if(!dueDate)return'normal';
+  const days=Math.ceil((new Date(dueDate)-new Date())/86400000);
+  if(days<0)return'overdue';
+  if(days<=3)return'due-soon';
+  return'normal';
+}
+
+// ── Assign task modal (Brian only) ──
+window.openAssignTask=pid=>{
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  showOv(`<div class="modal" style="max-width:520px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2><i class="ti ti-clipboard-list" style="font-size:18px;vertical-align:-2px;color:var(--ou-green)"></i> Assign task</h2>
+    <p class="msub">Assign a task or review request to team members on <strong>${esc(p.name)}</strong>.</p>
+    <div class="fr"><label class="fl">Task title *</label><input type="text" id="task-title" placeholder="e.g. Review hybrid work document" style="width:100%"></div>
+    <div class="fr"><label class="fl">Description / instructions</label><textarea id="task-desc" rows="2" placeholder="What needs to be done…" style="width:100%"></textarea></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Type</label>
+        <select id="task-type" style="width:100%">
+          <option value="action">✅ Action — complete a task</option>
+          <option value="review">👁 Review — review &amp; confirm</option>
+        </select>
+      </div>
+      <div class="fr"><label class="fl">Due date</label><input type="date" id="task-due" style="width:100%"></div>
+    </div>
+    <div class="fr"><label class="fl">Assign to (select all that apply)</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="task-assignees">
+        ${OWNERS.filter(o=>o.name!==ADMIN).map(o=>`
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2)">
+            <input type="checkbox" value="${esc(o.name)}" style="accent-color:var(--ou-green);width:14px;height:14px">
+            <div class="pav" style="width:22px;height:22px;border-radius:50%;background:${PRESENCE_COLORS[o.name]||'#555'};font-size:9px;font-weight:900;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${ini(o.name)}</div>
+            ${esc(o.name.split(' ').pop())}
+          </label>`).join('')}
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="saveAssignedTask('${pid}',null)"><i class="ti ti-send"></i> Assign task</button>
+    </div>
+  </div>`);
+  setTimeout(()=>document.getElementById('task-title')?.focus(),80);
+};
+
+window.saveAssignedTask=async(pid,taskId)=>{
+  const title=document.getElementById('task-title')?.value.trim();
+  if(!title){toast('Task title is required.');return;}
+  const assignees=[...document.querySelectorAll('#task-assignees input:checked')].map(x=>x.value);
+  if(!assignees.length){toast('Select at least one person to assign to.');return;}
+  const type=document.getElementById('task-type')?.value||'action';
+  const desc=document.getElementById('task-desc')?.value.trim()||'';
+  const dueDate=document.getElementById('task-due')?.value||'';
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  if(!p.tasks)p.tasks=[];
+  const task={
+    id:taskId||String(Date.now()),
+    title,desc,type,assignees,dueDate,
+    createdBy:CU,createdDate:today(),
+    reviews:{},completions:{}
+  };
+  if(taskId){const idx=p.tasks.findIndex(x=>x.id===taskId);if(idx>=0)p.tasks[idx]=task;else p.tasks.push(task);}
+  else{p.tasks.push(task);}
+  await saveP(p);
+  closeOv();
+  toast('Task assigned to '+assignees.map(n=>n.split(' ').pop()).join(', ')+'.');
+  // Send email notification to each assignee
+  const typeLabel=type==='review'?'Review request':'Task assigned';
+  assignees.forEach(name=>{
+    const owner=OWNERS.find(o=>o.name===name);
+    if(!owner)return;
+    const sub=encodeURIComponent(`[${typeLabel}] ${title} — ${p.name}`);
+    const body=encodeURIComponent(`Hi ${name.split(' ')[0]},\n\nYou have been assigned a ${type==='review'?'review request':'task'}:\n\nProject: ${p.name}\nTask: ${title}${desc?'\nDetails: '+desc:''}${dueDate?'\nDue: '+fmtD(dueDate):''}\n\nPlease log in to the VPRCA Team Tracker to complete this.\n\nThanks,\n${CU}`);
+    window.open(`mailto:${owner.email}?subject=${sub}&body=${body}`,'_blank');
+  });
+};
+
+window.markTaskDone=async(pid,taskId)=>{
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  const t=p.tasks?.find(x=>x.id===taskId);if(!t)return;
+  t.completions[CU]=today();
+  await saveP(p);
+  toast('Marked complete!');
+  renderPerformerDash();
+};
+
+window.markTaskReviewed=async(pid,taskId)=>{
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  const t=p.tasks?.find(x=>x.id===taskId);if(!t)return;
+  t.reviews[CU]=today();
+  await saveP(p);
+  toast('Review confirmed! ✅');
+  renderPerformerDash();
+};
+
+window.deleteTask=async(pid,taskId)=>{
+  if(!confirm('Delete this task?'))return;
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  p.tasks=(p.tasks||[]).filter(x=>x.id!==taskId);
+  await saveP(p);
+  toast('Task deleted.');
+  renderDash();
+};
+
+// ── Performer dashboard ──────────────────────────────────────────────────────
+function renderPerformerDash(){
+  const el=document.getElementById('perf-dash');if(!el)return;
+  const myTasks=getMyTasks();
+  const activeTasks=myTasks.filter(t=>t.type==='action'?!t.completions?.[CU]:!t.reviews?.[CU]);
+  const doneTasks=myTasks.filter(t=>t.type==='action'?t.completions?.[CU]:t.reviews?.[CU]);
+  const myProjects=S.projects.filter(canSee).filter(p=>(p.assignees||[]).includes(CU)||(p.tasks||[]).some(t=>(t.assignees||[]).includes(CU)));
+  const allVisible=S.projects.filter(canSee);
+  const onTrack=allVisible.filter(p=>!p.completed&&cRisk(p)==='g').length;
+  const atRisk=allVisible.filter(p=>!p.completed&&(cRisk(p)==='r'||cRisk(p)==='y'||cRisk(p)==='b')).length;
+
+  const now=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  let html=`<div class="perf-wrap">
+    <div class="perf-header">
+      <h2>Good ${new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, ${esc(CU.split(' ')[0])} 👋</h2>
+      <p>${now} &nbsp;·&nbsp; VPRCA Team Project Tracker</p>
+    </div>
+
+    <div class="perf-metrics">
+      <div class="perf-mc">
+        <div class="pml">My queue</div>
+        <div class="pmv" style="color:${activeTasks.length>0?'var(--red-text)':'var(--green-text)'}">${activeTasks.length}</div>
+        <div class="pms">${activeTasks.length===1?'item needs attention':'items need attention'}</div>
+      </div>
+      <div class="perf-mc">
+        <div class="pml">On track</div>
+        <div class="pmv" style="color:var(--green-text)">${onTrack}</div>
+        <div class="pms">active projects</div>
+      </div>
+      <div class="perf-mc">
+        <div class="pml">At risk</div>
+        <div class="pmv" style="color:${atRisk>0?'var(--red-text)':'var(--text)'}">${atRisk}</div>
+        <div class="pms">need attention</div>
+      </div>
+    </div>`;
+
+  // ── My Queue ──
+  html+=`<div class="perf-section">
+    <div class="perf-section-title"><i class="ti ti-clipboard-list" style="font-size:16px;color:var(--ou-green)"></i> My Queue <span>${activeTasks.length}</span></div>`;
+
+  if(!activeTasks.length){
+    html+=`<div class="perf-empty"><i class="ti ti-circle-check" style="color:var(--green-text)"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px;color:var(--green-text)">All caught up!</p><p style="font-size:13px">No tasks or reviews pending right now.</p></div>`;
+  } else {
+    activeTasks.forEach(t=>{
+      const urg=taskUrgency(t.dueDate,false);
+      const daysLeft=t.dueDate?Math.ceil((new Date(t.dueDate)-new Date())/86400000):null;
+      const dueColor=urg==='overdue'?'var(--red-text)':urg==='due-soon'?'var(--ou-gold)':'var(--text2)';
+      const dueLabel=t.dueDate?(daysLeft<0?`${Math.abs(daysLeft)}d overdue`:daysLeft===0?'Due today':daysLeft===1?'Due tomorrow':`Due in ${daysLeft}d`):'No due date';
+
+      // For review tasks show who else has/hasn't reviewed
+      let reviewStatus='';
+      if(t.type==='review'){
+        const allAssignees=t.assignees||[];
+        const reviewed=allAssignees.filter(n=>t.reviews?.[n]);
+        const pending=allAssignees.filter(n=>!t.reviews?.[n]);
+        reviewStatus=`<div class="task-review-status">
+          <div class="rs-title">Review status (${reviewed.length}/${allAssignees.length} confirmed)</div>
+          ${allAssignees.map(n=>`<span class="task-reviewer ${t.reviews?.[n]?'done':'pending'}">
+            ${t.reviews?.[n]?'✅':'⏳'} ${esc(n.split(' ').pop())} ${t.reviews?.[n]?'<span style="font-size:10px;color:var(--text3)">'+fmtS(t.reviews[n])+'</span>':''}
+          </span>`).join('')}
+        </div>`;
+      }
+
+      html+=`<div class="task-card ${urg==='overdue'?'overdue':urg==='due-soon'?'due-soon':''}">
+        <div class="task-card-head">
+          <div class="task-card-title">${esc(t.title)}</div>
+          <span class="task-type ${t.type==='review'?'task-type-review':'task-type-action'}">${t.type==='review'?'👁 Review':'✅ Action'}</span>
+        </div>
+        <div class="task-project"><i class="ti ti-folder" style="font-size:11px"></i> ${esc(t.projectName)}</div>
+        ${t.desc?`<div style="font-size:13px;color:var(--text2);margin-bottom:.5rem;line-height:1.5">${esc(t.desc)}</div>`:''}
+        <div class="task-meta">
+          <span class="task-due" style="color:${dueColor}"><i class="ti ti-calendar" style="font-size:11px;vertical-align:-1px"></i> ${dueLabel}</span>
+          <span style="font-size:11px;color:var(--text3)">Assigned by ${esc(t.createdBy.split(' ').pop())}</span>
+        </div>
+        ${reviewStatus}
+        <div class="task-actions">
+          ${t.type==='review'&&!t.reviews?.[CU]
+            ?`<button class="btn pri" onclick="markTaskReviewed('${t.projectId}','${t.id}')"><i class="ti ti-eye-check"></i> Review &amp; confirm</button>`
+            :''}
+          ${t.type==='action'&&!t.completions?.[CU]
+            ?`<button class="btn pri" onclick="markTaskDone('${t.projectId}','${t.id}')"><i class="ti ti-check"></i> Mark complete</button>`
+            :''}
+        </div>
+      </div>`;
+    });
+  }
+  html+=`</div>`;
+
+  // ── Completed/reviewed tasks ──
+  if(doneTasks.length){
+    html+=`<div class="perf-section">
+      <div class="perf-section-title" style="border-bottom-color:var(--green-border)"><i class="ti ti-checks" style="font-size:16px;color:var(--green-text)"></i> Recently completed <span style="background:var(--green-border)">${doneTasks.length}</span></div>`;
+    doneTasks.slice(0,5).forEach(t=>{
+      const doneDate=t.type==='review'?t.reviews?.[CU]:t.completions?.[CU];
+      html+=`<div class="task-card done-card">
+        <div class="task-card-head">
+          <div class="task-card-title">${esc(t.title)}</div>
+          <span class="task-type ${t.type==='review'?'task-type-review':'task-type-action'}">${t.type==='review'?'👁 Review':'✅ Action'}</span>
+        </div>
+        <div class="task-project"><i class="ti ti-folder" style="font-size:11px"></i> ${esc(t.projectName)}</div>
+        <div class="task-meta">
+          <span style="font-size:12px;color:var(--green-text);font-weight:600"><i class="ti ti-check" style="font-size:11px"></i> ${t.type==='review'?'Reviewed':'Completed'} ${doneDate?fmtS(doneDate):''}</span>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // ── Projects I'm involved in ──
+  const involvedProjects=S.projects.filter(canSee).filter(p=>
+    (p.tasks||[]).some(t=>(t.assignees||[]).includes(CU))
+  );
+  if(involvedProjects.length){
+    html+=`<div class="perf-section">
+      <div class="perf-section-title" style="border-bottom-color:var(--border)"><i class="ti ti-folder" style="font-size:16px;color:var(--text2)"></i> Projects I'm involved in <span style="background:var(--bg3);color:var(--text3)">${involvedProjects.length}</span></div>`;
+    involvedProjects.forEach(p=>{
+      const r=cRisk(p);
+      const rColor=r==='g'?'var(--green-text)':r==='y'?'var(--ou-gold)':r==='r'||r==='b'?'var(--red-text)':'var(--text3)';
+      html+=`<div class="perf-project-row">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(p.name)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(p.category||'—')} · ${esc(p.phase||'—')}</div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:${rColor};white-space:nowrap">${p.due?fmtS(p.due):'No deadline'}</div>
+        <div style="font-size:11px;color:var(--text2);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nextStep||'')}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+window.renderPerformerDash=renderPerformerDash;
+
+function tip_html(label,text){
+  return`<div style="background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius);padding:.6rem .85rem;font-size:12px;color:var(--text);line-height:1.5"><strong style="color:var(--ou-green)">${label}</strong><br>${text}</div>`;
+}
+
 async function checkNotify(){
   const td=today();
   let changed=false;
@@ -756,18 +2223,32 @@ function completeLogin(name){
   document.getElementById('app').style.display='block';
   document.getElementById('uav').textContent=ini(name);
   document.getElementById('uname').textContent=name;
-  if(isAdmin())document.getElementById('admin-btn').style.display='';
+  if(isAdmin()){
+    document.getElementById('admin-btn').style.display='';
+    document.getElementById('add-item-btn').style.display='';
+    document.getElementById('tab-bar-wrap').style.display='';
+    document.getElementById('perf-app').style.display='none';
+  } else {
+    document.getElementById('tab-bar-wrap').style.display='none';
+    document.getElementById('perf-app').style.display='block';
+    // Start performer data listener
+    startListeners();
+    renderPerformerDash();
+  }
   startPresence();
   startTodoListener();
-  startMsgListener();
-  startListeners();
+  if(isAdmin()){startRemListener();startCardsListener();startMemListener();startPolListener();startListeners();}
 }
 window.doSignOut=function(){
   clearPresence();
   if(_presenceInterval)clearInterval(_presenceInterval);
   if(_unsubTodos){_unsubTodos();_unsubTodos=null;}
   if(_unsubMsgs){_unsubMsgs();_unsubMsgs=null;}
-  _todos=[];_todosLoaded=false;
+  if(_unsubMem){_unsubMem();_unsubMem=null;}
+  if(_unsubPol){_unsubPol();_unsubPol=null;}
+  if(_unsubRem){_unsubRem();_unsubRem=null;}
+  if(_unsubCards){_unsubCards();_unsubCards=null;}
+  _todos=[];_todosLoaded=false;_reminders=[];_cards=[];
   sessionStorage.removeItem('vprca_user');CU=null;
   document.getElementById('app').style.display='none';
   document.getElementById('login-wrap').className='show';
@@ -836,7 +2317,10 @@ window.refreshDash=async function(){
     const cs=await getDocs(collection(db,'contacts'));
     S.contacts=cs.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name));
     if(currentTab==='dash') renderDash();
-    else if(currentTab==='msg') renderMessages();
+    else if(currentTab==='tasks') renderMyTasks();
+    else if(currentTab==='fin') renderFinance();
+    else if(currentTab==='agenda') renderAgenda();
+    else if(currentTab==='pol') renderPolicies();
     toast('Refreshed.');
   } catch(e){toast('Refresh failed: '+e.message);}
   finally{if(btn){setTimeout(()=>{btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh"></i> Refresh';},600);}}
@@ -866,7 +2350,7 @@ function renderPresence(snap){
 }
 
 function startListeners(){
-  onSnapshot(collection(db,'projects'),sn=>{S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));if(currentTab==='dash')renderDash();checkNotify()});
+  onSnapshot(collection(db,'projects'),sn=>{S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));if(currentTab==='dash')renderDash();checkNotify();if(!isAdmin())renderPerformerDash();});
   onSnapshot(collection(db,'contacts'),sn=>{S.contacts=sn.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name))});
   onSnapshot(doc(db,'meta','notifLog'),sn=>{if(sn.exists())S.notifLog=sn.data().entries||[];updateNotifBadge();});
   onSnapshot(collection(db,'presence'),sn=>{renderPresence(sn)});
@@ -892,7 +2376,7 @@ function renderDash(){
   const catCounts={};
   S.projects.filter(canSee).forEach(p=>{const c=p.category||'Uncategorized';catCounts[c]=(catCounts[c]||0)+1});
   const allCount=S.projects.filter(canSee).length;
-  const catIcons={'Events':'🎟','Policies/Procedures':'📋','Major Initiatives':'🚀','Personal':'👤','Memberships':'🤝'};
+  const catIcons={'Events':'🎟','Policies/Procedures':'📋','Major Initiatives':'🚀','Mine':'🙋','Memberships':'🤝'};
   const myProjCount=S.projects.filter(canSee).filter(p=>(p.owner||'')===CU).length;
   html+=`<div class="cat-tabs">
     <div class="cat-tab${!S.fCategory&&!S.fMyProjects?' active':''}" onclick="setCat('')">All <span class="ctc">${allCount}</span></div>
@@ -947,7 +2431,7 @@ function renderDash(){
   </div>`;
 
   // ── Personal To-Do panel ──
-  if(S.fCategory==='Personal'){html+=renderTodoPanel();}
+  if(S.fCategory==='Mine'){html+=renderTodoPanel();}
 
   html+=`<div class="tw"><table>
     <thead><tr>
@@ -1043,7 +2527,7 @@ function renderTodoDueAlerts(){
 
   let rows=alertTodos.map(t=>{
     const dl=dueLabel(t.days);
-    return`<div class="todo-alert-row ${rowClass(t.days)}" onclick="setCat('Personal')">
+    return`<div class="todo-alert-row ${rowClass(t.days)}" onclick="switchTab('tasks')">
       <div class="tad-pri" style="background:${priColor[t.priority||'medium']}"></div>
       <span class="tad-text">${esc(t.text)}</span>
       <span class="tad-chip" style="background:var(--bg3);color:var(--text3)">${priLabel[t.priority||'medium']}</span>
@@ -1059,7 +2543,7 @@ function renderTodoDueAlerts(){
         <div style="display:flex;gap:5px;margin-left:4px">${badges.join('')}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:11px;color:var(--text3)">Click to go to Personal tab</span>
+        <span style="font-size:11px;color:var(--text3)">Click to go to My Tasks tab</span>
         <i class="ti ti-chevron-down" id="todo-alert-chevron" style="font-size:14px;color:var(--text3);transition:transform .2s"></i>
       </div>
     </div>
@@ -1086,7 +2570,7 @@ function startTodoListener(){
   _unsubTodos=onSnapshot(doc(db,'meta',todoKey()),sn=>{
     _todos=sn.exists()?(sn.data().items||[]):[];
     _todosLoaded=true;
-    if(S.fCategory==='Personal')renderDash();
+    if(S.fCategory==='Mine')renderDash();
   });
 }
 
@@ -1256,13 +2740,16 @@ window.saveTodoEdit=async id=>{
 let currentTab='dash';
 window.switchTab=function(tab){
   currentTab=tab;
-  ['dash','msg','log'].forEach(t=>{
+  ['dash','tasks','fin','agenda','pol','log'].forEach(t=>{
     const btn=document.getElementById('tab-'+t);
     if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById(t==='dash'?'dash':t+'-view');
     if(el)el.style.display=tab===t?'':'none';
   });
-  if(tab==='msg'){markMsgsRead();renderMessages();}
+  if(tab==='tasks')renderMyTasks();
+  if(tab==='fin')renderFinance();
+  if(tab==='agenda')renderAgenda();
+  if(tab==='pol')renderPolicies();
   if(tab==='log')renderDesignLog();
 };
 
@@ -1984,6 +3471,28 @@ window.openDetail=id=>{
     <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.5rem .85rem">
       ${allT.map(t=>{const en=(p.triggers||{})[t.id]&&(p.recipients||[]).length>0,live=at.find(x=>x.id===t.id),href=en?mailto(p,t.l,t.d):null;return`<div class="etr"><div><div style="font-size:13px;font-weight:600">${t.l}${live?`<span style="font-size:10px;font-weight:800;color:var(--red-text);margin-left:8px;background:var(--red-bg);padding:1px 6px;border-radius:10px">● live</span>`:''}</div><div style="font-size:11px;color:var(--text2)">${t.d}</div></div>${href?`<a href="${href}" style="text-decoration:none"><button class="btn sm eml"><i class="ti ti-mail"></i>${live?'Send now':'Preview'}</button></a>`:`<span style="font-size:12px;color:var(--text2)">${!(p.triggers||{})[t.id]?'Disabled':'No recipients'}</span>`}</div>`}).join('')}
     </div>
+    ${(p.tasks||[]).length||ce?`
+    <div class="sdiv"><i class="ti ti-clipboard-list"></i> Assigned tasks ${ce?`<button class="btn xs" style="margin-left:auto;text-transform:none;letter-spacing:0;font-weight:600" onclick="closeOv();openAssignTask('${p.id}')"><i class="ti ti-plus" style="font-size:10px"></i> Assign task</button>`:''}</div>
+    ${!(p.tasks||[]).length?`<p style="font-size:13px;color:var(--text3);margin-bottom:.75rem">No tasks assigned yet.</p>`:`
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:.75rem">
+      ${(p.tasks||[]).map(t=>{
+        const allA=t.assignees||[];
+        const doneCount=t.type==='review'?allA.filter(n=>t.reviews?.[n]).length:allA.filter(n=>t.completions?.[n]).length;
+        const allDone=doneCount===allA.length&&allA.length>0;
+        return`<div style="background:${allDone?'var(--bg2)':'var(--bg)'};border:.5px solid var(--border);border-radius:var(--radius);padding:.6rem .85rem;opacity:${allDone?.65:1}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+            <span style="font-size:12px;font-weight:700;color:var(--text);flex:1">${allDone?'✅ ':''}${esc(t.title)}</span>
+            <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;background:${t.type==='review'?'#EDE9FE':'var(--ou-green-light)'};color:${t.type==='review'?'#5B21B6':'var(--ou-green)'}">${t.type==='review'?'👁 Review':'✅ Action'}</span>
+            ${ce?`<button class="ibtn" onclick="deleteTask('${p.id}','${t.id}')" style="padding:2px" title="Delete task"><i class="ti ti-trash" style="font-size:12px"></i></button>`:''}
+          </div>
+          ${t.desc?`<div style="font-size:12px;color:var(--text2);margin-bottom:5px">${esc(t.desc)}</div>`:''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            ${allA.map(n=>{const isDone=t.type==='review'?t.reviews?.[n]:t.completions?.[n];return`<span style="font-size:11px;font-weight:600;color:${isDone?'var(--green-text)':'var(--text3)'}">${isDone?'✅':'⏳'} ${esc(n.split(' ').pop())} ${isDone?`<span style="font-size:10px;color:var(--text3)">${fmtS(isDone)}</span>`:''}</span>`;}).join('')}
+            ${t.dueDate?`<span style="font-size:11px;color:var(--text3);margin-left:auto"><i class="ti ti-calendar" style="font-size:10px"></i> ${fmtD(t.dueDate)}</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`}`:``}
     <div class="sdiv"><i class="ti ti-notes"></i> Notes &amp; updates</div>
     <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.75rem">
       ${!(p.notes||[]).length?`<p style="font-size:13px;color:var(--text2);margin-bottom:8px">No notes yet.</p>`:''}
@@ -2007,7 +3516,7 @@ window.openDetail=id=>{
       <div id="upload-progress-${p.id}"></div>
       <div class="file-list" id="file-list-${p.id}"><div style="font-size:12px;color:var(--text3);padding:.5rem 0">Loading attachments…</div></div>
     </div>
-    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Close</button>${ce?`<button class="btn pri" onclick="closeOv();openEdit('${p.id}')"><i class="ti ti-edit"></i> Edit</button>`:''}</div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Close</button>${ce?`<button class="btn" onclick="closeOv();openAssignTask('${p.id}')"><i class="ti ti-clipboard-list"></i> Assign task</button><button class="btn pri" onclick="closeOv();openEdit('${p.id}')"><i class="ti ti-edit"></i> Edit</button>`:''}</div>
   </div>`);
   setTimeout(()=>{const n=document.getElementById('ni');if(n)n.focus();loadAttachments(p.id);},100);
 };
