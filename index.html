@@ -82,6 +82,9 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--ou-green);cursor:
 .etog{display:flex;align-items:center;gap:8px;padding:5px 12px;height:34px;border:.5px solid var(--border2);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;background:var(--bg);color:var(--text2);user-select:none}
 .etog.on{background:var(--ou-gold-light);color:var(--ou-gold);border-color:var(--ou-gold)}
 .cat-tabs{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.dash-view-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:7px 18px;height:36px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+.dash-view-btn:hover{background:var(--bg2);color:var(--text)}
+.dash-view-btn.active{background:var(--ou-green);color:#fff;border-color:var(--ou-green);box-shadow:0 2px 8px rgba(0,106,78,.25)}
 .cat-tab{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:7px 18px;height:36px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none}
 .cat-tab:hover{background:var(--bg2);color:var(--text);border-color:var(--border2)}
 .cat-tab.active{background:var(--ou-green);color:#fff;border-color:var(--ou-green);box-shadow:0 2px 8px rgba(0,106,78,.25)}
@@ -612,10 +615,8 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
       <button class="tab-btn" id="tab-tasks" onclick="switchTab('tasks')"><i class="ti ti-checkbox"></i> My Tasks <span id="tasks-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:3px;vertical-align:1px"></span></button>
       <button class="tab-btn" id="tab-fin" onclick="switchTab('fin')"><i class="ti ti-credit-card"></i> Finance</button>
       <button class="tab-btn" id="tab-agenda" onclick="switchTab('agenda')"><i class="ti ti-calendar-event"></i> Agenda</button>
-      <button class="tab-btn" id="tab-pol" onclick="switchTab('pol')"><i class="ti ti-file-certificate"></i> Policies</button>
-      <button class="tab-btn" id="tab-log" onclick="switchTab('log')"><i class="ti ti-history"></i> Design Log</button>
     </div>
-    <div class="main"><div id="dash"></div><div id="tasks-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div><div id="pol-view" style="display:none"></div><div id="log-view" style="display:none"></div></div>
+    <div class="main"><div id="dash"></div><div id="tasks-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
   </div>
   <div id="perf-app" style="display:none" class="main"><div id="perf-dash"></div></div>
 </div>
@@ -631,7 +632,7 @@ const db=getFirestore(_app);
 const storage=getStorage(_app);
 
 const PHASES=['Not Started','Planned','In Progress','Complete'];
-const CATEGORIES=['Events','Policies/Procedures','Major Initiatives','Mine','Memberships'];
+const CATEGORIES=['Events','Policies','Initiatives','Memberships','Personal'];
 const GROUPS=['VPRCA Leadership Team','OSP','Research Compliance','Research Development','LAR','Other'];
 const TRIGGERS=[{id:'t30',l:'30-day deadline alert',d:'30 days before due date'},{id:'t14',l:'2-week notice',d:'14 days before due date'},{id:'t1',l:'Day-before reminder',d:'1 day before due date'},{id:'tc',l:'Completion notice',d:'When marked Complete'}];
 const OWNERS=[{name:'G. Jason Jolley',email:'jolleyg1@ohio.edu'},{name:'Keith Leffler',email:'leffler@ohio.edu'},{name:'Kim Littlefield',email:'kplittle@ohio.edu'},{name:'Brian Mershon',email:'mershon@ohio.edu'},{name:'Eric Muth',email:'vprca@ohio.edu'}];
@@ -844,21 +845,24 @@ function renderMyTasks(){
   const lookaheadItems=[];
   const in30=new Date();in30.setDate(in30.getDate()+30);
   S.projects.filter(p=>!p.completed&&p.due&&new Date(p.due)<=in30).forEach(p=>{
-    lookaheadItems.push({name:p.name,date:p.due,type:'Project',color:'var(--ou-green)'});
+    lookaheadItems.push({name:p.name,date:p.due,type:'Project',color:'var(--ou-green)',sourceId:p.id,sourceType:'project',done:p.completed||false});
   });
   _memberships.filter(m=>m.renewalDate&&new Date(m.renewalDate)<=in30).forEach(m=>{
-    lookaheadItems.push({name:m.name+' renewal',date:m.renewalDate,type:'Membership',color:'var(--ou-gold)'});
+    lookaheadItems.push({name:m.name+' renewal',date:m.renewalDate,type:'Membership',color:'var(--ou-gold)',sourceId:m.id,sourceType:'membership',done:false});
   });
   _cards.filter(c=>{
     if(!c.dueDay)return false;
-    const now=new Date();
-    const due=new Date(now.getFullYear(),now.getMonth(),parseInt(c.dueDay));
-    if(due<now)due.setMonth(due.getMonth()+1);
-    const diff=Math.ceil((due-now)/86400000);
+    const now2=new Date();
+    const due=new Date(now2.getFullYear(),now2.getMonth(),parseInt(c.dueDay));
+    if(due<now2)due.setMonth(due.getMonth()+1);
+    const diff=Math.ceil((due-now2)/86400000);
     c._nextDue=due.toISOString().slice(0,10);
     return diff<=30;
   }).forEach(c=>{
-    lookaheadItems.push({name:c.name+' payment',date:c._nextDue,type:'Credit card',color:'#EF4444'});
+    lookaheadItems.push({name:c.name+' payment',date:c._nextDue,type:'Credit card',color:'#EF4444',sourceId:c.id,sourceType:'card',done:false});
+  });
+  _todos.filter(t=>!t.done&&t.due&&new Date(t.due)<=in30).forEach(t=>{
+    lookaheadItems.push({name:t.text,date:t.due,type:'To-do',color:'var(--text2)',sourceId:t.id,sourceType:'todo',done:t.done||false});
   });
   lookaheadItems.sort((a,b)=>a.date.localeCompare(b.date));
 
@@ -871,11 +875,13 @@ function renderMyTasks(){
       lookaheadItems.forEach(item=>{
         const days=Math.ceil((new Date(item.date)-new Date())/86400000);
         const color=days<=3?'var(--red-text)':days<=14?'var(--ou-gold)':'var(--text2)';
-        h+=`<div class="lookahead-item">
+        const isDone=item.done||false;
+        h+=`<div class="lookahead-item" style="${isDone?'opacity:.5':''}">
+          <input type="checkbox" ${isDone?'checked':''} onchange="completeLookaheadItem('${item.sourceId}','${item.sourceType}',this.checked)" style="accent-color:var(--ou-green);width:14px;height:14px;cursor:pointer;flex-shrink:0">
           <div class="lookahead-dot" style="background:${item.color}"></div>
-          <span class="lookahead-name">${esc(item.name)}</span>
+          <span class="lookahead-name" style="${isDone?'text-decoration:line-through;color:var(--text3)':''}">${esc(item.name)}</span>
           <span class="lookahead-type">${item.type}</span>
-          <span class="lookahead-date" style="color:${color}">${days===0?'Today':days===1?'Tomorrow':fmtS(item.date)}</span>
+          <span class="lookahead-date" style="color:${isDone?'var(--text3)':color}">${isDone?'Done':days===0?'Today':days===1?'Tomorrow':fmtS(item.date)}</span>
         </div>`;
       });
     }
@@ -942,6 +948,19 @@ window.clearDoneReminders=async()=>{
   await saveReminders();renderMyTasks();toast('Done reminders cleared.');
 };
 
+// Completing a lookahead item syncs to the source
+window.completeLookaheadItem=async(sourceId,sourceType,checked)=>{
+  if(sourceType==='project'){
+    const p=S.projects.find(x=>x.id===sourceId);
+    if(p){p.completed=checked;p.completedDate=checked?today():null;await saveP(p);renderMyTasks();renderDash();toast(checked?'Project marked complete!':'Project reopened.');}
+  } else if(sourceType==='todo'){
+    const t=_todos.find(x=>x.id===sourceId);
+    if(t){t.done=checked;t.doneDate=checked?today():null;await saveTodos();renderMyTasks();updateTasksBadge();toast(checked?'To-do checked off!':'To-do reopened.');}
+  } else if(sourceType==='membership'){
+    if(checked){await renewMembership(sourceId);renderMyTasks();}
+  }
+};
+
 // ── Finance tab ─────────────────────────────────────────────────────────────
 let _cards=[];
 let _unsubCards=null;
@@ -956,60 +975,81 @@ async function saveCards(){await setDoc(doc(db,'meta','cards_'+(CU||'').replace(
 
 function renderFinance(){
   const el=document.getElementById('fin-view');if(!el)return;
-  const now=new Date();
 
-  // Calculate next due date for each card
-  const cardsWithDue=_cards.map(c=>{
-    if(!c.dueDay)return{...c,nextDue:null,daysUntil:null};
-    const d=new Date(now.getFullYear(),now.getMonth(),parseInt(c.dueDay));
-    if(d<=now)d.setMonth(d.getMonth()+1);
-    const days=Math.ceil((d-now)/86400000);
-    return{...c,nextDue:d.toISOString().slice(0,10),daysUntil:days};
-  }).sort((a,b)=>(a.daysUntil||999)-(b.daysUntil||999));
+  // FY helpers — July 1 to June 30
+  function getFY(date){
+    const d=date?new Date(date):new Date();
+    return d.getMonth()>=6?d.getFullYear()+1:d.getFullYear();
+  }
+  const currentFY=getFY();
+  const fyLabel=fy=>`FY${fy}`;
+  const fyKey=fy=>`expenses_${fy}_`+(CU||'').replace(/\s/g,'_');
+
+  // Get all FY keys stored
+  const allFYs=[];
+  for(let y=currentFY-3;y<=currentFY;y++) allFYs.push(y);
+  const selectedFY=_selectedFY||currentFY;
 
   let html=`<div class="fin-wrap">
     <div class="fin-header">
-      <h2><i class="ti ti-credit-card" style="color:var(--ou-green)"></i> Finance</h2>
-    </div>
-    <div class="fin-grid">
+      <h2><i class="ti ti-receipt" style="color:var(--ou-green)"></i> Finance</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="fy-select" style="height:32px;font-size:12px" onchange="_selectedFY=parseInt(this.value);renderFinance()">
+          ${allFYs.map(y=>`<option value="${y}" ${selectedFY===y?'selected':''}>${fyLabel(y)}${y===currentFY?' (Current)':''}</option>`).join('')}
+        </select>
+        <button class="btn pri" onclick="openAddExpense()"><i class="ti ti-plus"></i> Log expense</button>
+      </div>
+    </div>`;
 
-      <div class="fin-card">
-        <div class="fin-card-head">
-          <h3><i class="ti ti-credit-card" style="color:var(--ou-green)"></i> Credit cards</h3>
-          <button class="btn xs pri" onclick="openAddCard()"><i class="ti ti-plus" style="font-size:11px"></i> Add card</button>
-        </div>`;
+  // Expense log for selected FY
+  const expenses=(_expenseLog[fyKey(selectedFY)]||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const catColors={'Membership/Dues':'var(--ou-green)','Event Support':'var(--ou-gold)','Other':'var(--text3)'};
+  const total=expenses.reduce((s,e)=>s+parseFloat(e.amount||0),0);
 
-  if(!cardsWithDue.length){
-    html+=`<div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:13px">No cards tracked yet.</div>`;
+  html+=`<div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1.25rem;box-shadow:var(--shadow)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <div style="font-size:15px;font-weight:800;color:var(--text)">${fyLabel(selectedFY)} Expense Log</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">${expenses.length} entries · Total: <strong style="color:var(--ou-green)">$${total.toFixed(2)}</strong></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        ${['Membership/Dues','Event Support','Other'].map(cat=>{
+          const catTotal=expenses.filter(e=>e.category===cat).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+          return catTotal>0?`<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;background:var(--bg2);color:${catColors[cat]}">${cat}: $${catTotal.toFixed(2)}</span>`:'';
+        }).join('')}
+      </div>
+    </div>`;
+
+  if(!expenses.length){
+    html+=`<div style="text-align:center;padding:2rem;color:var(--text3);font-size:13px"><i class="ti ti-receipt-off" style="font-size:28px;display:block;margin:0 auto 8px;color:var(--text3)"></i>No expenses logged for ${fyLabel(selectedFY)} yet.</div>`;
   } else {
-    cardsWithDue.forEach(c=>{
-      const urgent=c.daysUntil!==null&&c.daysUntil<=5;
-      const lastPay=(c.payments||[]).slice(-1)[0];
-      html+=`<div class="cc-row${urgent?' due-soon-cc':''}" onclick="openCardDetail('${c.id}')">
-        <div style="flex:1;min-width:0">
-          <div class="cc-name">${esc(c.name)} ${c.last4?`<span class="cc-last4">···${esc(c.last4)}</span>`:''}
-          ${urgent?`<span style="font-size:10px;font-weight:700;color:var(--red-text);margin-left:5px">⚠ Due soon</span>`:''}
-          </div>
-          ${lastPay?`<div style="font-size:11px;color:var(--text3);margin-top:1px">Last paid: ${fmtS(lastPay.date)} · $${esc(String(lastPay.amount))}</div>`:''}
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div class="cc-due" style="color:${urgent?'var(--red-text)':'var(--text)'}">${c.nextDue?fmtS(c.nextDue):'—'}</div>
-          ${c.typicalAmount?`<div class="cc-amount">~$${esc(c.typicalAmount)}</div>`:''}
-        </div>
-        <div style="display:flex;gap:4px;flex-shrink:0;margin-left:6px">
-          <button class="ibtn" onclick="event.stopPropagation();logPayment('${c.id}')" title="Log payment" style="padding:4px"><i class="ti ti-cash" style="font-size:13px;color:var(--ou-green)"></i></button>
-          <button class="ibtn" onclick="event.stopPropagation();openEditCard('${c.id}')" style="padding:4px"><i class="ti ti-edit" style="font-size:13px"></i></button>
-          <button class="ibtn" onclick="event.stopPropagation();deleteCard('${c.id}')" style="padding:4px"><i class="ti ti-trash" style="font-size:13px"></i></button>
-        </div>
-      </div>`;
+    html+=`<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="background:var(--bg2)">
+        <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Date</th>
+        <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Vendor</th>
+        <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Amount</th>
+        <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Category</th>
+        <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Description</th>
+        <th style="padding:7px 10px;border-bottom:.5px solid var(--border);width:32px"></th>
+      </tr></thead><tbody>`;
+    expenses.forEach(e=>{
+      html+=`<tr style="border-bottom:.5px solid var(--border)" onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background=''">
+        <td style="padding:7px 10px;font-weight:600">${fmtS(e.date)}</td>
+        <td style="padding:7px 10px;font-weight:700;color:var(--text)">${esc(e.vendor)}</td>
+        <td style="padding:7px 10px;font-weight:700;color:var(--ou-green)">$${parseFloat(e.amount).toFixed(2)}</td>
+        <td style="padding:7px 10px"><span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--bg3);color:${catColors[e.category]||'var(--text3)'}">${esc(e.category)}</span></td>
+        <td style="padding:7px 10px;color:var(--text2);font-size:12px">${esc(e.description||'')}</td>
+        <td style="padding:7px 10px"><button class="ibtn" onclick="deleteExpense('${e.id}',${selectedFY})" style="padding:3px"><i class="ti ti-trash" style="font-size:12px"></i></button></td>
+      </tr>`;
     });
+    html+=`</tbody></table>`;
   }
   html+=`</div>`;
 
-  // Memberships in right column
-  html+=`<div class="fin-card">
-    <div class="fin-card-head">
-      <h3><i class="ti ti-id-badge" style="color:var(--ou-green)"></i> Memberships</h3>
+  // Memberships section
+  html+=`<div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;box-shadow:var(--shadow)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px"><i class="ti ti-id-badge" style="color:var(--ou-green)"></i> Memberships</div>
       <button class="btn xs pri" onclick="openAddMem()"><i class="ti ti-plus" style="font-size:11px"></i> Add</button>
     </div>`;
   if(!_memberships.length){
@@ -1033,10 +1073,93 @@ function renderFinance(){
       </div>`;
     });
   }
-  html+=`</div></div></div>`;
+  html+=`</div></div>`;
   el.innerHTML=html;
 }
 window.renderFinance=renderFinance;
+
+// ── Expense log state & functions ──
+let _expenseLog={};  // keyed by fyKey
+let _selectedFY=null;
+let _unsubExpenses=null;
+
+function currentFYKey(){
+  const d=new Date();
+  const fy=d.getMonth()>=6?d.getFullYear()+1:d.getFullYear();
+  return`expenses_${fy}_`+(CU||'').replace(/\s/g,'_');
+}
+
+function startExpenseListener(){
+  if(_unsubExpenses)_unsubExpenses();
+  // Listen to all expense docs for this user
+  _unsubExpenses=onSnapshot(collection(db,'meta'),sn=>{
+    _expenseLog={};
+    sn.docs.forEach(d=>{
+      if(d.id.startsWith('expenses_')&&d.id.includes((CU||'').replace(/\s/g,'_'))){
+        _expenseLog[d.id]=d.data().entries||[];
+      }
+    });
+    if(currentTab==='fin')renderFinance();
+  });
+}
+
+async function saveExpenses(fyKey,entries){
+  await setDoc(doc(db,'meta',fyKey),{entries,owner:CU,updated:today()});
+}
+
+window.openAddExpense=()=>{
+  showOv(`<div class="modal" style="max-width:460px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Log expense</h2><p class="msub">Add an entry to the ${`FY${(_selectedFY||new Date().getFullYear())}`} expense log.</p>
+    <div class="f2">
+      <div class="fr"><label class="fl">Date *</label><input type="date" id="exp-date" value="${today()}" style="width:100%"></div>
+      <div class="fr"><label class="fl">Amount ($) *</label><input type="text" id="exp-amount" placeholder="0.00" style="width:100%"></div>
+    </div>
+    <div class="fr"><label class="fl">Vendor name *</label><input type="text" id="exp-vendor" placeholder="e.g. UIPD, Marriott, Amazon" style="width:100%"></div>
+    <div class="fr"><label class="fl">Category</label>
+      <select id="exp-cat" style="width:100%">
+        <option value="Membership/Dues">Membership/Dues</option>
+        <option value="Event Support">Event Support</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="fr"><label class="fl">Description (optional)</label><input type="text" id="exp-desc" placeholder="Brief note about this expense" style="width:100%"></div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="saveExpense()"><i class="ti ti-check"></i> Log expense</button>
+    </div>
+  </div>`);
+  setTimeout(()=>document.getElementById('exp-vendor')?.focus(),80);
+};
+
+window.saveExpense=async()=>{
+  const vendor=document.getElementById('exp-vendor')?.value.trim();
+  const amount=document.getElementById('exp-amount')?.value.trim();
+  if(!vendor||!amount){toast('Vendor and amount are required.');return;}
+  const date=document.getElementById('exp-date')?.value||today();
+  const fy=date.slice(5,7)>='07'?parseInt(date.slice(0,4))+1:parseInt(date.slice(0,4));
+  const key=`expenses_${fy}_`+(CU||'').replace(/\s/g,'_');
+  const entries=_expenseLog[key]||[];
+  entries.push({
+    id:String(Date.now()),date,vendor,
+    amount:parseFloat(amount).toFixed(2),
+    category:document.getElementById('exp-cat')?.value||'Other',
+    description:document.getElementById('exp-desc')?.value.trim()||''
+  });
+  await saveExpenses(key,entries);
+  closeOv();toast('Expense logged.');
+  // Also add to notification log
+  S.notifLog.unshift({date:today(),project:'Finance',trigger:`Expense logged: ${vendor} $${parseFloat(amount).toFixed(2)}`,daysLeft:null,recipients:CU,href:null});
+  await saveLog(S.notifLog);updateNotifBadge();
+};
+
+window.deleteExpense=async(id,fy)=>{
+  if(!confirm('Delete this expense entry?'))return;
+  const key=`expenses_${fy}_`+(CU||'').replace(/\s/g,'_');
+  const entries=(_expenseLog[key]||[]).filter(e=>e.id!==id);
+  await saveExpenses(key,entries);
+  toast('Expense deleted.');
+};
 
 window.openAddCard=()=>{
   showOv(`<div class="modal" style="max-width:460px">
@@ -1162,30 +1285,44 @@ let _agendaMeetingTitle='VPRCA Leadership Meeting';
 
 function buildAgendaSuggestions(){
   const items=[];
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()+30);
+  // Pull assigned tasks due within 30 days
   S.projects.filter(canSee).filter(p=>!p.completed).forEach(p=>{
-    let reason='';
-    const days=dU(p.due);
-    if(p.flag)reason='Eric decision required';
-    else if(days<=0)reason='Past due';
-    else if(days<=14)reason='Due in '+days+'d — High Risk';
-    else if(days<=30)reason='Due in '+days+'d — Caution';
-    else if(p.agendaFlag)reason='Flagged for discussion';
-    if(reason){
-      items.push({
-        id:'proj_'+p.id,
-        title:p.name,
-        reason,
-        type:'project',
-        dueDate:p.due,
-        minutes:5,
-        notes:'',
-        discussed:p.discussed||false
-      });
+    (p.tasks||[]).forEach(t=>{
+      if(!t.dueDate)return;
+      const due=new Date(t.dueDate);
+      if(due>cutoff)return;
+      const days=Math.ceil((due-new Date())/86400000);
+      const assigneeNames=(t.assignees||[]).join(', ');
+      const reason=days<0?`Past due · ${assigneeNames}`:days===0?`Due today · ${assigneeNames}`:`Due in ${days}d · ${assigneeNames}`;
+      // avoid duplicates
+      if(!items.find(x=>x.id==='task_'+t.id)){
+        items.push({
+          id:'task_'+t.id,
+          title:`${p.name}: ${t.title}`,
+          reason,
+          type:'task',
+          dueDate:t.dueDate,
+          minutes:5,
+          notes:'',
+          discussed:false,
+          taskId:t.id,
+          projectId:p.id,
+          urgent:days<=0
+        });
+      }
+    });
+    // Also include projects flagged for Eric with no tasks yet
+    if(p.flag&&!items.find(x=>x.id==='proj_'+p.id)){
+      const days=dU(p.due);
+      if(days<=30){
+        items.push({id:'proj_'+p.id,title:p.name,reason:'Eric decision required',type:'project',dueDate:p.due,minutes:10,notes:'',discussed:false,urgent:days<=0});
+      }
     }
   });
   return items.sort((a,b)=>{
-    const order={'Eric decision required':0,'Past due':1,'Flagged for discussion':2};
-    return(order[a.reason]||3)-(order[b.reason]||3);
+    if(a.urgent&&!b.urgent)return -1;if(!a.urgent&&b.urgent)return 1;
+    return(a.dueDate||'9999').localeCompare(b.dueDate||'9999');
   });
 }
 
@@ -2176,7 +2313,7 @@ function completeLogin(name){
   }
   startPresence();
   startTodoListener();
-  if(isAdmin()){startRemListener();startCardsListener();startMemListener();startPolListener();startListeners();}
+  if(isAdmin()){startRemListener();startCardsListener();startExpenseListener();startMemListener();startListeners();}
 }
 window.doSignOut=function(){
   clearPresence();
@@ -2187,7 +2324,8 @@ window.doSignOut=function(){
   if(_unsubPol){_unsubPol();_unsubPol=null;}
   if(_unsubRem){_unsubRem();_unsubRem=null;}
   if(_unsubCards){_unsubCards();_unsubCards=null;}
-  _todos=[];_todosLoaded=false;_reminders=[];_cards=[];
+  if(_unsubExpenses){_unsubExpenses();_unsubExpenses=null;}
+  _todos=[];_todosLoaded=false;_reminders=[];_cards=[];_expenseLog={};
   sessionStorage.removeItem('vprca_user');CU=null;
   document.getElementById('app').style.display='none';
   document.getElementById('login-wrap').className='show';
@@ -2319,7 +2457,6 @@ window.refreshDash=async function(){
     else if(currentTab==='tasks') renderMyTasks();
     else if(currentTab==='fin') renderFinance();
     else if(currentTab==='agenda') renderAgenda();
-    else if(currentTab==='pol') renderPolicies();
     toast('Refreshed.');
   } catch(e){toast('Refresh failed: '+e.message);}
   finally{if(btn){setTimeout(()=>{btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh"></i> Refresh';},600);}}
@@ -2370,17 +2507,15 @@ function renderDash(){
   </div>`;
   if(crit)html+=`<div class="cb-banner" onclick="openDetail('${crit.id}')"><i class="ti ti-alert-triangle" style="font-size:20px;flex-shrink:0"></i><div><strong>#1 Priority — Decision required:</strong> ${esc(crit.name)}<br><span style="font-size:12px;opacity:.8">${esc(crit.nextStep||'')}</span></div><div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span class="flag-eric"><i class="ti ti-user" style="font-size:9px"></i> Eric</span><i class="ti ti-chevron-right"></i></div></div>`;
 
-  // ── To-do due alerts ──
+  // ── Dashboard view buttons ──
   html+=renderTodoDueAlerts();
-  const catCounts={};
-  S.projects.filter(canSee).forEach(p=>{const c=p.category||'Uncategorized';catCounts[c]=(catCounts[c]||0)+1});
   const allCount=S.projects.filter(canSee).length;
-  const catIcons={'Events':'🎟','Policies/Procedures':'📋','Major Initiatives':'🚀','Mine':'🙋','Memberships':'🤝'};
-  const myProjCount=S.projects.filter(canSee).filter(p=>(p.owner||'')===CU).length;
-  html+=`<div class="cat-tabs">
-    <div class="cat-tab${!S.fCategory&&!S.fMyProjects?' active':''}" onclick="setCat('')">All <span class="ctc">${allCount}</span></div>
-    <div class="cat-tab${S.fMyProjects?' active':''}" onclick="setMyProjects()" style="${S.fMyProjects?'':''}">👤 My Projects <span class="ctc">${myProjCount}</span></div>
-    ${CATEGORIES.map(c=>`<div class="cat-tab${S.fCategory===c&&!S.fMyProjects?' active':''}" onclick="setCat('${c.replace(/'/g,"\\'")}')">${catIcons[c]||''} ${esc(c)}<span class="ctc">${catCounts[c]||0}</span></div>`).join('')}
+  const myCount=S.projects.filter(canSee).filter(p=>(p.owner||'')===CU||(p.createdBy||'')===CU).length;
+  const dashView=S.fMyProjects?'mine':S.fCategory==='__todo__'?'todo':'all';
+  html+=`<div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
+    <button class="dash-view-btn${dashView==='all'?' active':''}" onclick="setDashView('all')"><i class="ti ti-layout-list" style="font-size:14px"></i> All Projects <span class="ctc" style="background:${dashView==='all'?'rgba(255,255,255,.3)':'var(--bg3)'};color:${dashView==='all'?'#fff':'var(--text3)'}">${allCount}</span></button>
+    <button class="dash-view-btn${dashView==='mine'?' active':''}" onclick="setDashView('mine')"><i class="ti ti-user" style="font-size:14px"></i> My Projects <span class="ctc" style="background:${dashView==='mine'?'rgba(255,255,255,.3)':'var(--bg3)'};color:${dashView==='mine'?'#fff':'var(--text3)'}">${myCount}</span></button>
+    <button class="dash-view-btn${dashView==='todo'?' active':''}" onclick="setDashView('todo')"><i class="ti ti-checkbox" style="font-size:14px"></i> To-Do List</button>
   </div>`;
 
   html+=`<div class="toolbar">
@@ -2430,7 +2565,10 @@ function renderDash(){
   </div>`;
 
   // ── Personal To-Do panel ──
-  if(S.fCategory==='Mine'){html+=renderTodoPanel();}
+  // ── To-Do List view or project table ──
+  if(dashView==='todo'){
+    html+=renderTodoPanel();
+  } else {
 
   html+=`<div class="tw"><table>
     <thead><tr>
@@ -2473,12 +2611,19 @@ function renderDash(){
     });
   }
   html+=`</tbody></table></div>`;
+  } // end else (not todo view)
   document.getElementById('dash').innerHTML=html;
 }
 window.renderDash=renderDash;
 window.clearF=()=>{S.fCategory='';S.fPhase='';S.fRisk='';S.fOwner='';S.fGroup='';S.fVis='';S.searchQ='';S.fMyProjects=false;renderDash()};
 window.setCat=c=>{S.fCategory=c;S.fMyProjects=false;renderDash()};
 window.setMyProjects=()=>{S.fMyProjects=true;S.fCategory='';renderDash()};
+window.setDashView=function(view){
+  S.fMyProjects=view==='mine';
+  S.fCategory=view==='todo'?'__todo__':'';
+  S.searchQ='';S.fPhase='';S.fRisk='';S.fOwner='';S.fGroup='';S.fVis='';
+  renderDash();
+};
 
 // ── To-do due alert panel (shown on main dashboard) ──
 function renderTodoDueAlerts(){
@@ -2739,7 +2884,7 @@ window.saveTodoEdit=async id=>{
 let currentTab='dash';
 window.switchTab=function(tab){
   currentTab=tab;
-  ['dash','tasks','fin','agenda','pol','log'].forEach(t=>{
+  ['dash','tasks','fin','agenda'].forEach(t=>{
     const btn=document.getElementById('tab-'+t);
     if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById(t==='dash'?'dash':t+'-view');
@@ -2748,8 +2893,6 @@ window.switchTab=function(tab){
   if(tab==='tasks')renderMyTasks();
   if(tab==='fin')renderFinance();
   if(tab==='agenda')renderAgenda();
-  if(tab==='pol')renderPolicies();
-  if(tab==='log')renderDesignLog();
 };
 
 // ── SOP state ──
