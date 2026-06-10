@@ -487,29 +487,29 @@ const db=getFirestore(_app);
 const storage=getStorage(_app);
 
 const PHASES=['Not Started','Planned','In Progress','Complete'];
-const CATEGORIES=['Event','Policies/Procedures','Major Initiative','Personal'];
+const CATEGORIES=['Events','Policies/Procedures','Major Initiatives','Personal','Memberships'];
 const GROUPS=['VPRCA Leadership Team','OSP','Research Compliance','Research Development','LAR','Other'];
 const TRIGGERS=[{id:'t30',l:'30-day deadline alert',d:'30 days before due date'},{id:'t14',l:'2-week notice',d:'14 days before due date'},{id:'t1',l:'Day-before reminder',d:'1 day before due date'},{id:'tc',l:'Completion notice',d:'When marked Complete'}];
 const OWNERS=[{name:'G. Jason Jolley',email:'jolleyg1@ohio.edu'},{name:'Keith Leffler',email:'leffler@ohio.edu'},{name:'Kim Littlefield',email:'kplittle@ohio.edu'},{name:'Brian Mershon',email:'mershon@ohio.edu'},{name:'Eric Muth',email:'vprca@ohio.edu'}];
 const ADMIN='Brian Mershon';
 
 const DEFAULTS=[
-  {id:'1',name:'Innovation Ecosystem',category:'Major Initiative',phase:'In Progress',due:'2026-09-30',owner:'',approvalRequired:false,nextStep:'Finalize partner agreements',flag:false,description:'Discover Pillar initiative.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
-  {id:'2',name:'Shared Research Infrastructure',category:'Major Initiative',phase:'In Progress',due:'2026-10-15',owner:'',approvalRequired:false,nextStep:'Complete vendor selection',flag:false,description:'Shared infrastructure.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
-  {id:'3',name:'OHIO Aviation Vision 2035',category:'Major Initiative',phase:'In Progress',due:'2026-12-31',owner:'',approvalRequired:false,nextStep:'Draft stakeholder review',flag:false,description:'Aviation vision 2035.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
-  {id:'4',name:'Research Division Summer Retreat',category:'Event',phase:'In Progress',due:'2026-07-16',owner:'',approvalRequired:false,nextStep:'Confirm venue and agenda',flag:false,description:'Annual leadership retreat.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
-  {id:'5',name:'PRS Awards',category:'Event',phase:'Planned',due:'2026-08-01',owner:'',approvalRequired:false,nextStep:'Identify nominees',flag:false,description:'PRS Awards ceremony.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
-  {id:'6',name:'Airport Convening',category:'Event',phase:'Planned',due:'2026-09-30',owner:'',approvalRequired:false,nextStep:'Confirm participants',flag:false,description:'Airport venue event.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:false},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
-  {id:'7',name:'Inventors Dinner',category:'Event',phase:'Planned',due:'2026-11-01',owner:'',approvalRequired:false,nextStep:'Book venue',flag:false,description:'Annual Inventors Dinner.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
-  {id:'8',name:'Creators Dinner',category:'Event',phase:'Not Started',due:'2026-12-01',owner:'',approvalRequired:false,nextStep:'Kickoff planning',flag:false,description:'Future initiative.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'1',name:'Innovation Ecosystem',category:'Major Initiatives',phase:'In Progress',due:'2026-09-30',owner:'',approvalRequired:false,nextStep:'Finalize partner agreements',flag:false,description:'Discover Pillar initiative.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'2',name:'Shared Research Infrastructure',category:'Major Initiatives',phase:'In Progress',due:'2026-10-15',owner:'',approvalRequired:false,nextStep:'Complete vendor selection',flag:false,description:'Shared infrastructure.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'3',name:'OHIO Aviation Vision 2035',category:'Major Initiatives',phase:'In Progress',due:'2026-12-31',owner:'',approvalRequired:false,nextStep:'Draft stakeholder review',flag:false,description:'Aviation vision 2035.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'4',name:'Research Division Summer Retreat',category:'Events',phase:'In Progress',due:'2026-07-16',owner:'',approvalRequired:false,nextStep:'Confirm venue and agenda',flag:false,description:'Annual leadership retreat.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'5',name:'PRS Awards',category:'Events',phase:'Planned',due:'2026-08-01',owner:'',approvalRequired:false,nextStep:'Identify nominees',flag:false,description:'PRS Awards ceremony.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'6',name:'Airport Convening',category:'Events',phase:'Planned',due:'2026-09-30',owner:'',approvalRequired:false,nextStep:'Confirm participants',flag:false,description:'Airport venue event.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:false},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'7',name:'Inventors Dinner',category:'Events',phase:'Planned',due:'2026-11-01',owner:'',approvalRequired:false,nextStep:'Book venue',flag:false,description:'Annual Inventors Dinner.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'8',name:'Creators Dinner',category:'Events',phase:'Not Started',due:'2026-12-01',owner:'',approvalRequired:false,nextStep:'Kickoff planning',flag:false,description:'Future initiative.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
   {id:'9',name:'Capability Statements',category:'Policies/Procedures',phase:'Planned',due:'2026-09-01',owner:'',approvalRequired:false,nextStep:'Assign leads per unit',flag:false,description:'Capability statements.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:false},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
   {id:'10',name:'COI / COC Policy',category:'Policies/Procedures',phase:'In Progress',due:'2026-06-30',owner:'',approvalRequired:true,nextStep:'Final legal review',flag:false,description:'COI/COC policy revision.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'Research Compliance',createdBy:'Brian Mershon'},
   {id:'11',name:'Research Misconduct Policy',category:'Policies/Procedures',phase:'In Progress',due:'2026-08-15',owner:'',approvalRequired:true,nextStep:'Comment period closes July 1',flag:false,description:'Policy revision.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'Research Compliance',createdBy:'Brian Mershon'},
   {id:'12',name:'TTO + TreMonti Work',category:'Policies/Procedures',phase:'In Progress',due:'2026-10-23',owner:'',approvalRequired:false,nextStep:'Align on IP framework',flag:false,description:'TTO/TreMonti collaboration.',notes:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'Research Development',createdBy:'Brian Mershon'},
-  {id:'13',name:'Innovation Center Anchor Tenant',category:'Major Initiative',phase:'In Progress',due:'2026-12-31',owner:'',approvalRequired:true,nextStep:'Eric decision required',flag:true,description:'Strategic risk — Eric review required.',notes:[{date:'2026-06-04',text:'Flagged for Eric review.',author:'Brian Mershon'}],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
+  {id:'13',name:'Innovation Center Anchor Tenant',category:'Major Initiatives',phase:'In Progress',due:'2026-12-31',owner:'',approvalRequired:true,nextStep:'Eric decision required',flag:true,description:'Strategic risk — Eric review required.',notes:[{date:'2026-06-04',text:'Flagged for Eric review.',author:'Brian Mershon'}],recipients:[],triggers:{t30:true,t14:true,t1:true,tc:true},notified:{},completed:false,completedDate:null,followUp:null,visibility:'group',group:'VPRCA Leadership Team',createdBy:'Brian Mershon'},
 ];
 
-let S={projects:[],contacts:[],notifLog:[],ericOnly:false,searchQ:'',fCategory:'',fPhase:'',fRisk:'',fOwner:'',fGroup:'',fVis:''};
+let S={projects:[],contacts:[],notifLog:[],ericOnly:false,searchQ:'',fCategory:'',fPhase:'',fRisk:'',fOwner:'',fGroup:'',fVis:'',fMyProjects:false};
 let CU=null,_ed=null;
 
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -526,7 +526,7 @@ function rBadge(p){const r=cRisk(p);const lbl={g:'🟢 On Track',y:'🟡 Caution
 function rowCls(p){if(p.flag)return're';const r=cRisk(p);if(r==='r'||r==='b')return'rr-row';return''}
 function pSort(arr){const o=p=>{if(p.flag)return 0;const r=cRisk(p);if(r==='b')return 1;if(r==='r')return 2;if(r==='y')return 3;return 4};return[...arr].sort((a,b)=>{const oa=o(a),ob=o(b);if(oa!==ob)return oa-ob;return(a.due||'').localeCompare(b.due||'')})}
 function canSee(p){if(isAdmin())return true;if(p.visibility==='private')return p.createdBy===CU;return true}
-function getFiltered(){let r=S.projects.filter(canSee);if(S.ericOnly)r=r.filter(p=>p.flag||p.approvalRequired);if(S.searchQ){const q=S.searchQ.toLowerCase();r=r.filter(p=>p.name.toLowerCase().includes(q)||(p.nextStep||'').toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q)||(p.owner||'').toLowerCase().includes(q))}if(S.fCategory)r=r.filter(p=>p.category===S.fCategory);if(S.fPhase)r=r.filter(p=>p.phase===S.fPhase);if(S.fRisk)r=r.filter(p=>cRisk(p)===S.fRisk);if(S.fOwner)r=r.filter(p=>(p.owner||'')===S.fOwner);if(S.fGroup)r=r.filter(p=>p.visibility==='group'&&p.group===S.fGroup);if(S.fVis)r=r.filter(p=>p.visibility===S.fVis);return pSort(r)}
+function getFiltered(){let r=S.projects.filter(canSee);if(S.fMyProjects)r=r.filter(p=>(p.owner||'')===CU);if(S.ericOnly)r=r.filter(p=>p.flag||p.approvalRequired);if(S.searchQ){const q=S.searchQ.toLowerCase();r=r.filter(p=>p.name.toLowerCase().includes(q)||(p.nextStep||'').toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q)||(p.owner||'').toLowerCase().includes(q))}if(S.fCategory)r=r.filter(p=>p.category===S.fCategory);if(S.fPhase)r=r.filter(p=>p.phase===S.fPhase);if(S.fRisk)r=r.filter(p=>cRisk(p)===S.fRisk);if(S.fOwner)r=r.filter(p=>(p.owner||'')===S.fOwner);if(S.fGroup)r=r.filter(p=>p.visibility==='group'&&p.group===S.fGroup);if(S.fVis)r=r.filter(p=>p.visibility===S.fVis);return pSort(r)}
 function getMets(){const v=S.projects.filter(canSee),rs=v.map(p=>cRisk(p));return{total:v.length,g:rs.filter(r=>r==='g').length,y:rs.filter(r=>r==='y').length,r:rs.filter(r=>r==='r').length,b:rs.filter(r=>r==='b').length,c:v.filter(p=>p.completed).length,e:v.filter(p=>p.flag||p.approvalRequired).length,priv:v.filter(p=>p.visibility==='private').length,upcoming:v.filter(p=>{const d=dU(p.due);return d>=0&&d<=30&&!p.completed}).length}}
 function aTrig(p){const d=dU(p.due),out=[];const t=p.triggers||{};if(t.t30&&d<=30&&d>14)out.push({id:'t30',l:'30-day alert',d:'30 days before due'});if(t.t14&&d<=14&&d>1)out.push({id:'t14',l:'2-week alert',d:'14 days before due'});if(t.t1&&d<=1&&d>=0)out.push({id:'t1',l:'Day-before',d:'1 day before due'});if(t.tc&&p.phase==='Complete')out.push({id:'tc',l:'Completion',d:'When marked complete'});return out}
 function mailto(p,l,d){const to=(p.recipients||[]).map(r=>r.email).join(',');if(!to)return null;const s=encodeURIComponent('['+l+'] '+p.name+' — VPRCA Tracker');const b=encodeURIComponent('Project: '+p.name+'\nVisibility: '+(p.visibility==='private'?'Private':'Group — '+p.group)+'\nRisk: '+cRisk(p).toUpperCase()+'\nDeadline: '+fmtD(p.due)+'\nNext Step: '+(p.nextStep||'—')+'\n\nTrigger: '+d);return'mailto:'+to+'?subject='+s+'&body='+b}
@@ -892,10 +892,12 @@ function renderDash(){
   const catCounts={};
   S.projects.filter(canSee).forEach(p=>{const c=p.category||'Uncategorized';catCounts[c]=(catCounts[c]||0)+1});
   const allCount=S.projects.filter(canSee).length;
-  const catIcons={'Event':'🎟','Policies/Procedures':'📋','Major Initiative':'🚀','Personal':'👤'};
+  const catIcons={'Events':'🎟','Policies/Procedures':'📋','Major Initiatives':'🚀','Personal':'👤','Memberships':'🤝'};
+  const myProjCount=S.projects.filter(canSee).filter(p=>(p.owner||'')===CU).length;
   html+=`<div class="cat-tabs">
-    <div class="cat-tab${!S.fCategory?' active':''}" onclick="setCat('')">All <span class="ctc">${allCount}</span></div>
-    ${CATEGORIES.map(c=>`<div class="cat-tab${S.fCategory===c?' active':''}" onclick="setCat('${c.replace(/'/g,"\\'")}')">${catIcons[c]||''} ${esc(c)}<span class="ctc">${catCounts[c]||0}</span></div>`).join('')}
+    <div class="cat-tab${!S.fCategory&&!S.fMyProjects?' active':''}" onclick="setCat('')">All <span class="ctc">${allCount}</span></div>
+    <div class="cat-tab${S.fMyProjects?' active':''}" onclick="setMyProjects()" style="${S.fMyProjects?'':''}">👤 My Projects <span class="ctc">${myProjCount}</span></div>
+    ${CATEGORIES.map(c=>`<div class="cat-tab${S.fCategory===c&&!S.fMyProjects?' active':''}" onclick="setCat('${c.replace(/'/g,"\\'")}')">${catIcons[c]||''} ${esc(c)}<span class="ctc">${catCounts[c]||0}</span></div>`).join('')}
   </div>`;
 
   html+=`<div class="toolbar">
@@ -991,8 +993,9 @@ function renderDash(){
   document.getElementById('dash').innerHTML=html;
 }
 window.renderDash=renderDash;
-window.clearF=()=>{S.fCategory='';S.fPhase='';S.fRisk='';S.fOwner='';S.fGroup='';S.fVis='';S.searchQ='';renderDash()};
-window.setCat=c=>{S.fCategory=c;renderDash()};
+window.clearF=()=>{S.fCategory='';S.fPhase='';S.fRisk='';S.fOwner='';S.fGroup='';S.fVis='';S.searchQ='';S.fMyProjects=false;renderDash()};
+window.setCat=c=>{S.fCategory=c;S.fMyProjects=false;renderDash()};
+window.setMyProjects=()=>{S.fMyProjects=true;S.fCategory='';renderDash()};
 
 // ── To-do due alert panel (shown on main dashboard) ──
 function renderTodoDueAlerts(){
@@ -1658,7 +1661,7 @@ window.openHelp=function(){
         <div class="help-two-col">
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Category tabs</div>
-            <div class="hc-desc" style="margin-bottom:.6rem">Click <strong>All · Event · Policies/Procedures · Major Initiative · Personal</strong> to filter instantly. Count shows next to each tab.</div>
+            <div class="hc-desc" style="margin-bottom:.6rem">Click <strong>All · Events · Policies/Procedures · Major Initiatives · Personal · Memberships</strong> to filter instantly. Count shows next to each tab.</div>
             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Risk colors</div>
             <div style="display:flex;flex-direction:column;gap:4px">
               <div style="font-size:12px">🟢 <strong>On Track</strong> — due in 30+ days</div>
