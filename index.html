@@ -268,6 +268,27 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
 .pav .pav-tip{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;font-size:10px;font-weight:600;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:20}
 .pav:hover .pav-tip{opacity:1}
 .pav.me{border-color:var(--ou-gold);box-shadow:0 0 0 1.5px var(--ou-gold)}
+/* ── File uploads ── */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius);padding:1.25rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);position:relative}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--ou-green);background:var(--ou-green-light)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone .uz-icon{font-size:28px;color:var(--text3);display:block;margin:0 auto 6px}
+.upload-zone .uz-text{font-size:13px;font-weight:600;color:var(--text2)}
+.upload-zone .uz-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.upload-zone.drag-over .uz-icon,.upload-zone.drag-over .uz-text{color:var(--ou-green)}
+.file-list{margin-top:.85rem;display:flex;flex-direction:column;gap:6px}
+.file-item{display:flex;align-items:center;gap:10px;padding:.55rem .75rem;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);transition:background .12s}
+.file-item:hover{background:var(--bg2)}
+.file-icon{font-size:20px;flex-shrink:0;width:28px;text-align:center}
+.file-info{flex:1;min-width:0}
+.file-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-meta{font-size:11px;color:var(--text3);margin-top:1px}
+.file-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.upload-progress{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:6px}
+.upload-progress-bar{height:100%;background:var(--ou-green);border-radius:2px;transition:width .2s;width:0%}
+.upload-item{display:flex;align-items:center;gap:10px;padding:.55rem .75rem;background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius);margin-bottom:6px}
+.upload-item .up-name{font-size:12px;font-weight:600;color:var(--ou-green);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upload-item .up-pct{font-size:11px;font-weight:700;color:var(--ou-green);flex-shrink:0}
 /* ── Help modal ── */
 .help-modal{max-width:820px;padding:0;overflow:hidden}
 .help-header{background:var(--ou-green-dark);padding:1.5rem 1.75rem;border-bottom:3px solid var(--ou-gold);display:flex;align-items:center;justify-content:space-between}
@@ -350,6 +371,27 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
 .msg-deleted{font-size:12px;color:var(--text3);font-style:italic;padding:.35rem 0}
 .assign-toggle{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none;padding:4px 0}
 .assign-toggle input{accent-color:var(--ou-green);width:14px;height:14px;cursor:pointer}
+/* ── Design Log ── */
+.log-wrap{max-width:860px;margin:0 auto}
+.log-page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem}
+.log-page-header h2{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.log-entry{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1rem;box-shadow:var(--shadow);border-left:4px solid var(--ou-green)}
+.log-entry.decision{border-left-color:var(--ou-gold)}
+.log-entry.removed{border-left-color:var(--text3);opacity:.8}
+.log-entry.future{border-left-color:#3B82F6}
+.log-entry-head{display:flex;align-items:center;gap:10px;margin-bottom:.6rem;flex-wrap:wrap}
+.log-entry-title{font-size:15px;font-weight:800;color:var(--text)}
+.log-entry-date{font-size:11px;color:var(--text3);font-weight:600}
+.log-entry-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.tag-feature{background:var(--ou-green-light);color:var(--ou-green)}
+.tag-decision{background:var(--ou-gold-light);color:var(--ou-gold)}
+.tag-removed{background:var(--bg3);color:var(--text3)}
+.tag-future{background:#EFF6FF;color:#1D4ED8}
+.tag-fix{background:var(--red-bg);color:var(--red-text)}
+.log-entry-body{font-size:13px;color:var(--text2);line-height:1.65}
+.log-entry-body ul{margin:.5rem 0 0 1.25rem}
+.log-entry-body ul li{margin-bottom:4px}
+.log-section-label{font-size:11px;font-weight:800;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin:1.5rem 0 .75rem;padding-bottom:.4rem;border-bottom:.5px solid var(--border)}
 </style>
 </head>
 <body>
@@ -419,7 +461,7 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
       <div class="user-chip"><div class="u-av" id="uav"></div><span class="u-name" id="uname"></span></div>
       <button class="btn sm adm" id="admin-btn" style="display:none" onclick="openAdmin()"><i class="ti ti-shield"></i> Admin</button>
       <button class="btn sm gh" onclick="openContacts()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-address-book"></i> Contacts</button>
-      <button class="btn sm gh" onclick="openNotifLog()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-bell"></i> Log</button>
+      <button class="btn sm gh" onclick="openNotifLog()" style="color:#fff;border-color:rgba(255,255,255,.25)" id="notif-log-btn"><i class="ti ti-bell"></i> Log <span id="notif-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:2px;vertical-align:1px"></span></button>
       <button class="btn sm gh" onclick="refreshDash()" id="refresh-btn" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Refresh dashboard"><i class="ti ti-refresh"></i> Refresh</button>
       <button class="btn gld sm" onclick="openAdd()"><i class="ti ti-plus"></i> Add item</button>
       <button class="btn sm gh" onclick="openHelp()" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Help & getting started"><i class="ti ti-help-circle"></i> Help</button>
@@ -429,16 +471,20 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
     <button class="tab-btn" id="tab-msg" onclick="switchTab('msg')"><i class="ti ti-messages"></i> Messages <span id="msg-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:3px;vertical-align:1px"></span></button>
+    <button class="tab-btn" id="tab-log" onclick="switchTab('log')"><i class="ti ti-history"></i> Design Log</button>
   </div>
-  <div class="main"><div id="dash"></div><div id="msg-view" style="display:none"></div></div>
+  <div class="main"><div id="dash"></div><div id="msg-view" style="display:none"></div><div id="log-view" style="display:none"></div></div>
 </div>
 <div id="ovr"></div>
 <div id="toast"></div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getFirestore,collection,doc,onSnapshot,setDoc,deleteDoc,getDocs,writeBatch}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getStorage,ref,uploadBytesResumable,getDownloadURL,deleteObject,listAll}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 const FB={apiKey:"AIzaSyBxFaWEq6QmGd7POL8sN6NKFcFAvUOG_C0",authDomain:"vprca-tracker.firebaseapp.com",projectId:"vprca-tracker",storageBucket:"vprca-tracker.firebasestorage.app",messagingSenderId:"379502867253",appId:"1:379502867253:web:349c1f3a490da69db2527c"};
-const db=getFirestore(initializeApp(FB));
+const _app=initializeApp(FB);
+const db=getFirestore(_app);
+const storage=getStorage(_app);
 
 const PHASES=['Not Started','Planned','In Progress','Complete'];
 const CATEGORIES=['Event','Policies/Procedures','Major Initiative','Personal'];
@@ -489,7 +535,147 @@ async function saveP(p){await setDoc(doc(db,'projects',String(p.id)),p)}
 async function delP(id){await deleteDoc(doc(db,'projects',String(id)))}
 async function saveC(c){await setDoc(doc(db,'contacts',c.email.replace(/[^a-zA-Z0-9]/g,'_')),c)}
 async function delC(email){await deleteDoc(doc(db,'contacts',email.replace(/[^a-zA-Z0-9]/g,'_')))}
-async function saveLog(l){await setDoc(doc(db,'meta','notifLog'),{entries:l.slice(0,100)})}
+async function saveLog(l){await setDoc(doc(db,'meta','notifLog'),{entries:l.slice(0,200)});}
+
+// ── Per-user read tracking for notif badge ──
+function getNotifReadCount(){
+  try{return parseInt(localStorage.getItem('notif_read_'+(CU||'').replace(/\s/g,'_'))||'0',10);}catch(e){return 0;}
+}
+function saveNotifReadCount(n){
+  try{localStorage.setItem('notif_read_'+(CU||'').replace(/\s/g,'_'),String(n));}catch(e){}
+}
+function updateNotifBadge(){
+  const badge=document.getElementById('notif-badge');if(!badge)return;
+  // Count entries relevant to this user (all for now since log is shared)
+  const unread=S.notifLog.length-getNotifReadCount();
+  if(unread>0){badge.textContent=unread>9?'9+':unread;badge.style.display='';}
+  else{badge.style.display='none';}
+}
+
+// ── Notification check — fires on every project load and every minute ──
+// ── Design Log ──────────────────────────────────────────────────────────────
+const DESIGN_LOG=[
+  {date:'May 2026',title:'Project started',tag:'feature',text:'The VPRCA Team Project Tracker was conceived and begun as a collaboration between Brian Mershon and Claude (Anthropic). The goal was a real-time shared dashboard for the 5-person VPRCA leadership team that required no IT installation — just a single HTML file hosted on GitHub Pages backed by Firebase Firestore.'},
+  {date:'May 2026',title:'Core dashboard & project table',tag:'feature',text:'Built the main dashboard with a project table, metric cards, inline editing, and risk color coding. Risk levels: On Track (30d+), Caution (≤30d), High Risk (≤14d), Past Due, Complete.'},
+  {date:'May 2026',title:'Firebase authentication (custom)',tag:'decision',text:'Chose custom SHA-256 password hashing over Firebase Auth. Rationale: simpler setup for a small known team. Known limitation: not suitable for scaling beyond ~20 users. If extended to 30+ staff, Firebase Auth with Ohio University SSO would be required.'},
+  {date:'May 2026',title:'Private vs group visibility',tag:'feature',text:'Every item has two visibility modes: Private (creator + Brian only) and Group (all team, with sub-group selection). Visibility is enforced client-side — not by Firebase security rules. Acceptable for a small trusted team.'},
+  {date:'May 2026',title:'Email notification triggers',tag:'feature',text:'Items can have up to 4 email triggers: 30-day alert, 14-day alert, day-before reminder, and completion notice. When a trigger fires it opens Outlook with a pre-composed message. Automatic sending via EmailJS was evaluated but declined — the user preferred no external service dependency.'},
+  {date:'May 2026',title:'Live presence avatars',tag:'feature',text:'Colored initials avatars in the topbar show who is currently in the app. Each user has a unique color. Implemented via 30-second Firebase heartbeat with 90-second timeout. Your own avatar shows a gold ring.'},
+  {date:'May 2026',title:'Admin panel (Brian only)',tag:'feature',text:'Brian Mershon has an Admin Panel showing all accounts, pending password resets, and all private items across the team. Password reset workflow: user requests via "Forgot password?", Brian sets a temporary password in the panel, communicates it directly.'},
+  {date:'May 2026',title:'Category tabs added',tag:'feature',text:'Category filtering was upgraded from a dropdown to prominent pill-shaped tabs (All / Event / Policies/Procedures / Major Initiative / Personal). Active tab is highlighted in OU green. "Project" category was renamed to "Policies/Procedures" to better reflect VPRCA work.'},
+  {date:'May 2026',title:'Filter bar redesigned',tag:'feature',text:'All filter dropdowns now have labels above them (Visibility, Group, Owner, Phase, Risk). Active filters turn green. A red "Clear filters" button appears when any filter is active.'},
+  {date:'May 2026',title:'SOP & Timeline tabs built then removed',tag:'removed',text:'A step-by-step SOP builder and Gantt chart Timeline tab were built with drag-and-drop step reordering, tagging, and Word export. Both tabs were removed because sync and dropdown persistence after live Firebase updates was not reliable. The steps[] data structure is preserved on each project in Firebase. These tabs can be restored in a future iteration.'},
+  {date:'May 2026',title:'Personal to-do list',tag:'feature',text:'Each user has a private to-do list in the Personal tab. Fully private — not visible to anyone including Brian. Sorted by priority then due date. Completed items move to a "Completed" section automatically. Dashboard alert panel shows to-dos due within 7 days.'},
+  {date:'May 2026',title:'Message board',tag:'feature',text:'A Messages tab with Team / Group / Direct message types was built. Threaded inline replies. Unread badge on tab. Deletion follows Teams/Messenger model: only author (and Brian) can delete, deleted messages show a placeholder. "Add to my to-do" button on every message and reply. "Assign as to-do" toggle auto-adds to recipients\' to-do lists on send.'},
+  {date:'May 2026',title:'File upload deferred',tag:'removed',text:'File attachments per project were built but then removed from the live app. Requires Firebase Storage which requires adding a billing account. Free tier is 5GB — sufficient for a 5-person team — but user preferred not to add billing at this time. Can be re-enabled when ready.'},
+  {date:'May 2026',title:'In-app help guide',tag:'feature',text:'A Help button in the topbar opens a scrollable quick reference guide covering all features. Static content baked into the HTML — no database reads required.'},
+  {date:'June 2026',title:'Notification log fixed',tag:'fix',text:'The checkNotify() function was missing entirely — it was called but never defined, which is why no deadline alerts were firing. Fixed and improved: red bell badge on Log button, per-entry dismiss, color-coded urgency (red for overdue/today, yellow for 14-day), days remaining shown on each entry.'},
+  {date:'June 2026',title:'VS Code + GitHub connected',tag:'feature',text:'Brian set up Visual Studio Code connected to the GitHub repository (mershonbr/VPRCA-TRACKER). New workflow: paste updated code into index.html in VS Code → Ctrl+S → Commit → Sync Changes → live in 60 seconds. No more manual copy-paste into GitHub website.'},
+  {date:'June 2026',title:'Design Log tab added',tag:'feature',text:'This Design Log tab was added to the app to serve as an in-app changelog. The full Product Design Document (Word) was also produced covering architecture, feature rationale, Firebase config, and future roadmap.'},
+  {date:'Future',title:'SOPs & Timeline — planned restore',tag:'future',text:'The SOP builder and Gantt chart tabs are planned for a future iteration with improved rendering and sync reliability. The underlying steps[] data is intact in Firebase.'},
+  {date:'Future',title:'File uploads — planned',tag:'future',text:'Firebase Storage file attachments per project. Requires enabling billing account. Free tier (5GB) is sufficient for the team.'},
+  {date:'Future',title:'Scale to 30 users — consideration',tag:'future',text:'If extended to the broader Ohio University research team, would require: Firebase Authentication with OU SSO, server-enforced security rules, pagination, and Ohio University IT review. Estimated cost: $0–15/month on Firebase Blaze plan.'},
+];
+
+function renderDesignLog(){
+  const el=document.getElementById('log-view');if(!el)return;
+  const tagLabel={feature:'Feature',decision:'Design decision',removed:'Removed/deferred',future:'Future',fix:'Bug fix'};
+  const tagCls={feature:'tag-feature',decision:'tag-decision',removed:'tag-removed',future:'tag-future',fix:'tag-fix'};
+  const entryCls={feature:'',decision:'decision',removed:'removed',future:'future',fix:'fix'};
+
+  const groups={'May 2026':[],'June 2026':[],'Future':[]};
+  DESIGN_LOG.forEach(e=>{
+    const g=e.date.startsWith('May')?'May 2026':e.date.startsWith('Jun')?'June 2026':'Future';
+    groups[g].push(e);
+  });
+
+  let html=`<div class="log-wrap">
+    <div class="log-page-header">
+      <div>
+        <h2><i class="ti ti-history" style="color:var(--ou-green)"></i> Design Log</h2>
+        <p style="font-size:12px;color:var(--text2);margin-top:3px">Full history of features built, decisions made, and what's coming next</p>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:11px;color:var(--text3)">Legend:</span>
+        <span class="log-entry-tag tag-feature">Feature</span>
+        <span class="log-entry-tag tag-decision">Decision</span>
+        <span class="log-entry-tag tag-fix">Fix</span>
+        <span class="log-entry-tag tag-removed">Removed</span>
+        <span class="log-entry-tag tag-future">Future</span>
+      </div>
+    </div>`;
+
+  Object.entries(groups).forEach(([period,entries])=>{
+    if(!entries.length)return;
+    html+=`<div class="log-section-label"><i class="ti ti-calendar" style="font-size:11px"></i> ${period}</div>`;
+    entries.forEach(e=>{
+      html+=`<div class="log-entry ${entryCls[e.tag]||''}">
+        <div class="log-entry-head">
+          <span class="log-entry-title">${esc(e.title)}</span>
+          <span class="log-entry-tag ${tagCls[e.tag]||'tag-feature'}">${tagLabel[e.tag]||e.tag}</span>
+          <span class="log-entry-date">${esc(e.date)}</span>
+        </div>
+        <div class="log-entry-body">${esc(e.text)}</div>
+      </div>`;
+    });
+  });
+
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+window.renderDesignLog=renderDesignLog;
+
+async function checkNotify(){
+  const td=today();
+  let changed=false;
+
+  for(const p of S.projects.filter(canSee)){
+    if(p.completed)continue;
+    if(!p.notified)p.notified={};
+    const days=dU(p.due);
+    const triggers=p.triggers||{};
+
+    // Build list of triggers that should fire today
+    const toFire=[];
+    if(triggers.t30 && days<=30 && days>14) toFire.push({id:'t30',label:'30-day deadline alert'});
+    if(triggers.t14 && days<=14 && days>1)  toFire.push({id:'t14',label:'2-week deadline alert'});
+    if(triggers.t1  && days<=1  && days>=0) toFire.push({id:'t1', label:'Due tomorrow alert'});
+    if(triggers.tc  && p.completed)          toFire.push({id:'tc', label:'Completion notice'});
+
+    for(const t of toFire){
+      const key=`${p.id}_${t.id}_${td}`;
+      if(p.notified[key])continue; // already fired today
+
+      // Build log entry
+      const entry={
+        id:key,
+        date:td,
+        project:p.name,
+        trigger:t.label,
+        daysLeft:days,
+        recipients:(p.recipients||[]).map(r=>r.name).join(', ')||p.owner||'(no recipients set)',
+        href:(p.recipients||[]).length?mailto(p,t.label,t.label):null,
+        owner:p.owner||p.createdBy||'',
+      };
+      S.notifLog.unshift(entry);
+      p.notified[key]=true;
+      changed=true;
+    }
+  }
+
+  if(changed){
+    await saveLog(S.notifLog);
+    // Save updated notified flags back to each project
+    for(const p of S.projects){
+      if(Object.keys(p.notified||{}).length>0){
+        await setDoc(doc(db,'projects',String(p.id)),p);
+      }
+    }
+    updateNotifBadge();
+  } else {
+    updateNotifBadge();
+  }
+}
 async function getUsers(){try{const sn=await getDocs(collection(db,'meta'));const ud=sn.docs.find(d=>d.id==='users');return ud?ud.data():{}}catch(e){return{}}}
 async function saveUsers(u){await setDoc(doc(db,'meta','users'),u)}
 async function saveResetReq(name){await setDoc(doc(db,'passwordResets',name.replace(/\s/g,'_')),{userName:name,requestDate:today(),status:'pending'})}
@@ -682,7 +868,7 @@ function renderPresence(snap){
 function startListeners(){
   onSnapshot(collection(db,'projects'),sn=>{S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));if(currentTab==='dash')renderDash();checkNotify()});
   onSnapshot(collection(db,'contacts'),sn=>{S.contacts=sn.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name))});
-  onSnapshot(doc(db,'meta','notifLog'),sn=>{if(sn.exists())S.notifLog=sn.data().entries||[]});
+  onSnapshot(doc(db,'meta','notifLog'),sn=>{if(sn.exists())S.notifLog=sn.data().entries||[];updateNotifBadge();});
   onSnapshot(collection(db,'presence'),sn=>{renderPresence(sn)});
 }
 
@@ -1067,13 +1253,14 @@ window.saveTodoEdit=async id=>{
 let currentTab='dash';
 window.switchTab=function(tab){
   currentTab=tab;
-  ['dash','msg'].forEach(t=>{
+  ['dash','msg','log'].forEach(t=>{
     const btn=document.getElementById('tab-'+t);
     if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById(t==='dash'?'dash':t+'-view');
     if(el)el.style.display=tab===t?'':'none';
   });
   if(tab==='msg'){markMsgsRead();renderMessages();}
+  if(tab==='log')renderDesignLog();
 };
 
 // ── SOP state ──
@@ -1803,11 +1990,149 @@ window.openDetail=id=>{
         <button class="btn sm" onclick="addNote('${p.id}')"><i class="ti ti-plus"></i> Add</button>
       </div>
     </div>
+    <div class="sdiv"><i class="ti ti-paperclip"></i> Attachments <span id="att-count-${p.id}" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">loading…</span></div>
+    <div id="att-zone-${p.id}">
+      <div class="upload-zone" id="drop-zone-${p.id}"
+        ondragover="event.preventDefault();document.getElementById('drop-zone-${p.id}').classList.add('drag-over')"
+        ondragleave="document.getElementById('drop-zone-${p.id}').classList.remove('drag-over')"
+        ondrop="handleFileDrop(event,'${p.id}')">
+        <input type="file" multiple onchange="handleFileSelect(event,'${p.id}')">
+        <i class="ti ti-cloud-upload uz-icon"></i>
+        <div class="uz-text">Click to browse or drag &amp; drop files here</div>
+        <div class="uz-sub">PDF, Word, Excel, images — max 10 MB per file</div>
+      </div>
+      <div id="upload-progress-${p.id}"></div>
+      <div class="file-list" id="file-list-${p.id}"><div style="font-size:12px;color:var(--text3);padding:.5rem 0">Loading attachments…</div></div>
+    </div>
     <div class="mfoot"><button class="btn gh" onclick="closeOv()">Close</button>${ce?`<button class="btn pri" onclick="closeOv();openEdit('${p.id}')"><i class="ti ti-edit"></i> Edit</button>`:''}</div>
   </div>`);
-  setTimeout(()=>{const n=document.getElementById('ni');if(n)n.focus()},100);
+  setTimeout(()=>{const n=document.getElementById('ni');if(n)n.focus();loadAttachments(p.id);},100);
 };
 window.addNote=async id=>{const el=document.getElementById('ni');const v=el?el.value.trim():'';if(!v)return;const p=S.projects.find(x=>x.id===id);if(!p)return;if(!p.notes)p.notes=[];p.notes.push({date:today(),text:v,author:CU});await saveP(p);openDetail(id);toast('Note saved.')};
+
+// ── File upload helpers ──
+const MAX_FILE_SIZE=10*1024*1024; // 10MB
+
+function fileIcon(name){
+  const ext=(name.split('.').pop()||'').toLowerCase();
+  if(['pdf'].includes(ext))return'📄';
+  if(['doc','docx'].includes(ext))return'📝';
+  if(['xls','xlsx','csv'].includes(ext))return'📊';
+  if(['ppt','pptx'].includes(ext))return'📑';
+  if(['png','jpg','jpeg','gif','webp','svg'].includes(ext))return'🖼';
+  if(['zip','rar','7z'].includes(ext))return'🗜';
+  if(['mp4','mov','avi','mkv'].includes(ext))return'🎬';
+  return'📎';
+}
+
+function fmtBytes(b){
+  if(b<1024)return b+' B';
+  if(b<1024*1024)return(b/1024).toFixed(1)+' KB';
+  return(b/(1024*1024)).toFixed(1)+' MB';
+}
+
+async function loadAttachments(pid){
+  const listEl=document.getElementById('file-list-'+pid);
+  const countEl=document.getElementById('att-count-'+pid);
+  if(!listEl)return;
+  try{
+    const folderRef=ref(storage,'projects/'+pid+'/');
+    const result=await listAll(folderRef);
+    if(!countEl){}
+    else countEl.textContent=result.items.length?`(${result.items.length} file${result.items.length!==1?'s':''})`: '(no files yet)';
+    if(!result.items.length){
+      listEl.innerHTML=`<div style="font-size:12px;color:var(--text3);padding:.35rem 0">No attachments yet — upload files above.</div>`;
+      return;
+    }
+    const files=await Promise.all(result.items.map(async item=>{
+      const url=await getDownloadURL(item);
+      return{name:item.name,fullPath:item.fullPath,url};
+    }));
+    listEl.innerHTML=files.map(f=>`
+      <div class="file-item">
+        <div class="file-icon">${fileIcon(f.name)}</div>
+        <div class="file-info">
+          <div class="file-name">${esc(f.name)}</div>
+          <div class="file-meta">Click to download</div>
+        </div>
+        <div class="file-actions">
+          <a href="${f.url}" target="_blank" download="${esc(f.name)}" style="text-decoration:none">
+            <button class="btn xs pri"><i class="ti ti-download" style="font-size:11px"></i> Download</button>
+          </a>
+          <button class="ibtn" onclick="deleteAttachment('${esc(f.fullPath)}','${pid}')" title="Delete file" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button>
+        </div>
+      </div>`).join('');
+  }catch(e){
+    if(listEl)listEl.innerHTML=`<div style="font-size:12px;color:var(--red-text);padding:.35rem 0">Could not load files. Check Firebase Storage is enabled.</div>`;
+    console.error('loadAttachments error:',e);
+  }
+}
+
+window.handleFileDrop=async(e,pid)=>{
+  e.preventDefault();
+  document.getElementById('drop-zone-'+pid)?.classList.remove('drag-over');
+  await uploadFiles(Array.from(e.dataTransfer.files),pid);
+};
+window.handleFileSelect=async(e,pid)=>{
+  await uploadFiles(Array.from(e.target.files),pid);
+  e.target.value=''; // reset so same file can be re-uploaded
+};
+
+async function uploadFiles(files,pid){
+  const progressEl=document.getElementById('upload-progress-'+pid);
+  if(!progressEl)return;
+  for(const file of files){
+    if(file.size>MAX_FILE_SIZE){toast(`"${file.name}" exceeds 10 MB limit.`);continue;}
+    // Show progress row
+    const rowId='up-'+Date.now();
+    const row=document.createElement('div');
+    row.className='upload-item';row.id=rowId;
+    row.innerHTML=`<i class="ti ti-loader-2" style="font-size:14px;color:var(--ou-green);animation:spin .7s linear infinite;flex-shrink:0"></i>
+      <span class="up-name">${esc(file.name)}</span>
+      <span class="up-pct">0%</span>
+      <div class="upload-progress" style="position:absolute;bottom:0;left:0;right:0;height:3px;margin:0;border-radius:0"><div class="upload-progress-bar" id="bar-${rowId}"></div></div>`;
+    row.style.position='relative';
+    progressEl.appendChild(row);
+    // Upload
+    const storageRef=ref(storage,'projects/'+pid+'/'+file.name);
+    const task=uploadBytesResumable(storageRef,file);
+    await new Promise((resolve,reject)=>{
+      task.on('state_changed',
+        snap=>{
+          const pct=Math.round(snap.bytesTransferred/snap.totalBytes*100);
+          const pctEl=row.querySelector('.up-pct');
+          const barEl=document.getElementById('bar-'+rowId);
+          if(pctEl)pctEl.textContent=pct+'%';
+          if(barEl)barEl.style.width=pct+'%';
+        },
+        err=>{
+          row.remove();
+          toast(`Upload failed: ${file.name}`);
+          console.error(err);
+          reject(err);
+        },
+        ()=>{
+          row.remove();
+          resolve();
+        }
+      );
+    }).catch(()=>{});
+  }
+  toast('Upload complete.');
+  loadAttachments(pid);
+}
+
+window.deleteAttachment=async(fullPath,pid)=>{
+  if(!confirm('Delete this file permanently?'))return;
+  try{
+    await deleteObject(ref(storage,fullPath));
+    toast('File deleted.');
+    loadAttachments(pid);
+  }catch(e){
+    toast('Could not delete file.');
+    console.error(e);
+  }
+};;
 
 // ── Contacts ──
 window.openContacts=()=>{showOv(`<div class="modal" style="max-width:520px">
@@ -1827,12 +2152,77 @@ window.addGC=async()=>{const n=document.getElementById('nc-n').value.trim(),e=do
 window.rmGC=async email=>{const c=S.contacts.find(x=>x.email===email);if(!confirm('Remove '+(c?c.name:email)+'?'))return;await delC(email);document.getElementById('cl').innerHTML=renderCL();toast('Removed.')};
 
 // ── Notif log ──
-window.openNotifLog=()=>{showOv(`<div class="modal" style="max-width:560px">
-  <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
-  <h2>Notification log</h2><p class="msub">History of email triggers across the team.</p>
-  ${!S.notifLog.length?`<div class="empty" style="padding:2rem"><i class="ti ti-bell-off"></i><p>No notifications yet.</p></div>`:`<div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.5rem .85rem">${S.notifLog.map(l=>`<div class="logrow"><div class="ldot" style="background:${l.manual?'#3B82F6':'#22C55E'}"></div><div><div style="font-weight:700">${esc(l.project)}</div><div style="color:var(--text2)">${esc(l.trigger)} · ${esc(l.recipients)} · ${esc(l.date)}</div></div>${l.href?`<a href="${l.href}" style="text-decoration:none;margin-left:auto"><button class="btn xs eml"><i class="ti ti-mail"></i></button></a>`:''}</div>`).join('')}</div>`}
-  <div class="mfoot"><button class="btn dng sm" onclick="S.notifLog=[];saveLog([]).then(()=>openNotifLog())"><i class="ti ti-trash"></i> Clear</button><button class="btn" onclick="closeOv()">Close</button></div>
-</div>`)};
+window.openNotifLog=()=>{
+  // Mark all as read
+  saveNotifReadCount(S.notifLog.length);
+  updateNotifBadge();
+
+  const urgColor=days=>{
+    if(days<0)  return'var(--red-text)';
+    if(days<=1) return'var(--red-text)';
+    if(days<=14)return'var(--yellow-text)';
+    return'var(--text2)';
+  };
+  const urgBg=days=>{
+    if(days<0)  return'var(--red-bg)';
+    if(days<=1) return'var(--red-bg)';
+    if(days<=14)return'var(--yellow-bg)';
+    return'var(--bg2)';
+  };
+  const daysLabel=days=>{
+    if(days<0)  return`${Math.abs(days)}d overdue`;
+    if(days===0)return'Due today';
+    if(days===1)return'Due tomorrow';
+    return`${days}d remaining`;
+  };
+
+  const entries=S.notifLog;
+
+  showOv(`<div class="modal" style="max-width:580px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2><i class="ti ti-bell" style="font-size:18px;vertical-align:-2px;color:var(--ou-green)"></i> Notification Log</h2>
+    <p class="msub">Deadline alerts and email trigger history for all visible items.</p>
+    ${!entries.length
+      ?`<div class="empty" style="padding:2rem"><i class="ti ti-bell-off"></i><p style="font-weight:600;font-size:14px;margin-bottom:4px">No notifications yet</p><p style="font-size:13px">Alerts appear here when item deadlines are approaching.</p></div>`
+      :`<div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);max-height:420px;overflow-y:auto">
+        ${entries.map((l,i)=>`
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:.65rem .9rem;border-bottom:.5px solid var(--border);background:${l.daysLeft!==undefined?urgBg(l.daysLeft):'var(--bg2)'}">
+            <div style="width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;background:${l.daysLeft!==undefined?urgColor(l.daysLeft):'#22C55E'}"></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(l.project)}</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:1px">${esc(l.trigger)}${l.daysLeft!==undefined?` · <strong style="color:${urgColor(l.daysLeft)}">${daysLabel(l.daysLeft)}</strong>`:''}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(l.date)}${l.recipients?' · '+esc(l.recipients):''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+              ${l.href?`<a href="${l.href}" target="_blank" style="text-decoration:none"><button class="btn xs eml"><i class="ti ti-mail" style="font-size:10px"></i> Email</button></a>`:''}
+              <button class="ibtn" onclick="removeLogEntry(${i})" title="Dismiss" style="padding:3px"><i class="ti ti-x" style="font-size:12px"></i></button>
+            </div>
+          </div>`).join('')}
+      </div>`}
+    <div class="mfoot">
+      ${entries.length?`<button class="btn dng sm" onclick="clearAllLog()"><i class="ti ti-trash"></i> Clear all</button>`:''}
+      <button class="btn" onclick="closeOv()">Close</button>
+    </div>
+  </div>`);
+};
+
+window.removeLogEntry=async i=>{
+  S.notifLog.splice(i,1);
+  await saveLog(S.notifLog);
+  saveNotifReadCount(Math.max(0,getNotifReadCount()-1));
+  updateNotifBadge();
+  openNotifLog();
+};
+
+window.clearAllLog=async()=>{
+  if(!confirm('Clear all notification entries?'))return;
+  S.notifLog=[];
+  await saveLog([]);
+  saveNotifReadCount(0);
+  updateNotifBadge();
+  closeOv();
+  toast('Notification log cleared.');
+};
 
 // ── Gantt / Timeline renderer ──
 let ganttSelectedId='';
@@ -2314,4 +2704,3 @@ setInterval(checkNotify,60000);
 </script>
 </body>
 </html>
-
