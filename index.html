@@ -622,12 +622,10 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
   <div id="perf-app" style="display:none">
     <div class="tab-bar" id="perf-tab-bar">
       <button class="tab-btn active" id="ptab-dash" onclick="switchPerfTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
-      <button class="tab-btn" id="ptab-tasks" onclick="switchPerfTab('tasks')"><i class="ti ti-checkbox"></i> My Tasks</button>
       <button class="tab-btn" id="ptab-done" onclick="switchPerfTab('done')"><i class="ti ti-checks"></i> Completed</button>
     </div>
     <div class="main">
       <div id="perf-dash"></div>
-      <div id="perf-tasks" style="display:none"></div>
       <div id="perf-done" style="display:none"></div>
     </div>
   </div>
@@ -684,14 +682,21 @@ function rowCls(p){if(p.flag)return're';const r=cRisk(p);if(r==='r'||r==='b')ret
 function pSort(arr){const o=p=>{if(p.flag)return 0;const r=cRisk(p);if(r==='b')return 1;if(r==='r')return 2;if(r==='y')return 3;return 4};return[...arr].sort((a,b)=>{const oa=o(a),ob=o(b);if(oa!==ob)return oa-ob;return(a.due||'').localeCompare(b.due||'')})}
 function canSee(p){
   if(isAdmin())return true;
-  // Performers only see items assigned to them
+  // Performers only see items where they are in assignedTo
   return(p.assignedTo||[]).includes(CU);
 }
 function getFiltered(){
   let r=S.projects.filter(canSee);
+  if(S.fCategory==='__done__'){
+    // Completed view — only current user's completed items
+    return r.filter(p=>p.completed&&((p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU))
+             .sort((a,b)=>(b.completedDate||'').localeCompare(a.completedDate||''));
+  }
+  // All other views — exclude completed
+  r=r.filter(p=>!p.completed);
   if(S.fMyProjects)r=r.filter(p=>(p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU);
   if(S.searchQ){const q=S.searchQ.toLowerCase();r=r.filter(p=>p.name.toLowerCase().includes(q)||(p.description||'').toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q))}
-  if(S.fCategory&&S.fCategory!=='__todo__')r=r.filter(p=>p.category===S.fCategory);
+  if(S.fCategory)r=r.filter(p=>p.category===S.fCategory);
   if(S.fPhase)r=r.filter(p=>(p.phase||'Not Started')===S.fPhase);
   if(S.fVis)r=r.filter(p=>p.visibility===S.fVis);
   return pSort(r);
@@ -2106,21 +2111,20 @@ function renderPerformerDash(){
   const el=document.getElementById('perf-dash');if(!el)return;
   const viewAs=_previewingAs||CU;
   const isPreview=!!_previewingAs;
-  const now=new Date();const hour=now.getHours();
-  const greet=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
+  const now=new Date();
   const statusIcon={'Not Started':'🔵','In Progress':'🟡','Completed':'✅'};
   const statusColor={'Not Started':'var(--text2)','In Progress':'var(--ou-gold)','Completed':'var(--green-text)'};
 
-  // Items assigned to this person (active only)
+  // Items assigned to this person (active only)d to this person (active only)
   const myItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&!p.completed);
   const doneItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&p.completed);
   const unacked=myItems.filter(p=>!(p.acknowledged||{})[viewAs]).length;
   const atRisk=myItems.filter(p=>p.due&&Math.ceil((new Date(p.due)-new Date())/86400000)<=14).length;
 
   let html=`<div class="perf-wrap">
-    <div style="margin-bottom:1.25rem">
-      <h2 style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.02em">${greet}, ${esc(viewAs.split(' ')[0])} 👋</h2>
-      <p style="font-size:13px;color:var(--text2);margin-top:4px">${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+    <div style="margin-bottom:1rem;padding:.85rem 1.25rem;background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius-lg)">
+      <div style="font-size:15px;font-weight:800;color:var(--ou-green)">Welcome, ${esc(viewAs.split(' ')[0])}!</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:3px">Below are your assigned projects. Please review, acknowledge and complete prior to the deadline.</div>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem">
@@ -2196,14 +2200,13 @@ window.renderPerformerDash=renderPerformerDash;
 let _perfTab='dash';
 window.switchPerfTab=function(tab){
   _perfTab=tab;
-  ['dash','tasks','done'].forEach(t=>{
+  ['dash','done'].forEach(t=>{
     const btn=document.getElementById('ptab-'+t);
     if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById('perf-'+t);
     if(el)el.style.display=tab===t?'':'none';
   });
   if(tab==='dash')renderPerformerDash();
-  if(tab==='tasks')renderPerfTasks();
   if(tab==='done')renderPerfDone();
 };
 
@@ -2777,14 +2780,14 @@ function renderDash(){
   if(crit)html+=`<div class="cb-banner" onclick="openDetail('${crit.id}')"><i class="ti ti-alert-triangle" style="font-size:20px;flex-shrink:0"></i><div><strong>#1 Priority — Decision required:</strong> ${esc(crit.name)}<br><span style="font-size:12px;opacity:.8">${esc(crit.nextStep||'')}</span></div><div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span class="flag-eric"><i class="ti ti-user" style="font-size:9px"></i> Eric</span><i class="ti ti-chevron-right"></i></div></div>`;
 
   // ── Dashboard view buttons ──
-  html+=renderTodoDueAlerts();
-  const allCount=S.projects.filter(canSee).length;
-  const myCount=S.projects.filter(canSee).filter(p=>(p.owner||'')===CU||(p.createdBy||'')===CU).length;
-  const dashView=S.fMyProjects?'mine':S.fCategory==='__todo__'?'todo':'all';
+  const allCount=S.projects.filter(canSee).filter(p=>!p.completed).length;
+  const myCount=S.projects.filter(canSee).filter(p=>!p.completed&&((p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU)).length;
+  const doneCount=S.projects.filter(canSee).filter(p=>p.completed&&((p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU)).length;
+  const dashView=S.fMyProjects?'mine':S.fCategory==='__done__'?'done':'all';
   html+=`<div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
     <button class="dash-view-btn${dashView==='all'?' active':''}" onclick="setDashView('all')"><i class="ti ti-layout-list" style="font-size:14px"></i> All Projects <span class="ctc" style="background:${dashView==='all'?'rgba(255,255,255,.3)':'var(--bg3)'};color:${dashView==='all'?'#fff':'var(--text3)'}">${allCount}</span></button>
     <button class="dash-view-btn${dashView==='mine'?' active':''}" onclick="setDashView('mine')"><i class="ti ti-user" style="font-size:14px"></i> My Projects <span class="ctc" style="background:${dashView==='mine'?'rgba(255,255,255,.3)':'var(--bg3)'};color:${dashView==='mine'?'#fff':'var(--text3)'}">${myCount}</span></button>
-    <button class="dash-view-btn${dashView==='todo'?' active':''}" onclick="setDashView('todo')"><i class="ti ti-checkbox" style="font-size:14px"></i> To-Do List</button>
+    <button class="dash-view-btn${dashView==='done'?' active':''}" onclick="setDashView('done')"><i class="ti ti-checks" style="font-size:14px"></i> Completed <span class="ctc" style="background:${dashView==='done'?'rgba(255,255,255,.3)':'var(--bg3)'};color:${dashView==='done'?'#fff':'var(--text3)'}">${doneCount}</span></button>
   </div>`;
 
   html+=`<div class="toolbar">
@@ -2834,9 +2837,30 @@ function renderDash(){
   </div>`;
 
   // ── Personal To-Do panel ──
-  // ── To-Do List view or project table ──
-  if(dashView==='todo'){
-    html+=renderTodoPanel();
+  // ── Welcome message ──
+  html+=`<div style="margin-bottom:1rem;padding:.85rem 1.25rem;background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius-lg)">
+    <div style="font-size:15px;font-weight:800;color:var(--ou-green)">Welcome, ${esc(CU.split(' ')[0])}!</div>
+    <div style="font-size:13px;color:var(--text2);margin-top:3px">Below are your assigned projects. Please review, acknowledge and complete prior to the deadline.</div>
+  </div>`;
+  html+=renderTodoDueAlerts();
+
+  // ── Completed view ──
+  if(dashView==='done'){
+    const doneProjects=S.projects.filter(canSee).filter(p=>p.completed&&((p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU));
+    if(!doneProjects.length){
+      html+=`<div class="empty"><i class="ti ti-checks"></i><p style="font-weight:600;font-size:14px;margin-bottom:4px">No completed items yet</p><p style="font-size:13px">Items you complete will appear here.</p></div>`;
+    } else {
+      doneProjects.sort((a,b)=>(b.completedDate||'').localeCompare(a.completedDate||'')).forEach(p=>{
+        html+=`<div style="display:flex;align-items:center;gap:12px;padding:.75rem 1rem;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;opacity:.75;cursor:pointer" onclick="openDetail('${p.id}')">
+          <span style="font-size:18px">✅</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--text);text-decoration:line-through">${esc(p.name)}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px">${esc(p.category||'—')} · Completed ${p.completedDate?fmtS(p.completedDate):'—'}</div>
+          </div>
+          <button class="ibtn" onclick="event.stopPropagation();reopenItem('${p.id}')" style="padding:4px" title="Reopen"><i class="ti ti-arrow-back-up" style="font-size:13px"></i></button>
+        </div>`;
+      });
+    }
   } else {
 
   html+=`<div class="tw"><table>
@@ -2900,9 +2924,16 @@ window.setCat=c=>{S.fCategory=c;S.fMyProjects=false;renderDash()};
 window.setMyProjects=()=>{S.fMyProjects=true;S.fCategory='';renderDash()};
 window.setDashView=function(view){
   S.fMyProjects=view==='mine';
-  S.fCategory=view==='todo'?'__todo__':'';
+  S.fCategory=view==='done'?'__done__':'';
   S.searchQ='';S.fPhase='';S.fRisk='';S.fOwner='';S.fGroup='';S.fVis='';
   renderDash();
+};
+
+window.reopenItem=async id=>{
+  if(!confirm('Reopen this item?'))return;
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  p.completed=false;p.completedDate=null;p.phase='In Progress';p.status='In Progress';
+  await saveP(p);toast('Item reopened.');
 };
 
 // ── To-do due alert panel (shown on main dashboard) ──
