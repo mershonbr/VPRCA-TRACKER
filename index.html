@@ -601,11 +601,12 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
       <div class="presence-wrap" id="presence-wrap"><span class="plabel">Online</span></div>
       <div class="user-chip"><div class="u-av" id="uav"></div><span class="u-name" id="uname"></span></div>
       <button class="btn sm adm" id="admin-btn" style="display:none" onclick="openAdmin()"><i class="ti ti-shield"></i> Admin</button>
-      <button class="btn sm gh" onclick="openContacts()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-address-book"></i> Contacts</button>
-      <button class="btn sm gh" onclick="openNotifLog()" style="color:#fff;border-color:rgba(255,255,255,.25)" id="notif-log-btn"><i class="ti ti-bell"></i> Log <span id="notif-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:2px;vertical-align:1px"></span></button>
+      <button class="btn sm gh" id="contacts-btn" onclick="openContacts()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-address-book"></i> Contacts</button>
+      <button class="btn sm gh" id="notif-log-btn" onclick="openNotifLog()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-bell"></i> Log <span id="notif-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:2px;vertical-align:1px"></span></button>
+      <button class="btn sm gh" id="perf-log-btn" style="display:none;color:#fff;border-color:rgba(255,255,255,.25)" onclick="openNotifLog()"><i class="ti ti-bell"></i> Log <span class="log-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:2px;vertical-align:1px"></span></button>
       <button class="btn sm gh" onclick="refreshDash()" id="refresh-btn" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Refresh"><i class="ti ti-refresh"></i> Refresh</button>
       <button class="btn gld sm" id="add-item-btn" onclick="openAdd()" style="display:none"><i class="ti ti-plus"></i> Add item</button>
-      <button class="btn sm gh" onclick="openHelp()" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Help & getting started"><i class="ti ti-help-circle"></i> Help</button>
+      <button class="btn sm gh" onclick="openHelp()" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Help"><i class="ti ti-help-circle"></i> Help</button>
       <button class="btn sm gh" onclick="doSignOut()" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.15)" title="Sign out"><i class="ti ti-logout"></i></button>
     </div>
   </div>
@@ -618,7 +619,18 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
     </div>
     <div class="main"><div id="dash"></div><div id="tasks-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
   </div>
-  <div id="perf-app" style="display:none" class="main"><div id="perf-dash"></div></div>
+  <div id="perf-app" style="display:none">
+    <div class="tab-bar" id="perf-tab-bar">
+      <button class="tab-btn active" id="ptab-dash" onclick="switchPerfTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+      <button class="tab-btn" id="ptab-tasks" onclick="switchPerfTab('tasks')"><i class="ti ti-checkbox"></i> My Tasks</button>
+      <button class="tab-btn" id="ptab-done" onclick="switchPerfTab('done')"><i class="ti ti-checks"></i> Completed</button>
+    </div>
+    <div class="main">
+      <div id="perf-dash"></div>
+      <div id="perf-tasks" style="display:none"></div>
+      <div id="perf-done" style="display:none"></div>
+    </div>
+  </div>
 </div>
 <div id="ovr"></div>
 <div id="toast"></div>
@@ -2096,72 +2108,151 @@ function renderPerformerDash(){
   const isPreview=!!_previewingAs;
   const now=new Date();const hour=now.getHours();
   const greet=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
-
-  // Items assigned to this person
-  const myItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&!p.completed);
-  const doneItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&p.completed);
-
   const statusIcon={'Not Started':'🔵','In Progress':'🟡','Completed':'✅'};
   const statusColor={'Not Started':'var(--text2)','In Progress':'var(--ou-gold)','Completed':'var(--green-text)'};
 
+  // Items assigned to this person (active only)
+  const myItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&!p.completed);
+  const doneItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&p.completed);
+  const unacked=myItems.filter(p=>!(p.acknowledged||{})[viewAs]).length;
+  const atRisk=myItems.filter(p=>p.due&&Math.ceil((new Date(p.due)-new Date())/86400000)<=14).length;
+
   let html=`<div class="perf-wrap">
-    <div class="perf-header">
-      <h2>${greet}, ${esc(viewAs.split(' ')[0])} 👋</h2>
+    <div style="margin-bottom:1.25rem">
+      <h2 style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.02em">${greet}, ${esc(viewAs.split(' ')[0])} 👋</h2>
       <p style="font-size:13px;color:var(--text2);margin-top:4px">${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
     </div>
-    <div style="display:flex;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap">
-      <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:.75rem 1.25rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px">
-        <span style="font-size:28px;font-weight:800;color:${myItems.length>0?'var(--ou-green)':'var(--text3)'}">${myItems.length}</span>
-        <span style="font-size:13px;color:var(--text2)">active item${myItems.length!==1?'s':''} assigned to you</span>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem">
+      <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow)">
+        <div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Assigned to you</div>
+        <div style="font-size:28px;font-weight:800;color:var(--ou-green)">${myItems.length}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:3px">active item${myItems.length!==1?'s':''}</div>
       </div>
-      ${myItems.filter(p=>!p.acknowledged?.[viewAs]).length>0?`<div style="background:var(--yellow-bg);border:.5px solid var(--ou-gold);border-radius:var(--radius-lg);padding:.75rem 1.25rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px">
-        <span style="font-size:28px;font-weight:800;color:var(--ou-gold)">${myItems.filter(p=>!p.acknowledged?.[viewAs]).length}</span>
-        <span style="font-size:13px;color:var(--ou-gold)">need acknowledgment</span>
-      </div>`:''}
+      <div style="background:${unacked>0?'var(--yellow-bg)':'var(--bg)'};border:.5px solid ${unacked>0?'var(--ou-gold)':'var(--border)'};border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow)">
+        <div style="font-size:10px;font-weight:800;color:${unacked>0?'var(--ou-gold)':'var(--text3)'};text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Need acknowledgment</div>
+        <div style="font-size:28px;font-weight:800;color:${unacked>0?'var(--ou-gold)':'var(--text)'}">${unacked}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:3px">pending</div>
+      </div>
+      <div style="background:${atRisk>0?'var(--red-bg)':'var(--bg)'};border:.5px solid ${atRisk>0?'var(--red-border)':'var(--border)'};border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow)">
+        <div style="font-size:10px;font-weight:800;color:${atRisk>0?'var(--red-text)':'var(--text3)'};text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Due within 14 days</div>
+        <div style="font-size:28px;font-weight:800;color:${atRisk>0?'var(--red-text)':'var(--text)'}">${atRisk}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:3px">need attention</div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:2px solid var(--ou-green);display:flex;align-items:center;gap:8px">
+      <i class="ti ti-layout-list" style="font-size:15px;color:var(--ou-green)"></i> Your assigned items
     </div>`;
 
   if(!myItems.length){
     html+=`<div class="perf-empty"><i class="ti ti-circle-check" style="color:var(--green-text);font-size:36px"></i><p style="font-size:15px;font-weight:700;margin-bottom:4px;color:var(--green-text)">Nothing assigned to you</p><p style="font-size:13px">Brian will assign items here when something needs your attention.</p></div>`;
   } else {
-    html+=`<div class="perf-section"><div class="perf-section-title"><i class="ti ti-clipboard-list" style="font-size:16px;color:var(--ou-green)"></i> Your assigned items <span>${myItems.length}</span></div>`;
-    myItems.forEach(p=>{
-      const daysLeft=p.due?Math.ceil((new Date(p.due)-new Date())/86400000):null;
-      const urg=daysLeft!==null?(daysLeft<0?'overdue':daysLeft<=3?'due-soon':'normal'):'normal';
-      const dueColor=urg==='overdue'?'var(--red-text)':urg==='due-soon'?'var(--ou-gold)':'var(--text2)';
-      const dueLabel=!p.due?'No deadline':daysLeft<0?`${Math.abs(daysLeft)}d overdue`:daysLeft===0?'Due today':daysLeft===1?'Due tomorrow':`Due in ${daysLeft}d`;
-      const hasAck=p.acknowledged?.[viewAs];
-      const phase=p.phase||'Not Started';
+    html+=`<div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:var(--bg2)">
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Name</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Category</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Status</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Deadline</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Description</th>
+          <th style="padding:8px 12px;text-align:center;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Ack</th>
+        </tr></thead><tbody>`;
 
-      html+=`<div class="task-card ${urg==='overdue'?'overdue':urg==='due-soon'?'due-soon':''}" style="cursor:pointer" onclick="openPerformerDetail('${p.id}')">
+    myItems.sort((a,b)=>{
+      const da=a.due?new Date(a.due):new Date('2099-01-01');
+      const db2=b.due?new Date(b.due):new Date('2099-01-01');
+      return da-db2;
+    }).forEach(p=>{
+      const phase=p.phase||'Not Started';
+      const hasAck=(p.acknowledged||{})[viewAs];
+      const days=p.due?Math.ceil((new Date(p.due)-new Date())/86400000):null;
+      const dc=days!==null?(days<0?'var(--red-text)':days<=7?'var(--ou-gold)':'var(--text)'):'var(--text)';
+      const rowBg=days!==null&&days<0?'var(--red-bg)':!hasAck?'var(--yellow-bg)':'';
+      html+=`<tr style="border-bottom:.5px solid var(--border);cursor:pointer;${rowBg?'background:'+rowBg+';':''}" onclick="openPerformerDetail('${p.id}')" onmouseenter="if(!('${rowBg}'))this.style.background='var(--bg2)'" onmouseleave="this.style.background='${rowBg||''}'">
+        <td style="padding:10px 12px">
+          <div style="font-weight:700;font-size:13px;color:var(--text)">${esc(p.name)}</div>
+          ${!hasAck?`<div style="font-size:10px;font-weight:700;color:var(--ou-gold);margin-top:2px">⚠ Tap to acknowledge</div>`:''}
+        </td>
+        <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${esc(p.category||'—')}</td>
+        <td style="padding:10px 12px"><span style="font-size:12px;font-weight:700;color:${statusColor[phase]||'var(--text2)'}">${statusIcon[phase]||''} ${phase}</span></td>
+        <td style="padding:10px 12px;font-size:12px;font-weight:700;color:${dc};white-space:nowrap">${p.due?fmtS(p.due):'—'}</td>
+        <td style="padding:10px 12px;font-size:12px;color:var(--text2);max-width:220px">${esc((p.description||'').slice(0,100))}${(p.description||'').length>100?'…':''}</td>
+        <td style="padding:10px 12px;text-align:center">
+          ${hasAck
+            ?`<span style="font-size:11px;font-weight:700;color:var(--green-text)" title="Acknowledged ${fmtS(hasAck)}">✅</span>`
+            :`<span style="font-size:11px;font-weight:700;color:var(--ou-gold)">⏳</span>`}
+        </td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+  updatePerfLogBadge();
+}
+window.renderPerformerDash=renderPerformerDash;
+
+let _perfTab='dash';
+window.switchPerfTab=function(tab){
+  _perfTab=tab;
+  ['dash','tasks','done'].forEach(t=>{
+    const btn=document.getElementById('ptab-'+t);
+    if(btn)btn.className='tab-btn'+(tab===t?' active':'');
+    const el=document.getElementById('perf-'+t);
+    if(el)el.style.display=tab===t?'':'none';
+  });
+  if(tab==='dash')renderPerformerDash();
+  if(tab==='tasks')renderPerfTasks();
+  if(tab==='done')renderPerfDone();
+};
+
+function updatePerfLogBadge(){
+  const btn=document.getElementById('perf-log-btn');if(!btn)return;
+  const unacked=S.projects.filter(p=>(p.assignedTo||[]).includes(CU)&&!p.completed&&!(p.acknowledged||{})[CU]).length;
+  const badge=btn.querySelector('.log-badge');
+  if(badge){
+    if(unacked>0){badge.textContent=unacked>9?'9+':unacked;badge.style.display='';}
+    else badge.style.display='none';
+  }
+}
+
+function renderPerfTasks(){
+  const el=document.getElementById('perf-tasks');if(!el)return;
+  el.innerHTML=`<div class="perf-wrap">${renderTodoPanel()}</div>`;
+}
+
+function renderPerfDone(){
+  const el=document.getElementById('perf-done');if(!el)return;
+  const viewAs=_previewingAs||CU;
+  const doneItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&p.completed);
+  const statusIcon={'Not Started':'🔵','In Progress':'🟡','Completed':'✅'};
+  let html=`<div class="perf-wrap">
+    <div class="perf-header">
+      <h2 style="font-size:18px;font-weight:800;color:var(--text)"><i class="ti ti-checks" style="color:var(--green-text);font-size:18px"></i> Completed items</h2>
+      <p style="font-size:13px;color:var(--text2);margin-top:4px">${doneItems.length} item${doneItems.length!==1?'s':''} completed</p>
+    </div>`;
+  if(!doneItems.length){
+    html+=`<div class="perf-empty"><i class="ti ti-checks" style="color:var(--text3);font-size:32px"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px">No completed items yet</p><p style="font-size:13px">Completed items will appear here.</p></div>`;
+  } else {
+    doneItems.sort((a,b)=>(b.completedDate||'').localeCompare(a.completedDate||'')).forEach(p=>{
+      html+=`<div class="task-card done-card" style="cursor:pointer;opacity:.75" onclick="openPerformerDetail('${p.id}')">
         <div class="task-card-head">
           <div>
-            <div class="task-card-title">${esc(p.name)}</div>
+            <div class="task-card-title" style="text-decoration:line-through">${esc(p.name)}</div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(p.category||'—')}</div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-            <span style="font-size:12px;font-weight:700;color:${statusColor[phase]||'var(--text2)'}">${statusIcon[phase]||''} ${phase}</span>
-            ${hasAck?`<span style="font-size:10px;color:var(--text3)">✓ Acknowledged ${fmtS(hasAck)}</span>`:'<span style="font-size:10px;font-weight:700;color:var(--ou-gold)">⚠ Tap to acknowledge</span>'}
-          </div>
+          <span style="font-size:12px;font-weight:700;color:var(--green-text)">✅ Completed</span>
         </div>
-        ${p.description?`<div style="font-size:13px;color:var(--text2);margin:.4rem 0 .6rem;line-height:1.5">${esc(p.description.slice(0,120))}${p.description.length>120?'…':''}</div>`:''}
-        <div class="task-meta" style="margin-bottom:.5rem">
-          <span class="task-due" style="color:${dueColor}"><i class="ti ti-calendar" style="font-size:11px;vertical-align:-1px"></i> ${dueLabel}</span>
-        </div>
-        <div style="font-size:11px;color:var(--ou-green);font-weight:600">Tap to open, acknowledge, update, or email Brian →</div>
+        ${p.completedDate?`<div style="font-size:11px;color:var(--text3);margin-top:4px">Completed ${fmtS(p.completedDate)}</div>`:''}
       </div>`;
     });
-    html+=`</div>`;
   }
-
-  if(doneItems.length){
-    html+=`<div class="perf-section"><div class="perf-section-title" style="border-bottom-color:var(--green-border);cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><i class="ti ti-checks" style="font-size:16px;color:var(--green-text)"></i> Completed <span style="background:var(--green-border)">${doneItems.length}</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">click to expand</span></div>
-    <div style="display:none">${doneItems.map(p=>`<div class="task-card done-card"><div class="task-card-title">${esc(p.name)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(p.category||'—')}</div></div>`).join('')}</div></div>`;
-  }
-
   html+=`</div>`;
   el.innerHTML=html;
 }
-window.renderPerformerDash=renderPerformerDash;
+window.renderPerfDone=renderPerfDone;
+window.renderPerfTasks=renderPerfTasks;
 
 window.acknowledgeItem=async id=>{
   const p=S.projects.find(x=>x.id===id);if(!p)return;
@@ -2433,12 +2524,18 @@ function completeLogin(name){
   document.getElementById('app').style.display='block';
   document.getElementById('uav').textContent=ini(name);
   document.getElementById('uname').textContent=name;
+
   if(isAdmin()){
+    // Show admin-only buttons
     document.getElementById('admin-btn').style.display='';
     document.getElementById('add-item-btn').style.display='';
+    document.getElementById('contacts-btn').style.display='';
+    document.getElementById('notif-log-btn').style.display='';
+    document.getElementById('perf-log-btn').style.display='none';
+    // Show Brian's tab bar, hide performer view
     document.getElementById('tab-bar-wrap').style.display='';
     document.getElementById('perf-app').style.display='none';
-    // Set My Tasks as active tab immediately — before data loads
+    // Set My Tasks as active immediately
     ['dash','tasks','fin','agenda'].forEach(t=>{
       const btn=document.getElementById('tab-'+t);
       if(btn)btn.className='tab-btn'+(t==='tasks'?' active':'');
@@ -2446,17 +2543,24 @@ function completeLogin(name){
       if(el)el.style.display=t==='tasks'?'':'none';
     });
     currentTab='tasks';
-    // Render empty My Tasks immediately so screen isn't black
+    // Show loading spinner
     const tv=document.getElementById('tasks-view');
     if(tv)tv.innerHTML=`<div style="max-width:900px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your tasks…</div></div>`;
-    // Start all listeners — they will update the view when data arrives
+    // Start listeners
     startTodoListener();
     startRemListener();startCardsListener();startExpenseListener();startMemListener();
     startListeners();
   } else {
+    // Hide admin-only buttons, show performer Log button
+    document.getElementById('admin-btn').style.display='none';
+    document.getElementById('add-item-btn').style.display='none';
+    document.getElementById('contacts-btn').style.display='none';
+    document.getElementById('notif-log-btn').style.display='none';
+    document.getElementById('perf-log-btn').style.display='';
+    // Hide Brian's tabs, show performer app
     document.getElementById('tab-bar-wrap').style.display='none';
     document.getElementById('perf-app').style.display='block';
-    // Show loading state immediately
+    // Show loading spinner
     const pd=document.getElementById('perf-dash');
     if(pd)pd.innerHTML=`<div style="max-width:860px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your items…</div></div>`;
     startTodoListener();
@@ -2548,7 +2652,6 @@ let _previewingAs=null;
 window.previewAs=function(name){
   _previewingAs=name;
   closeOv();
-  // Show preview banner
   const banner=document.getElementById('preview-banner');
   if(banner){
     banner.style.display='flex';
@@ -2559,11 +2662,15 @@ window.previewAs=function(name){
       </div>
       <button class="btn sm" onclick="exitPreview()" style="background:#fff;color:#7C3AED;border-color:#fff;font-weight:700"><i class="ti ti-x" style="font-size:12px"></i> Exit preview</button>`;
   }
-  // Hide Brian's full dashboard, show performer view
-  const tbw=document.getElementById('tab-bar-wrap');
-  if(tbw)tbw.style.display='none';
-  const pa=document.getElementById('perf-app');
-  if(pa){pa.style.display='block';}
+  // Hide admin controls, show performer view
+  document.getElementById('tab-bar-wrap').style.display='none';
+  document.getElementById('add-item-btn').style.display='none';
+  document.getElementById('contacts-btn').style.display='none';
+  document.getElementById('notif-log-btn').style.display='none';
+  document.getElementById('perf-log-btn').style.display='';
+  document.getElementById('perf-app').style.display='block';
+  // Reset performer tabs to dashboard
+  switchPerfTab('dash');
   renderPerformerDash();
 };
 
@@ -2572,10 +2679,12 @@ window.exitPreview=function(){
   const banner=document.getElementById('preview-banner');
   if(banner)banner.style.display='none';
   // Restore Brian's full view
-  const tbw=document.getElementById('tab-bar-wrap');
-  if(tbw)tbw.style.display='';
-  const pa=document.getElementById('perf-app');
-  if(pa)pa.style.display='none';
+  document.getElementById('tab-bar-wrap').style.display='';
+  document.getElementById('perf-app').style.display='none';
+  document.getElementById('perf-log-btn').style.display='none';
+  document.getElementById('notif-log-btn').style.display='';
+  document.getElementById('contacts-btn').style.display='';
+  document.getElementById('add-item-btn').style.display='';
   switchTab(currentTab||'tasks');
   toast('Back to your admin view.');
 };
@@ -2642,7 +2751,9 @@ function startListeners(){
       if(currentTab==='tasks')renderMyTasks();
       checkNotify();
     } else {
-      renderPerformerDash();
+      if(_perfTab==='dash')renderPerformerDash();
+      else if(_perfTab==='done')renderPerfDone();
+      updatePerfLogBadge();
     }
   });
   onSnapshot(collection(db,'contacts'),sn=>{S.contacts=sn.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name))});
