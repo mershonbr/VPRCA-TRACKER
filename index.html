@@ -2357,17 +2357,25 @@ function completeLogin(name){
     document.getElementById('add-item-btn').style.display='';
     document.getElementById('tab-bar-wrap').style.display='';
     document.getElementById('perf-app').style.display='none';
-    startRemListener();startCardsListener();startExpenseListener();startMemListener();startListeners();
-    // Default to My Tasks tab for Brian
-    setTimeout(()=>switchTab('tasks'),100);
+    // Switch to My Tasks tab immediately — no delay needed
+    // Make tasks tab active visually right away
+    ['dash','tasks','fin','agenda'].forEach(t=>{
+      const btn=document.getElementById('tab-'+t);
+      if(btn)btn.className='tab-btn'+(t==='tasks'?' active':'');
+      const el=document.getElementById(t==='dash'?'dash':t+'-view');
+      if(el)el.style.display=t==='tasks'?'':'none';
+    });
+    currentTab='tasks';
+    startTodoListener();
+    startRemListener();startCardsListener();startExpenseListener();startMemListener();
+    startListeners();
   } else {
     document.getElementById('tab-bar-wrap').style.display='none';
     document.getElementById('perf-app').style.display='block';
     startListeners();
-    renderPerformerDash();
   }
   startPresence();
-  startTodoListener();
+  if(!isAdmin())startTodoListener();
 }
 window.doSignOut=function(){
   clearPresence();
@@ -2540,7 +2548,16 @@ function renderPresence(snap){
 }
 
 function startListeners(){
-  onSnapshot(collection(db,'projects'),sn=>{S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));if(currentTab==='dash')renderDash();checkNotify();if(!isAdmin())renderPerformerDash();});
+  onSnapshot(collection(db,'projects'),sn=>{
+    S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));
+    if(isAdmin()){
+      if(currentTab==='dash')renderDash();
+      if(currentTab==='tasks')renderMyTasks();
+      checkNotify();
+    } else {
+      renderPerformerDash();
+    }
+  });
   onSnapshot(collection(db,'contacts'),sn=>{S.contacts=sn.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name))});
   onSnapshot(doc(db,'meta','notifLog'),sn=>{if(sn.exists())S.notifLog=sn.data().entries||[];updateNotifBadge();});
   onSnapshot(collection(db,'presence'),sn=>{renderPresence(sn)});
@@ -2779,7 +2796,9 @@ function startTodoListener(){
   _unsubTodos=onSnapshot(doc(db,'meta',todoKey()),sn=>{
     _todos=sn.exists()?(sn.data().items||[]):[];
     _todosLoaded=true;
-    if(S.fCategory==='Mine')renderDash();
+    updateTasksBadge();
+    if(currentTab==='tasks')renderMyTasks();
+    else if(currentTab==='dash')renderDash();
   });
 }
 
@@ -3702,6 +3721,27 @@ window.submitP=async eid=>{
       const body=encodeURIComponent(`Hi ${name.split(' ')[0]},\n\nYou have been assigned to: ${obj.name}\n\nCategory: ${obj.category}\nStatus: ${phase}${obj.due?'\nDeadline: '+fmtD(obj.due):''}\n${description?'\nDetails: '+description:''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
       window.open(`mailto:${owner.email}?subject=${sub}&body=${body}`,'_blank');
     });
+  }
+
+  // Auto-add to Brian's to-do if assigned to himself and no step todos exist
+  const stepTodos=(obj.steps||[]).filter(s=>s.addToTodo);
+  if(assignedTo.includes(CU)&&stepTodos.length===0){
+    // Check if there's already a project-level todo for this item
+    const existingTodo=_todos.find(t=>t.projectId===obj.id&&t.fromProject);
+    if(!existingTodo){
+      const todoItem={
+        id:String(Date.now()+1),
+        text:obj.name+(obj.due?' — Due '+fmtD(obj.due):''),
+        priority:'medium',
+        due:obj.due||'',
+        done:false,doneDate:null,
+        createdDate:today(),
+        fromProject:true,
+        projectId:obj.id
+      };
+      _todos.push(todoItem);
+      await saveTodos();
+    }
   }
 
   // Auto-add checked steps to Brian's to-do list
