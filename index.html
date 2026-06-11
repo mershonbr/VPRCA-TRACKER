@@ -2132,7 +2132,7 @@ function renderPerformerDash(){
       const hasAck=p.acknowledged?.[viewAs];
       const phase=p.phase||'Not Started';
 
-      html+=`<div class="task-card ${urg==='overdue'?'overdue':urg==='due-soon'?'due-soon':''}">
+      html+=`<div class="task-card ${urg==='overdue'?'overdue':urg==='due-soon'?'due-soon':''}" style="cursor:pointer" onclick="openPerformerDetail('${p.id}')">
         <div class="task-card-head">
           <div>
             <div class="task-card-title">${esc(p.name)}</div>
@@ -2140,23 +2140,14 @@ function renderPerformerDash(){
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
             <span style="font-size:12px;font-weight:700;color:${statusColor[phase]||'var(--text2)'}">${statusIcon[phase]||''} ${phase}</span>
-            ${hasAck?`<span style="font-size:10px;color:var(--text3)">✓ Acknowledged ${fmtS(hasAck)}</span>`:'<span style="font-size:10px;font-weight:700;color:var(--ou-gold)">⚠ Needs acknowledgment</span>'}
+            ${hasAck?`<span style="font-size:10px;color:var(--text3)">✓ Acknowledged ${fmtS(hasAck)}</span>`:'<span style="font-size:10px;font-weight:700;color:var(--ou-gold)">⚠ Tap to acknowledge</span>'}
           </div>
         </div>
-        ${p.description?`<div style="font-size:13px;color:var(--text2);margin:.4rem 0 .6rem;line-height:1.5">${esc(p.description)}</div>`:''}
-        <div class="task-meta" style="margin-bottom:.75rem">
+        ${p.description?`<div style="font-size:13px;color:var(--text2);margin:.4rem 0 .6rem;line-height:1.5">${esc(p.description.slice(0,120))}${p.description.length>120?'…':''}</div>`:''}
+        <div class="task-meta" style="margin-bottom:.5rem">
           <span class="task-due" style="color:${dueColor}"><i class="ti ti-calendar" style="font-size:11px;vertical-align:-1px"></i> ${dueLabel}</span>
-          <span style="font-size:11px;color:var(--text3)">Assigned by ${esc((p.createdBy||'Brian').split(' ')[0])}</span>
         </div>
-        <div class="task-actions" style="flex-wrap:wrap;gap:8px">
-          ${!hasAck&&!isPreview?`<button class="btn" style="font-size:12px" onclick="acknowledgeItem('${p.id}')"><i class="ti ti-eye-check"></i> Acknowledge</button>`:''}
-          ${phase!=='Completed'&&!isPreview?`<select style="height:34px;font-size:12px;border-color:var(--border2)" onchange="updateItemStatus('${p.id}',this.value)">
-            ${['Not Started','In Progress','Completed'].map(s=>`<option value="${s}" ${phase===s?'selected':''}>${statusIcon[s]} ${s}</option>`).join('')}
-          </select>`:''}
-          ${phase==='Completed'?`<span style="font-size:12px;color:var(--green-text);font-weight:700">✅ Completed</span>`:''}
-          ${!isPreview?`<button class="btn sm" onclick="openPerformerNote('${p.id}')"><i class="ti ti-notes" style="font-size:12px"></i> Add note</button>`:''}
-          ${isPreview?`<span style="font-size:11px;color:var(--text3);font-style:italic">Preview mode</span>`:''}
-        </div>
+        <div style="font-size:11px;color:var(--ou-green);font-weight:600">Tap to open, acknowledge, update, or email Brian →</div>
       </div>`;
     });
     html+=`</div>`;
@@ -2203,6 +2194,96 @@ window.openPerformerNote=id=>{
     <button class="btn pri" onclick="savePerformerNote('${id}')"><i class="ti ti-check"></i> Save note</button></div>
   </div>`);
   setTimeout(()=>document.getElementById('perf-note')?.focus(),80);
+};
+
+window.openPerformerDetail=id=>{
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  const viewAs=_previewingAs||CU;
+  const isPreview=!!_previewingAs;
+  const phase=p.phase||'Not Started';
+  const statusIcon={'Not Started':'🔵','In Progress':'🟡','Completed':'✅'};
+  const hasAck=p.acknowledged?.[viewAs];
+  const days=p.due?Math.ceil((new Date(p.due)-new Date())/86400000):null;
+  const dueColor=days!==null?(days<0?'var(--red-text)':days<=7?'var(--ou-gold)':'var(--text2)'):'var(--text2)';
+  const dueLabel=!p.due?'No deadline':days<0?`${Math.abs(days)} days overdue`:days===0?'Due today':days===1?'Due tomorrow':`Due in ${days} days`;
+
+  showOv(`<div class="modal" style="max-width:580px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:.75rem">
+      <div>
+        <h2 style="margin-bottom:4px">${esc(p.name)}</h2>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span style="background:var(--bg2);border:.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;padding:3px 9px;color:var(--text2)">${esc(p.category||'—')}</span>
+          <span style="font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--bg2);border:.5px solid var(--border)">${statusIcon[phase]||''} ${phase}</span>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:14px;font-weight:800;color:${dueColor}">${dueLabel}</div>
+        ${p.due?`<div style="font-size:11px;color:var(--text3)">${fmtD(p.due)}</div>`:''}
+      </div>
+    </div>
+
+    ${p.description?`<div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.75rem .85rem;margin-bottom:.75rem;font-size:13px;color:var(--text);line-height:1.65">${esc(p.description)}</div>`:''}
+
+    ${(p.notes||[]).length?`
+    <div class="sdiv" style="margin-top:.5rem"><i class="ti ti-notes"></i> Updates & notes</div>
+    <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:.5rem .75rem;margin-bottom:.75rem;max-height:150px;overflow-y:auto">
+      ${(p.notes||[]).slice().reverse().map(n=>`<div style="padding:.35rem 0;border-bottom:.5px solid var(--border);font-size:12px"><span style="font-weight:700;color:var(--text)">${esc(n.author||'')}</span> <span style="color:var(--text3)">${esc(n.date)}</span><div style="color:var(--text2);margin-top:2px">${esc(n.text)}</div></div>`).join('')}
+    </div>`:''}
+
+    ${!isPreview?`
+    <div class="sdiv"><i class="ti ti-edit"></i> Add your update</div>
+    <div class="fr"><textarea id="pd-note" rows="2" style="width:100%" placeholder="Add a note or status update…"></textarea></div>
+    <div class="fr">
+      <label class="fl">Update status</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        ${['Not Started','In Progress','Completed'].map(s=>`<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border:.5px solid var(--border2);border-radius:var(--radius);background:${phase===s?'var(--ou-green)':'var(--bg2)'};color:${phase===s?'#fff':'var(--text)'}">
+          <input type="radio" name="pd-status" value="${s}" ${phase===s?'checked':''} style="display:none" onchange="document.querySelectorAll('[name=pd-status]').forEach(el=>{el.parentElement.style.background=el.checked?'var(--ou-green)':'var(--bg2)';el.parentElement.style.color=el.checked?'#fff':'var(--text)'})">
+          ${statusIcon[s]} ${s}
+        </label>`).join('')}
+      </div>
+    </div>`:''}
+
+    <div class="mfoot" style="flex-wrap:wrap;gap:8px">
+      <button class="btn gh" onclick="closeOv()">Close</button>
+      ${!hasAck&&!isPreview?`<button class="btn" onclick="acknowledgeItem('${p.id}');closeOv()"><i class="ti ti-eye-check"></i> Acknowledge</button>`:''}
+      ${!isPreview?`<button class="btn" onclick="emailBackToBrian('${p.id}')"><i class="ti ti-mail"></i> Email Brian</button>`:''}
+      ${!isPreview?`<button class="btn pri" onclick="savePerformerDetailUpdate('${p.id}')"><i class="ti ti-check"></i> Save update</button>`:''}
+    </div>
+  </div>`);
+};
+
+window.savePerformerDetailUpdate=async id=>{
+  const note=document.getElementById('pd-note')?.value.trim();
+  const status=document.querySelector('[name=pd-status]:checked')?.value;
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  let changed=false;
+  if(status&&status!==p.phase){
+    p.phase=status;p.status=status;
+    if(status==='Completed'){p.completed=true;p.completedDate=today();}
+    else{p.completed=false;p.completedDate=null;}
+    changed=true;
+  }
+  if(note){
+    p.notes=p.notes||[];
+    p.notes.push({date:today(),text:note,author:CU});
+    changed=true;
+  }
+  if(!changed){toast('Nothing to save.');return;}
+  await saveP(p);
+  closeOv();
+  renderPerformerDash();
+  toast('Update saved.');
+};
+
+window.emailBackToBrian=id=>{
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  const note=document.getElementById('pd-note')?.value.trim()||'';
+  const status=document.querySelector('[name=pd-status]:checked')?.value||p.phase;
+  const brian=OWNERS.find(o=>o.name===ADMIN);
+  const sub=encodeURIComponent(`[Update] ${p.name}`);
+  const body=encodeURIComponent(`Hi Brian,\n\nHere is an update on: ${p.name}\n\nStatus: ${status}${note?'\n\nUpdate: '+note:''}\n\nThanks,\n${CU}`);
+  window.open(`mailto:${brian?.email||'mershon@ohio.edu'}?subject=${sub}&body=${body}`,'_blank');
 };
 
 window.savePerformerNote=async id=>{
@@ -2357,8 +2438,7 @@ function completeLogin(name){
     document.getElementById('add-item-btn').style.display='';
     document.getElementById('tab-bar-wrap').style.display='';
     document.getElementById('perf-app').style.display='none';
-    // Switch to My Tasks tab immediately — no delay needed
-    // Make tasks tab active visually right away
+    // Set My Tasks as active tab immediately — before data loads
     ['dash','tasks','fin','agenda'].forEach(t=>{
       const btn=document.getElementById('tab-'+t);
       if(btn)btn.className='tab-btn'+(t==='tasks'?' active':'');
@@ -2366,16 +2446,23 @@ function completeLogin(name){
       if(el)el.style.display=t==='tasks'?'':'none';
     });
     currentTab='tasks';
+    // Render empty My Tasks immediately so screen isn't black
+    const tv=document.getElementById('tasks-view');
+    if(tv)tv.innerHTML=`<div style="max-width:900px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your tasks…</div></div>`;
+    // Start all listeners — they will update the view when data arrives
     startTodoListener();
     startRemListener();startCardsListener();startExpenseListener();startMemListener();
     startListeners();
   } else {
     document.getElementById('tab-bar-wrap').style.display='none';
     document.getElementById('perf-app').style.display='block';
+    // Show loading state immediately
+    const pd=document.getElementById('perf-dash');
+    if(pd)pd.innerHTML=`<div style="max-width:860px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your items…</div></div>`;
+    startTodoListener();
     startListeners();
   }
   startPresence();
-  if(!isAdmin())startTodoListener();
 }
 window.doSignOut=function(){
   clearPresence();
@@ -2460,6 +2547,7 @@ let _previewingAs=null;
 
 window.previewAs=function(name){
   _previewingAs=name;
+  closeOv();
   // Show preview banner
   const banner=document.getElementById('preview-banner');
   if(banner){
@@ -2467,29 +2555,28 @@ window.previewAs=function(name){
     banner.innerHTML=`
       <div style="display:flex;align-items:center;gap:10px;flex:1">
         <div style="width:26px;height:26px;border-radius:50%;background:${PRESENCE_COLORS[name]||'#555'};color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini(name)}</div>
-        <span style="font-size:13px;font-weight:700">Previewing as <strong>${esc(name)}</strong> — this is what they see when they log in</span>
+        <span style="font-size:13px;font-weight:700">👁 Previewing as <strong>${esc(name)}</strong> — this is exactly what they see when they log in</span>
       </div>
       <button class="btn sm" onclick="exitPreview()" style="background:#fff;color:#7C3AED;border-color:#fff;font-weight:700"><i class="ti ti-x" style="font-size:12px"></i> Exit preview</button>`;
   }
-  // Show performer view with that user's perspective
-  document.getElementById('tab-bar-wrap').style.display='none';
-  document.getElementById('perf-app').style.display='block';
-  // Temporarily set CU to preview user for rendering
-  const realCU=CU;
-  CU=name;
+  // Hide Brian's full dashboard, show performer view
+  const tbw=document.getElementById('tab-bar-wrap');
+  if(tbw)tbw.style.display='none';
+  const pa=document.getElementById('perf-app');
+  if(pa){pa.style.display='block';}
   renderPerformerDash();
-  CU=realCU;
 };
 
 window.exitPreview=function(){
   _previewingAs=null;
   const banner=document.getElementById('preview-banner');
   if(banner)banner.style.display='none';
-  // Restore Brian's view
-  document.getElementById('tab-bar-wrap').style.display='';
-  document.getElementById('perf-app').style.display='none';
-  // Go back to dashboard
-  switchTab('dash');
+  // Restore Brian's full view
+  const tbw=document.getElementById('tab-bar-wrap');
+  if(tbw)tbw.style.display='';
+  const pa=document.getElementById('perf-app');
+  if(pa)pa.style.display='none';
+  switchTab(currentTab||'tasks');
   toast('Back to your admin view.');
 };
 window.adminReset=async function(name){
