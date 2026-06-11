@@ -614,11 +614,10 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
   <div id="preview-banner" style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:.6rem 1.5rem;background:#7C3AED;color:#fff;border-bottom:2px solid #5B21B6;position:sticky;top:64px;z-index:90;flex-wrap:wrap"></div>
     <div class="tab-bar">
       <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
-      <button class="tab-btn" id="tab-tasks" onclick="switchTab('tasks')"><i class="ti ti-checkbox"></i> My Tasks <span id="tasks-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:3px;vertical-align:1px"></span></button>
       <button class="tab-btn" id="tab-fin" onclick="switchTab('fin')"><i class="ti ti-credit-card"></i> Finance</button>
       <button class="tab-btn" id="tab-agenda" onclick="switchTab('agenda')"><i class="ti ti-calendar-event"></i> Agenda</button>
     </div>
-    <div class="main"><div id="dash"></div><div id="tasks-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
+    <div class="main"><div id="dash"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
   </div>
   <div id="perf-app" style="display:none">
     <div class="tab-bar" id="perf-tab-bar">
@@ -1120,12 +1119,45 @@ window.renderDesignLog=renderDesignLog;
 let _reminders=[];
 let _unsubRem=null;
 function remKey(){return'reminders_'+(CU||'').replace(/\s/g,'_');}
+function renderRemindersPanel(){
+  const td=today();
+  const activeRem=_reminders.filter(r=>!r.done).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
+  let h=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+    <h3 style="font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px"><i class="ti ti-bell" style="color:var(--ou-gold)"></i> Reminders</h3>
+    <div style="display:flex;gap:6px;align-items:center">
+      <input type="text" id="rem-quick" placeholder="Quick reminder…" style="height:30px;font-size:12px;width:160px" onkeydown="if(event.key==='Enter')quickAddReminder()">
+      <input type="date" id="rem-quick-date" style="height:30px;font-size:12px;width:120px">
+      <button class="btn sm" onclick="quickAddReminder()" style="height:30px"><i class="ti ti-plus"></i></button>
+    </div>
+  </div>`;
+  if(!activeRem.length){
+    h+=`<div style="text-align:center;padding:.75rem;color:var(--text3);font-size:12px">No reminders set.</div>`;
+  } else {
+    activeRem.slice(0,8).forEach(r=>{
+      const isOverdue=r.date&&r.date<td;
+      const isToday=r.date===td;
+      const dateColor=isOverdue||isToday?'var(--red-text)':'var(--text3)';
+      const days=r.date?Math.ceil((new Date(r.date)-new Date())/86400000):null;
+      const dateLabel=!r.date?'':isOverdue?`${Math.abs(days)}d overdue`:isToday?'Today':days===1?'Tomorrow':fmtS(r.date);
+      h+=`<div style="display:flex;align-items:center;gap:8px;padding:.4rem 0;border-bottom:.5px solid var(--border)">
+        <input type="checkbox" style="accent-color:var(--ou-green);width:14px;height:14px;cursor:pointer;flex-shrink:0" onchange="doneReminder('${r.id}',this.checked)">
+        <span style="flex:1;font-size:12px;color:var(--text)">${esc(r.text)}</span>
+        ${r.date?`<span style="font-size:11px;font-weight:700;color:${dateColor};white-space:nowrap">${dateLabel}</span>`:''}
+        <button class="ibtn" onclick="deleteReminder('${r.id}')" style="padding:2px"><i class="ti ti-x" style="font-size:11px"></i></button>
+      </div>`;
+    });
+    if(activeRem.length>8){h+=`<div style="font-size:11px;color:var(--text3);padding:.35rem 0">+${activeRem.length-8} more…</div>`;}
+  }
+  return h;
+}
+window.renderRemindersPanel=renderRemindersPanel;
+
 function startRemListener(){
   if(_unsubRem)_unsubRem();
   _unsubRem=onSnapshot(doc(db,'meta',remKey()),sn=>{
     _reminders=sn.exists()?(sn.data().items||[]):[];
     updateTasksBadge();
-    if(currentTab==='tasks')renderMyTasks();
+    if(currentTab==='dash')renderDash();
   });
 }
 async function saveReminders(){await setDoc(doc(db,'meta',remKey()),{items:_reminders,owner:CU,updated:today()});}
@@ -2868,17 +2900,17 @@ function completeLogin(name){
     // Show Brian's tab bar, hide performer view
     document.getElementById('tab-bar-wrap').style.display='';
     document.getElementById('perf-app').style.display='none';
-    // Set My Tasks as active immediately
-    ['dash','tasks','fin','agenda'].forEach(t=>{
+    // Set Dashboard as active immediately
+    ['dash','fin','agenda'].forEach(t=>{
       const btn=document.getElementById('tab-'+t);
-      if(btn)btn.className='tab-btn'+(t==='tasks'?' active':'');
+      if(btn)btn.className='tab-btn'+(t==='dash'?' active':'');
       const el=document.getElementById(t==='dash'?'dash':t+'-view');
-      if(el)el.style.display=t==='tasks'?'':'none';
+      if(el)el.style.display=t==='dash'?'':'none';
     });
-    currentTab='tasks';
-    // Show loading spinner
-    const tv=document.getElementById('tasks-view');
-    if(tv)tv.innerHTML=`<div style="max-width:900px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your tasks…</div></div>`;
+    currentTab='dash';
+    // Show loading spinner on dashboard
+    const dv=document.getElementById('dash');
+    if(dv)dv.innerHTML=`<div style="max-width:900px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your dashboard…</div></div>`;
     // Start listeners
     startTodoListener();
     startRemListener();startCardsListener();startExpenseListener();startMemListener();startSOPListener();
@@ -3022,7 +3054,7 @@ window.exitPreview=function(){
   document.getElementById('contacts-btn').style.display='';
   document.getElementById('sop-lib-btn').style.display='';
   document.getElementById('add-item-btn').style.display='';
-  switchTab(currentTab||'tasks');
+  switchTab(currentTab||'dash');
   toast('Back to your admin view.');
 };
 window.adminReset=async function(name){
@@ -3049,7 +3081,6 @@ window.refreshDash=async function(){
     const cs=await getDocs(collection(db,'contacts'));
     S.contacts=cs.docs.map(d=>d.data()).sort((a,b)=>a.name.localeCompare(b.name));
     if(currentTab==='dash') renderDash();
-    else if(currentTab==='tasks') renderMyTasks();
     else if(currentTab==='fin') renderFinance();
     else if(currentTab==='agenda') renderAgenda();
     toast('Refreshed.');
@@ -3085,7 +3116,6 @@ function startListeners(){
     S.projects=sn.docs.map(d=>({...d.data(),id:d.id}));
     if(isAdmin()){
       if(currentTab==='dash')renderDash();
-      if(currentTab==='tasks')renderMyTasks();
       checkNotify();
     } else {
       if(_perfTab==='dash')renderPerformerDash();
@@ -3125,52 +3155,30 @@ function renderDash(){
   </div>`;
 
   html+=`<div class="toolbar">
-    <div class="sw"><span class="flbl">Search</span><i class="ti ti-search"></i><input type="text" placeholder="Search items…" value="${esc(S.searchQ)}" oninput="S.searchQ=this.value;renderDash()" style="width:100%"></div>
-    <div class="filter-group${S.fVis?' active':''}">
-      <span class="filter-label">Visibility</span>
-      <select onchange="S.fVis=this.value;renderDash()">
-        <option value="">All</option>
-        <option value="group" ${S.fVis==='group'?'selected':''}>👥 Group</option>
-        <option value="private" ${S.fVis==='private'?'selected':''}>🔒 Private</option>
-      </select>
+    <div class="sw" style="flex:1;max-width:none">
+      <span class="flbl">Quick add to-do</span>
+      <i class="ti ti-checkbox" style="color:var(--ou-green)"></i>
+      <input type="text" id="todo-inp" placeholder="What do you need to do? Press Enter to save…" value="" oninput="" onkeydown="if(event.key==='Enter')addTodo()" style="width:100%">
     </div>
-    <div class="filter-group${S.fGroup?' active':''}">
-      <span class="filter-label">Group</span>
-      <select onchange="S.fGroup=this.value;renderDash()">
-        <option value="">All</option>
-        ${GROUPS.map(g=>`<option value="${esc(g)}" ${S.fGroup===g?'selected':''}>${esc(g)}</option>`).join('')}
-      </select>
-    </div>
-    <div class="filter-group${S.fOwner?' active':''}">
-      <span class="filter-label">Owner</span>
-      <select onchange="S.fOwner=this.value;renderDash()">
-        <option value="">All</option>
-        ${OWNERS.map(o=>`<option value="${esc(o.name)}" ${S.fOwner===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}
-      </select>
-    </div>
+    <input type="date" id="todo-due" title="Deadline (optional)" style="height:36px;font-size:12px;width:140px;border:.5px solid var(--border2);border-radius:var(--radius);padding:0 8px;background:var(--bg);color:var(--text)">
+    <button class="btn pri" onclick="addTodo()" style="height:36px;white-space:nowrap;flex-shrink:0"><i class="ti ti-plus"></i> Add to-do</button>
     <div class="filter-group${S.fPhase?' active':''}">
-      <span class="filter-label">Phase</span>
+      <span class="filter-label">Status</span>
       <select onchange="S.fPhase=this.value;renderDash()">
         <option value="">All</option>
-        ${PHASES.map(p=>`<option value="${esc(p)}" ${S.fPhase===p?'selected':''}>${p}</option>`).join('')}
+        ${PHASES.map(p=>`<option value="${esc(p)}" ${S.fPhase===p?'selected':''}>${esc(p)}</option>`).join('')}
       </select>
     </div>
-    <div class="filter-group${S.fRisk?' active':''}">
-      <span class="filter-label">Risk</span>
-      <select onchange="S.fRisk=this.value;renderDash()">
-        <option value="">All</option>
-        <option value="r" ${S.fRisk==='r'?'selected':''}>🔴 High Risk</option>
-        <option value="y" ${S.fRisk==='y'?'selected':''}>🟡 Caution</option>
-        <option value="g" ${S.fRisk==='g'?'selected':''}>🟢 On Track</option>
-        <option value="b" ${S.fRisk==='b'?'selected':''}>⚫ Past Due</option>
-      </select>
+    ${S.fPhase?`<button class="btn sm dng" onclick="clearF()" style="height:32px"><i class="ti ti-x"></i> Clear</button>`:''}
+  </div>
+  <div id="dash-todo-section" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+    <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow)">
+      ${renderTodoPanel()}
     </div>
-    ${S.fGroup||S.fPhase||S.fRisk||S.fOwner||S.fVis||S.searchQ
-      ?`<button class="btn sm dng" onclick="clearF()" style="align-self:flex-end;margin-bottom:1px"><i class="ti ti-x"></i> Clear filters</button>`
-      :''}
+    <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow)">
+      ${renderRemindersPanel()}
+    </div>
   </div>`;
-
-  // ── Personal To-Do panel ──
   // ── Welcome message ──
   html+=`<div style="margin-bottom:1rem;padding:.85rem 1.25rem;background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius-lg)">
     <div style="font-size:15px;font-weight:800;color:var(--ou-green)">Welcome, ${esc(CU.split(' ')[0])}!</div>
@@ -3387,78 +3395,72 @@ window.submitComplete=async id=>{
 
   if(hasNextStep&&!nsDesc){toast('Please describe the next step.');return;}
 
-  // Mark current item complete
-  p.completed=true;p.completedDate=today();
-  p.phase='Completed';p.status='Completed';
-  p.notes=p.notes||[];
-  p.notes.push({date:today(),text:`Marked complete by ${CU}.${hasNextStep?' Follow-up created.':''}`,author:CU});
-  logActivity(p,`Marked complete by ${CU}${hasNextStep?' — follow-up created':''}`);
-  await saveP(p);
-
   if(hasNextStep){
+    // ── Follow-up path — keep item ACTIVE, update it with new step/deadline ──
     const nsDue=document.getElementById('ns-due')?.value||'';
     const nsAssign=document.getElementById('ns-assign')?.value||CU;
-    const assignees=p.assignedTo&&p.assignedTo.length?p.assignedTo:[nsAssign];
 
-    // Create follow-up item
-    const followUp={
-      id:String(Date.now()),
-      name:p.name+' — Follow-up',
-      category:p.category||CATEGORIES[0],
-      phase:'Not Started',status:'Not Started',
-      due:nsDue,
-      description:nsDesc,nextStep:nsDesc,
-      assignedTo:assignees,
-      owner:ADMIN,
-      visibility:'group',group:GROUPS[0],
-      triggers:{t30:true,t14:true,t1:false,tc:true},
-      recipients:assignees.map(n=>OWNERS.find(o=>o.name===n)).filter(Boolean).map(o=>({name:o.name,email:o.email})),
-      createdBy:CU,
-      acknowledged:{},
-      completed:false,completedDate:null,
-      notes:[{date:today(),text:`Follow-up created from: ${p.name}`,author:CU}],
-      steps:[],tasks:[],
-      parentId:p.id
-    };
-    await saveP(followUp);
+    // Update the existing item — don't mark complete
+    p.notes=p.notes||[];
+    p.notes.push({date:today(),text:`Step completed by ${CU}. Next step: ${nsDesc}`,author:CU});
+    logActivity(p,`Step completed by ${CU}. Follow-up: "${nsDesc.slice(0,80)}"`);
 
-    // Notify Brian if a performer created the follow-up
+    // Update description and deadline with the new step
+    p.description=nsDesc;
+    p.nextStep=nsDesc;
+    if(nsDue)p.due=nsDue;
+    p.phase='In Progress';p.status='In Progress';
+    p.completed=false;p.completedDate=null;
+
+    // Reset acknowledgments for the new step
+    p.acknowledged={};
+
+    await saveP(p);
+
+    // Notify newly assigned person if different
+    const newAssign=nsAssign;
+    if(newAssign&&newAssign!==CU){
+      const owner=OWNERS.find(o=>o.name===newAssign);
+      if(owner){
+        const sub=encodeURIComponent(`[Next step assigned] ${p.name}`);
+        const body=encodeURIComponent(`Hi ${newAssign.split(' ')[0]},\n\nThere is a new step on: ${p.name}\n\nNext step: ${nsDesc}${nsDue?'\nNew deadline: '+fmtD(nsDue):''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
+        window.open(`mailto:${owner.email}?subject=${sub}&body=${body}`,'_blank');
+      }
+    }
+
+    // Notify Brian if a performer updated it
     if(!isAdmin()){
       const brian=OWNERS.find(o=>o.name===ADMIN);
-      const sub=encodeURIComponent(`[Follow-up created] ${followUp.name}`);
-      const body=encodeURIComponent(`Hi Brian,\n\n${CU} has completed "${p.name}" and created a follow-up item:\n\nFollow-up: ${followUp.name}\nNext step: ${nsDesc}${nsDue?'\nNew deadline: '+fmtD(nsDue):''}\n\nPlease review in the tracker.\n\nThanks,\n${CU}`);
+      const sub=encodeURIComponent(`[Follow-up step] ${p.name}`);
+      const body=encodeURIComponent(`Hi Brian,\n\n${CU} has completed a step on "${p.name}" and added a follow-up:\n\nNext step: ${nsDesc}${nsDue?'\nNew deadline: '+fmtD(nsDue):''}\n\nThe item remains active on the dashboard.\n\nThanks,\n${CU}`);
       window.open(`mailto:${brian?.email||'mershon@ohio.edu'}?subject=${sub}&body=${body}`,'_blank');
     }
 
-    // Notify newly assigned people
-    assignees.filter(n=>n!==CU).forEach(name=>{
-      const owner=OWNERS.find(o=>o.name===name);if(!owner)return;
-      const sub=encodeURIComponent(`[New follow-up assigned] ${followUp.name}`);
-      const body=encodeURIComponent(`Hi ${name.split(' ')[0]},\n\nA follow-up item has been assigned to you:\n\n${followUp.name}\nNext step: ${nsDesc}${nsDue?'\nDeadline: '+fmtD(nsDue):''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
-      window.open(`mailto:${owner.email}?subject=${sub}&body=${body}`,'_blank');
-    });
-
-    // Add to notification log
-    S.notifLog.unshift({date:today(),project:followUp.name,trigger:'Follow-up item created from: '+p.name,daysLeft:nsDue?dU(nsDue):null,recipients:assignees.join(', '),href:null});
-    await saveLog(S.notifLog);updateNotifBadge();
-
     closeOv();
-    toast('Item completed ✅ — follow-up created and team notified.');
+    toast('Step logged ✅ — item updated with next step and stays active.');
+
   } else {
-    closeOv();
-    toast('Item completed ✅ — moved to Completed tab.');
-  }
+    // ── Complete path — mark done, move to Completed tab ──
+    p.completed=true;p.completedDate=today();
+    p.phase='Completed';p.status='Completed';
+    p.notes=p.notes||[];
+    p.notes.push({date:today(),text:`Marked complete by ${CU}.`,author:CU});
+    logActivity(p,`Marked complete by ${CU}`);
+    await saveP(p);
 
-  // SOP generation path
-  if(generateSOP){
-    closeOv();
-    toast('Item completed ✅');
-    setTimeout(()=>openSOPGenerator(id),400);
+    if(generateSOP){
+      closeOv();
+      toast('Item completed ✅');
+      setTimeout(()=>openSOPGenerator(id),400);
+    } else {
+      closeOv();
+      toast('Item completed ✅ — moved to Completed tab.');
+    }
   }
 
   // Re-render everything
   if(isAdmin()){renderDash();if(currentTab==='tasks')renderMyTasks();}
-  else{renderPerformerDash();renderPerfDone();}
+  else{renderPerformerDash();if(_perfTab==='done')renderPerfDone();}
   updatePerfLogBadge();
 };
 
@@ -3508,7 +3510,7 @@ function renderTodoDueAlerts(){
 
   let rows=alertTodos.map(t=>{
     const dl=dueLabel(t.days);
-    return`<div class="todo-alert-row ${rowClass(t.days)}" onclick="switchTab('tasks')">
+    return`<div class="todo-alert-row ${rowClass(t.days)}" onclick="document.getElementById('dash-todo-section')?.scrollIntoView({behavior:'smooth'})">
       <div class="tad-pri" style="background:${priColor[t.priority||'medium']}"></div>
       <span class="tad-text">${esc(t.text)}</span>
       <span class="tad-chip" style="background:var(--bg3);color:var(--text3)">${priLabel[t.priority||'medium']}</span>
@@ -3552,8 +3554,7 @@ function startTodoListener(){
     _todos=sn.exists()?(sn.data().items||[]):[];
     _todosLoaded=true;
     updateTasksBadge();
-    if(currentTab==='tasks')renderMyTasks();
-    else if(currentTab==='dash')renderDash();
+    if(currentTab==='dash')renderDash();
   });
 }
 
@@ -3592,15 +3593,10 @@ function renderTodoPanel(){
       <h3><i class="ti ti-checkbox" style="color:var(--ou-green)"></i> My To-Do List <span style="font-size:12px;font-weight:500;color:var(--text2)">(private — only you see this)</span></h3>
       <span style="font-size:12px;color:var(--text2)">${active.length} active · ${done.length} completed</span>
     </div>
-    <div class="todo-add-row">
-      <input type="text" id="todo-inp" placeholder="Add a to-do item… (press Enter to save)" onkeydown="if(event.key==='Enter')addTodo()">
-      <select id="todo-pri">
-        <option value="medium">⚡ Medium</option>
-        <option value="high">🔴 High</option>
-        <option value="low">🟢 Low</option>
-      </select>
-      <input type="date" id="todo-due" title="Due date (optional)">
-      <button class="btn pri" onclick="addTodo()"><i class="ti ti-plus"></i> Add</button>
+    <div class="todo-add-row" style="display:flex;gap:8px;align-items:center;margin-bottom:.85rem">
+      <input type="text" id="todo-inp" placeholder="What do you need to do? (press Enter to save)" style="flex:1;height:38px;font-size:13px" onkeydown="if(event.key==='Enter')addTodo()">
+      <input type="date" id="todo-due" title="Deadline (optional)" style="height:38px;font-size:13px;width:145px">
+      <button class="btn pri" onclick="addTodo()" style="height:38px;white-space:nowrap"><i class="ti ti-plus"></i> Add</button>
     </div>`;
 
   if(!active.length&&!done.length){
@@ -3647,25 +3643,24 @@ window.addTodo=async()=>{
   const inp=document.getElementById('todo-inp');
   const text=(inp?inp.value.trim():'');
   if(!text){toast('Enter a to-do item.');if(inp)inp.focus();return;}
-  const pri=document.getElementById('todo-pri')?.value||'medium';
   const due=document.getElementById('todo-due')?.value||'';
-  const item={id:String(Date.now()),text,priority:pri,due,done:false,doneDate:null,createdDate:today()};
+  const item={id:String(Date.now()),text,priority:'medium',due,done:false,doneDate:null,createdDate:today()};
   _todos.push(item);
   await saveTodos();
   if(inp)inp.value='';
   const duEl=document.getElementById('todo-due');if(duEl)duEl.value='';
-  const prEl=document.getElementById('todo-pri');if(prEl)prEl.value='medium';
-  renderDash();
-  toast('To-do added.');
-  setTimeout(()=>{const el=document.getElementById('todo-inp');if(el)el.focus();},100);
+  updateTasksBadge();
+  if(currentTab==='tasks')renderMyTasks();else renderDash();
+  toast('Added ✅');
+  setTimeout(()=>{const el=document.getElementById('todo-inp');if(el)el.focus();},80);
 };
 
 window.toggleTodo=async(id,checked)=>{
   const t=_todos.find(x=>x.id===id);if(!t)return;
-  t.done=checked;
-  t.doneDate=checked?today():null;
+  t.done=checked;t.doneDate=checked?today():null;
   await saveTodos();
-  renderDash();
+  updateTasksBadge();
+  if(currentTab==='tasks')renderMyTasks();else renderDash();
 };
 
 window.deleteTodo=async id=>{
@@ -3723,13 +3718,12 @@ window.saveTodoEdit=async id=>{
 let currentTab='dash';
 window.switchTab=function(tab){
   currentTab=tab;
-  ['dash','tasks','fin','agenda'].forEach(t=>{
+  ['dash','fin','agenda'].forEach(t=>{
     const btn=document.getElementById('tab-'+t);
     if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById(t==='dash'?'dash':t+'-view');
     if(el)el.style.display=tab===t?'':'none';
   });
-  if(tab==='tasks')renderMyTasks();
   if(tab==='fin')renderFinance();
   if(tab==='agenda')renderAgenda();
 };
