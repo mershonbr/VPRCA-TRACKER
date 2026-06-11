@@ -2161,6 +2161,7 @@ function renderPerformerDash(){
           <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Deadline</th>
           <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Description</th>
           <th style="padding:8px 12px;text-align:center;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Ack</th>
+          <th style="padding:8px 12px;text-align:center;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Done</th>
         </tr></thead><tbody>`;
 
     myItems.sort((a,b)=>{
@@ -2186,6 +2187,12 @@ function renderPerformerDash(){
           ${hasAck
             ?`<span style="font-size:11px;font-weight:700;color:var(--green-text)" title="Acknowledged ${fmtS(hasAck)}">✅</span>`
             :`<span style="font-size:11px;font-weight:700;color:var(--ou-gold)">⏳</span>`}
+        </td>
+        <td style="padding:10px 12px;text-align:center" onclick="event.stopPropagation()">
+          <input type="checkbox" ${p.completed?'checked':''} title="Mark complete"
+            onchange="event.stopPropagation();openCompleteDialog('${p.id}',this.checked)"
+            onclick="event.stopPropagation()"
+            style="width:16px;height:16px;cursor:pointer;accent-color:var(--ou-green)">
         </td>
       </tr>`;
     });
@@ -2342,7 +2349,9 @@ window.openPerformerDetail=id=>{
       <button class="btn gh" onclick="closeOv()">Close</button>
       ${!hasAck&&!isPreview?`<button class="btn" onclick="acknowledgeItem('${p.id}');closeOv()"><i class="ti ti-eye-check"></i> Acknowledge</button>`:''}
       ${!isPreview?`<button class="btn" onclick="emailBackToBrian('${p.id}')"><i class="ti ti-mail"></i> Email Brian</button>`:''}
-      ${!isPreview?`<button class="btn pri" onclick="savePerformerDetailUpdate('${p.id}')"><i class="ti ti-check"></i> Save update</button>`:''}
+      ${!p.completed&&!isPreview?`<button class="btn pri" onclick="closeOv();openCompleteDialog('${p.id}',true)"><i class="ti ti-circle-check"></i> Mark complete</button>`:''}
+      ${p.completed&&!isPreview?`<button class="btn" onclick="closeOv();openCompleteDialog('${p.id}',false)"><i class="ti ti-arrow-back-up"></i> Reopen</button>`:''}
+      ${!isPreview?`<button class="btn sm" onclick="savePerformerDetailUpdate('${p.id}')"><i class="ti ti-check"></i> Save update</button>`:''}
     </div>
   </div>`);
 };
@@ -2869,9 +2878,10 @@ function renderDash(){
       <th style="width:10%">Category</th>
       <th style="width:10%">Status</th>
       <th style="width:9%">Deadline</th>
-      <th style="width:20%">Description</th>
-      <th style="width:16%">Assigned to</th>
+      <th style="width:18%">Description</th>
+      <th style="width:14%">Assigned to</th>
       <th style="width:7%;text-align:center">Acknowledged</th>
+      <th style="width:4%;text-align:center">Done</th>
       <th style="width:3%"></th>
     </tr></thead><tbody>`;
   if(!rows.length){html+=`<tr><td colspan="8"><div class="empty"><i class="ti ti-search"></i><p>No items match your filters.</p></div></td></tr>`}
@@ -2907,6 +2917,12 @@ function renderDash(){
           </div>
         </td>
         <td style="text-align:center"><span style="font-size:11px;font-weight:700;color:${ackColor}">${assignedTo.length?`${ackCount}/${assignedTo.length}`:'—'}</span></td>
+        <td style="text-align:center" onclick="event.stopPropagation()">
+          <input type="checkbox" ${p.completed?'checked':''} title="${p.completed?'Mark as not complete':'Mark as complete'}"
+            onchange="event.stopPropagation();openCompleteDialog('${p.id}',this.checked)"
+            onclick="event.stopPropagation()"
+            style="width:16px;height:16px;cursor:pointer;accent-color:var(--ou-green)">
+        </td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">${ce
           ?`<button class="ibtn" onclick="event.stopPropagation();openEdit('${p.id}')" style="padding:3px"><i class="ti ti-edit" style="font-size:13px"></i></button><button class="ibtn" onclick="event.stopPropagation();doDelP('${p.id}')" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button>`
           :`<button class="ibtn" onclick="openDetail('${p.id}')" style="padding:3px"><i class="ti ti-eye" style="font-size:13px"></i></button>`}
@@ -2933,7 +2949,164 @@ window.reopenItem=async id=>{
   if(!confirm('Reopen this item?'))return;
   const p=S.projects.find(x=>x.id===id);if(!p)return;
   p.completed=false;p.completedDate=null;p.phase='In Progress';p.status='In Progress';
-  await saveP(p);toast('Item reopened.');
+  await saveP(p);
+  renderDash();
+  if(!isAdmin())renderPerformerDash();
+  toast('Item reopened.');
+};
+
+// ── Completion dialog ────────────────────────────────────────────────────────
+window.openCompleteDialog=function(id,checked){
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+
+  // Unchecking — reopen item
+  if(!checked){
+    showOv(`<div class="modal" style="max-width:420px">
+      <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+      <h2>Reopen item?</h2>
+      <p class="msub">This will move <strong>${esc(p.name)}</strong> back to active and set status to In Progress.</p>
+      <div class="mfoot">
+        <button class="btn gh" onclick="closeOv();forceRender()">Cancel</button>
+        <button class="btn pri" onclick="doReopenItem('${id}')"><i class="ti ti-arrow-back-up"></i> Reopen</button>
+      </div>
+    </div>`);
+    return;
+  }
+
+  // Checking — show next step dialog
+  showOv(`<div class="modal" style="max-width:500px">
+    <button class="ibtn mclose" onclick="closeOv();forceRender()"><i class="ti ti-x"></i></button>
+    <h2><i class="ti ti-circle-check" style="color:var(--ou-green);font-size:18px;vertical-align:-2px"></i> Complete: ${esc(p.name)}</h2>
+    <p class="msub">Great work! Before closing this item, are there any follow-up steps needed?</p>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:.75rem 0">
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:.85rem 1rem;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--bg2)" id="opt-no-label">
+        <input type="radio" name="next-step-opt" value="no" checked style="margin-top:2px;accent-color:var(--ou-green)" onchange="document.getElementById('next-step-fields').style.display='none';document.getElementById('opt-no-label').style.borderColor='var(--ou-green)';document.getElementById('opt-yes-label').style.borderColor='var(--border2)'">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">✅ No — close this item</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">Mark as complete and move to the Completed tab.</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:.85rem 1rem;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--bg2)" id="opt-yes-label">
+        <input type="radio" name="next-step-opt" value="yes" style="margin-top:2px;accent-color:var(--ou-green)" onchange="document.getElementById('next-step-fields').style.display='';document.getElementById('opt-yes-label').style.borderColor='var(--ou-green)';document.getElementById('opt-no-label').style.borderColor='var(--border2)'">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">🔄 Yes — there's a follow-up step</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">Complete this item and create a follow-up with a new deadline.</div>
+        </div>
+      </label>
+    </div>
+
+    <div id="next-step-fields" style="display:none;background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:1rem;margin-top:.5rem">
+      <div class="fr"><label class="fl">What is the next step? *</label>
+        <textarea id="ns-desc" rows="2" style="width:100%" placeholder="Describe what needs to happen next…"></textarea>
+      </div>
+      <div class="f2">
+        <div class="fr"><label class="fl">New deadline</label><input type="date" id="ns-due" style="width:100%"></div>
+        <div class="fr"><label class="fl">Assign to</label>
+          <select id="ns-assign" style="width:100%">
+            ${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(p.assignedTo||[]).includes(o.name)?'selected':''}>${esc(o.name.split(' ').pop())}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv();forceRender()">Cancel</button>
+      <button class="btn pri" onclick="submitComplete('${id}')"><i class="ti ti-check"></i> Confirm</button>
+    </div>
+  </div>`);
+};
+
+// Force re-render to reset checkboxes if user cancels
+window.forceRender=function(){
+  if(isAdmin())renderDash();
+  else renderPerformerDash();
+};
+
+window.doReopenItem=async id=>{
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  p.completed=false;p.completedDate=null;p.phase='In Progress';p.status='In Progress';
+  p.notes=p.notes||[];
+  p.notes.push({date:today(),text:'Reopened by '+CU,author:CU});
+  await saveP(p);
+  closeOv();
+  renderDash();
+  if(!isAdmin())renderPerformerDash();
+  toast('Item reopened and set to In Progress.');
+};
+
+window.submitComplete=async id=>{
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  const hasNextStep=document.querySelector('[name=next-step-opt]:checked')?.value==='yes';
+  const nsDesc=document.getElementById('ns-desc')?.value.trim();
+
+  if(hasNextStep&&!nsDesc){toast('Please describe the next step.');return;}
+
+  // Mark current item complete
+  p.completed=true;p.completedDate=today();
+  p.phase='Completed';p.status='Completed';
+  p.notes=p.notes||[];
+  p.notes.push({date:today(),text:`Marked complete by ${CU}.${hasNextStep?' Follow-up created.':''}`,author:CU});
+  await saveP(p);
+
+  if(hasNextStep){
+    const nsDue=document.getElementById('ns-due')?.value||'';
+    const nsAssign=document.getElementById('ns-assign')?.value||CU;
+    const assignees=p.assignedTo&&p.assignedTo.length?p.assignedTo:[nsAssign];
+
+    // Create follow-up item
+    const followUp={
+      id:String(Date.now()),
+      name:p.name+' — Follow-up',
+      category:p.category||CATEGORIES[0],
+      phase:'Not Started',status:'Not Started',
+      due:nsDue,
+      description:nsDesc,nextStep:nsDesc,
+      assignedTo:assignees,
+      owner:ADMIN,
+      visibility:'group',group:GROUPS[0],
+      triggers:{t30:true,t14:true,t1:false,tc:true},
+      recipients:assignees.map(n=>OWNERS.find(o=>o.name===n)).filter(Boolean).map(o=>({name:o.name,email:o.email})),
+      createdBy:CU,
+      acknowledged:{},
+      completed:false,completedDate:null,
+      notes:[{date:today(),text:`Follow-up created from: ${p.name}`,author:CU}],
+      steps:[],tasks:[],
+      parentId:p.id
+    };
+    await saveP(followUp);
+
+    // Notify Brian if a performer created the follow-up
+    if(!isAdmin()){
+      const brian=OWNERS.find(o=>o.name===ADMIN);
+      const sub=encodeURIComponent(`[Follow-up created] ${followUp.name}`);
+      const body=encodeURIComponent(`Hi Brian,\n\n${CU} has completed "${p.name}" and created a follow-up item:\n\nFollow-up: ${followUp.name}\nNext step: ${nsDesc}${nsDue?'\nNew deadline: '+fmtD(nsDue):''}\n\nPlease review in the tracker.\n\nThanks,\n${CU}`);
+      window.open(`mailto:${brian?.email||'mershon@ohio.edu'}?subject=${sub}&body=${body}`,'_blank');
+    }
+
+    // Notify newly assigned people
+    assignees.filter(n=>n!==CU).forEach(name=>{
+      const owner=OWNERS.find(o=>o.name===name);if(!owner)return;
+      const sub=encodeURIComponent(`[New follow-up assigned] ${followUp.name}`);
+      const body=encodeURIComponent(`Hi ${name.split(' ')[0]},\n\nA follow-up item has been assigned to you:\n\n${followUp.name}\nNext step: ${nsDesc}${nsDue?'\nDeadline: '+fmtD(nsDue):''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
+      window.open(`mailto:${owner.email}?subject=${sub}&body=${body}`,'_blank');
+    });
+
+    // Add to notification log
+    S.notifLog.unshift({date:today(),project:followUp.name,trigger:'Follow-up item created from: '+p.name,daysLeft:nsDue?dU(nsDue):null,recipients:assignees.join(', '),href:null});
+    await saveLog(S.notifLog);updateNotifBadge();
+
+    closeOv();
+    toast('Item completed ✅ — follow-up created and team notified.');
+  } else {
+    closeOv();
+    toast('Item completed ✅ — moved to Completed tab.');
+  }
+
+  // Re-render everything
+  if(isAdmin()){renderDash();if(currentTab==='tasks')renderMyTasks();}
+  else{renderPerformerDash();renderPerfDone();}
+  updatePerfLogBadge();
 };
 
 // ── To-do due alert panel (shown on main dashboard) ──
@@ -4064,7 +4237,7 @@ window.openDetail=id=>{
       <div id="upload-progress-${p.id}"></div>
       <div class="file-list" id="file-list-${p.id}"><div style="font-size:12px;color:var(--text3);padding:.5rem 0">Loading attachments…</div></div>
     </div>
-    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Close</button>${ce?`<button class="btn" onclick="closeOv();openAssignTask('${p.id}')"><i class="ti ti-clipboard-list"></i> Assign task</button><button class="btn pri" onclick="closeOv();openEdit('${p.id}')"><i class="ti ti-edit"></i> Edit</button>`:''}</div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Close</button>${ce?`<button class="btn" onclick="closeOv();openCompleteDialog('${p.id}',${!p.completed})">${p.completed?'<i class="ti ti-arrow-back-up"></i> Reopen':'<i class="ti ti-circle-check"></i> Mark complete'}</button><button class="btn" onclick="closeOv();openAssignTask('${p.id}')"><i class="ti ti-clipboard-list"></i> Assign task</button><button class="btn pri" onclick="closeOv();openEdit('${p.id}')"><i class="ti ti-edit"></i> Edit</button>`:''}</div>
   </div>`);
   setTimeout(()=>{const n=document.getElementById('ni');if(n)n.focus();loadAttachments(p.id);},100);
 };
