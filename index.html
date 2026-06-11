@@ -631,7 +631,7 @@ const _app=initializeApp(FB);
 const db=getFirestore(_app);
 const storage=getStorage(_app);
 
-const PHASES=['Not Started','Planned','In Progress','Complete'];
+const PHASES=['Not Started','In Progress','Completed'];
 const CATEGORIES=['Events','Policies','Initiatives','Memberships','Personal'];
 const GROUPS=['VPRCA Leadership Team','OSP','Research Compliance','Research Development','LAR','Other'];
 const TRIGGERS=[{id:'t30',l:'30-day deadline alert',d:'30 days before due date'},{id:'t14',l:'2-week notice',d:'14 days before due date'},{id:'t1',l:'Day-before reminder',d:'1 day before due date'},{id:'tc',l:'Completion notice',d:'When marked Complete'}];
@@ -670,8 +670,20 @@ function cRisk(p){if(p.completed)return'c';const d=dU(p.due);if(d<0)return'b';if
 function rBadge(p){const r=cRisk(p);const lbl={g:'🟢 On Track',y:'🟡 Caution',r:'🔴 High Risk',b:'⚫ Past Due',c:'✅ Complete'};const cls={g:'rg',y:'ry',r:'rr',b:'rb',c:'rc'};return`<span class="rbadge ${cls[r]}">${lbl[r]}</span>`}
 function rowCls(p){if(p.flag)return're';const r=cRisk(p);if(r==='r'||r==='b')return'rr-row';return''}
 function pSort(arr){const o=p=>{if(p.flag)return 0;const r=cRisk(p);if(r==='b')return 1;if(r==='r')return 2;if(r==='y')return 3;return 4};return[...arr].sort((a,b)=>{const oa=o(a),ob=o(b);if(oa!==ob)return oa-ob;return(a.due||'').localeCompare(b.due||'')})}
-function canSee(p){if(isAdmin())return true;if(p.visibility==='private')return p.createdBy===CU;return true}
-function getFiltered(){let r=S.projects.filter(canSee);if(S.fMyProjects)r=r.filter(p=>(p.owner||'')===CU);if(S.ericOnly)r=r.filter(p=>p.flag||p.approvalRequired);if(S.searchQ){const q=S.searchQ.toLowerCase();r=r.filter(p=>p.name.toLowerCase().includes(q)||(p.nextStep||'').toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q)||(p.owner||'').toLowerCase().includes(q))}if(S.fCategory)r=r.filter(p=>p.category===S.fCategory);if(S.fPhase)r=r.filter(p=>p.phase===S.fPhase);if(S.fRisk)r=r.filter(p=>cRisk(p)===S.fRisk);if(S.fOwner)r=r.filter(p=>(p.owner||'')===S.fOwner);if(S.fGroup)r=r.filter(p=>p.visibility==='group'&&p.group===S.fGroup);if(S.fVis)r=r.filter(p=>p.visibility===S.fVis);return pSort(r)}
+function canSee(p){
+  if(isAdmin())return true;
+  // Performers only see items assigned to them
+  return(p.assignedTo||[]).includes(CU);
+}
+function getFiltered(){
+  let r=S.projects.filter(canSee);
+  if(S.fMyProjects)r=r.filter(p=>(p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU);
+  if(S.searchQ){const q=S.searchQ.toLowerCase();r=r.filter(p=>p.name.toLowerCase().includes(q)||(p.description||'').toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q))}
+  if(S.fCategory&&S.fCategory!=='__todo__')r=r.filter(p=>p.category===S.fCategory);
+  if(S.fPhase)r=r.filter(p=>(p.phase||'Not Started')===S.fPhase);
+  if(S.fVis)r=r.filter(p=>p.visibility===S.fVis);
+  return pSort(r);
+}
 function getMets(){const v=S.projects.filter(canSee),rs=v.map(p=>cRisk(p));return{total:v.length,g:rs.filter(r=>r==='g').length,y:rs.filter(r=>r==='y').length,r:rs.filter(r=>r==='r').length,b:rs.filter(r=>r==='b').length,c:v.filter(p=>p.completed).length,e:v.filter(p=>p.flag||p.approvalRequired).length,priv:v.filter(p=>p.visibility==='private').length,upcoming:v.filter(p=>{const d=dU(p.due);return d>=0&&d<=30&&!p.completed}).length}}
 function aTrig(p){const d=dU(p.due),out=[];const t=p.triggers||{};if(t.t30&&d<=30&&d>14)out.push({id:'t30',l:'30-day alert',d:'30 days before due'});if(t.t14&&d<=14&&d>1)out.push({id:'t14',l:'2-week alert',d:'14 days before due'});if(t.t1&&d<=1&&d>=0)out.push({id:'t1',l:'Day-before',d:'1 day before due'});if(t.tc&&p.phase==='Complete')out.push({id:'tc',l:'Completion',d:'When marked complete'});return out}
 function mailto(p,l,d){const to=(p.recipients||[]).map(r=>r.email).join(',');if(!to)return null;const s=encodeURIComponent('['+l+'] '+p.name+' — VPRCA Tracker');const b=encodeURIComponent('Project: '+p.name+'\nVisibility: '+(p.visibility==='private'?'Private':'Group — '+p.group)+'\nRisk: '+cRisk(p).toUpperCase()+'\nDeadline: '+fmtD(p.due)+'\nNext Step: '+(p.nextStep||'—')+'\n\nTrigger: '+d);return'mailto:'+to+'?subject='+s+'&body='+b}
@@ -1285,39 +1297,26 @@ let _agendaMeetingTitle='VPRCA Leadership Meeting';
 
 function buildAgendaSuggestions(){
   const items=[];
-  const cutoff=new Date();cutoff.setDate(cutoff.getDate()+30);
-  // Pull assigned tasks due within 30 days
+  const meetingDate=_agendaMeetingDate?new Date(_agendaMeetingDate):new Date();
+  const cutoff=new Date(meetingDate);cutoff.setDate(cutoff.getDate()+30);
+
   S.projects.filter(canSee).filter(p=>!p.completed).forEach(p=>{
-    (p.tasks||[]).forEach(t=>{
-      if(!t.dueDate)return;
-      const due=new Date(t.dueDate);
-      if(due>cutoff)return;
-      const days=Math.ceil((due-new Date())/86400000);
-      const assigneeNames=(t.assignees||[]).join(', ');
-      const reason=days<0?`Past due · ${assigneeNames}`:days===0?`Due today · ${assigneeNames}`:`Due in ${days}d · ${assigneeNames}`;
-      // avoid duplicates
-      if(!items.find(x=>x.id==='task_'+t.id)){
-        items.push({
-          id:'task_'+t.id,
-          title:`${p.name}: ${t.title}`,
-          reason,
-          type:'task',
-          dueDate:t.dueDate,
-          minutes:5,
-          notes:'',
-          discussed:false,
-          taskId:t.id,
-          projectId:p.id,
-          urgent:days<=0
-        });
-      }
-    });
-    // Also include projects flagged for Eric with no tasks yet
-    if(p.flag&&!items.find(x=>x.id==='proj_'+p.id)){
-      const days=dU(p.due);
-      if(days<=30){
-        items.push({id:'proj_'+p.id,title:p.name,reason:'Eric decision required',type:'project',dueDate:p.due,minutes:10,notes:'',discussed:false,urgent:days<=0});
-      }
+    if(!p.due)return;
+    const due=new Date(p.due);
+    if(due>cutoff)return;
+    const days=Math.ceil((due-meetingDate)/86400000);
+    const assignees=(p.assignedTo||[]).filter(n=>n!==CU);
+    if(!assignees.length&&!p.flag)return; // only show if assigned to someone or Eric-flagged
+    const unacked=assignees.filter(n=>!p.acknowledged?.[n]);
+    let reason=p.flag?'Eric decision required':days<0?'Past due':days===0?'Due on meeting day':`Due in ${days}d`;
+    if(unacked.length) reason+=` · ${unacked.length} pending ack`;
+    if(!items.find(x=>x.id==='proj_'+p.id)){
+      items.push({
+        id:'proj_'+p.id,title:p.name,reason,type:'project',
+        dueDate:p.due,minutes:5,notes:'',discussed:false,
+        assignees:assignees.join(', '),
+        urgent:days<=0||p.flag
+      });
     }
   });
   return items.sort((a,b)=>{
@@ -1386,6 +1385,7 @@ function renderAgenda(){
         <div class="agenda-item-meta">
           <span style="color:${item.reason.includes('Past due')||item.reason.includes('decision')?'var(--red-text)':'var(--ou-gold)'}">${esc(item.reason)}</span>
           ${item.dueDate?`<span>Deadline: ${fmtS(item.dueDate)}</span>`:''}
+          ${item.assignees?`<span>Assigned: ${esc(item.assignees)}</span>`:''}
         </div>
         ${item.notes?`<div class="agenda-item-notes">${esc(item.notes)}</div>`:''}
       </div>
@@ -2094,22 +2094,16 @@ function renderPerformerDash(){
   const el=document.getElementById('perf-dash');if(!el)return;
   const viewAs=_previewingAs||CU;
   const isPreview=!!_previewingAs;
-  const myTasks=[];
-  S.projects.filter(p=>!p.completed).forEach(p=>{
-    (p.tasks||[]).forEach(t=>{
-      if((t.assignees||[]).includes(viewAs)) myTasks.push({...t,projectId:p.id,projectName:p.name});
-    });
-  });
-  myTasks.sort((a,b)=>{
-    const da=a.dueDate?new Date(a.dueDate):new Date('2099-01-01');
-    const db2=b.dueDate?new Date(b.dueDate):new Date('2099-01-01');
-    return da-db2;
-  });
-  const activeTasks=myTasks.filter(t=>t.type==='action'?!t.completions?.[viewAs]:!t.reviews?.[viewAs]);
-  const doneTasks=myTasks.filter(t=>t.type==='action'?t.completions?.[viewAs]:t.reviews?.[viewAs]);
-  const atRisk=S.projects.filter(canSee).filter(p=>!p.completed&&(cRisk(p)==='r'||cRisk(p)==='b')).length;
   const now=new Date();const hour=now.getHours();
   const greet=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
+
+  // Items assigned to this person
+  const myItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&!p.completed);
+  const doneItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&p.completed);
+
+  const statusIcon={'Not Started':'🔵','In Progress':'🟡','Completed':'✅'};
+  const statusColor={'Not Started':'var(--text2)','In Progress':'var(--ou-gold)','Completed':'var(--green-text)'};
+
   let html=`<div class="perf-wrap">
     <div class="perf-header">
       <h2>${greet}, ${esc(viewAs.split(' ')[0])} 👋</h2>
@@ -2117,52 +2111,111 @@ function renderPerformerDash(){
     </div>
     <div style="display:flex;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap">
       <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:.75rem 1.25rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px">
-        <span style="font-size:28px;font-weight:800;color:${activeTasks.length>0?'var(--red-text)':'var(--green-text)'}">${activeTasks.length}</span>
-        <span style="font-size:13px;color:var(--text2)">${activeTasks.length===1?'item in your queue':'items in your queue'}</span>
+        <span style="font-size:28px;font-weight:800;color:${myItems.length>0?'var(--ou-green)':'var(--text3)'}">${myItems.length}</span>
+        <span style="font-size:13px;color:var(--text2)">active item${myItems.length!==1?'s':''} assigned to you</span>
       </div>
-      ${atRisk>0?`<div style="background:var(--red-bg);border:.5px solid var(--red-border);border-radius:var(--radius-lg);padding:.75rem 1.25rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px"><span style="font-size:28px;font-weight:800;color:var(--red-text)">${atRisk}</span><span style="font-size:13px;color:var(--red-text)">project${atRisk!==1?'s':''} at risk</span></div>`:''}
-    </div>
-    <div class="perf-section">
-      <div class="perf-section-title"><i class="ti ti-clipboard-list" style="font-size:16px;color:var(--ou-green)"></i> Your queue ${activeTasks.length?`<span>${activeTasks.length}</span>`:''}</div>`;
-  if(!activeTasks.length){
-    html+=`<div class="perf-empty"><i class="ti ti-circle-check" style="color:var(--green-text);font-size:36px"></i><p style="font-size:15px;font-weight:700;margin-bottom:4px;color:var(--green-text)">Nothing pending</p><p style="font-size:13px">Brian will assign tasks here when something needs your attention.</p></div>`;
+      ${myItems.filter(p=>!p.acknowledged?.[viewAs]).length>0?`<div style="background:var(--yellow-bg);border:.5px solid var(--ou-gold);border-radius:var(--radius-lg);padding:.75rem 1.25rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px">
+        <span style="font-size:28px;font-weight:800;color:var(--ou-gold)">${myItems.filter(p=>!p.acknowledged?.[viewAs]).length}</span>
+        <span style="font-size:13px;color:var(--ou-gold)">need acknowledgment</span>
+      </div>`:''}
+    </div>`;
+
+  if(!myItems.length){
+    html+=`<div class="perf-empty"><i class="ti ti-circle-check" style="color:var(--green-text);font-size:36px"></i><p style="font-size:15px;font-weight:700;margin-bottom:4px;color:var(--green-text)">Nothing assigned to you</p><p style="font-size:13px">Brian will assign items here when something needs your attention.</p></div>`;
   } else {
-    activeTasks.forEach(t=>{
-      const daysLeft=t.dueDate?Math.ceil((new Date(t.dueDate)-new Date())/86400000):null;
+    html+=`<div class="perf-section"><div class="perf-section-title"><i class="ti ti-clipboard-list" style="font-size:16px;color:var(--ou-green)"></i> Your assigned items <span>${myItems.length}</span></div>`;
+    myItems.forEach(p=>{
+      const daysLeft=p.due?Math.ceil((new Date(p.due)-new Date())/86400000):null;
       const urg=daysLeft!==null?(daysLeft<0?'overdue':daysLeft<=3?'due-soon':'normal'):'normal';
       const dueColor=urg==='overdue'?'var(--red-text)':urg==='due-soon'?'var(--ou-gold)':'var(--text2)';
-      const dueLabel=!t.dueDate?'No due date':daysLeft<0?`${Math.abs(daysLeft)}d overdue`:daysLeft===0?'Due today':daysLeft===1?'Due tomorrow':`Due in ${daysLeft}d`;
-      let reviewStatus='';
-      if(t.type==='review'){
-        const allA=t.assignees||[];
-        reviewStatus=`<div class="task-review-status" style="margin-bottom:.65rem"><div class="rs-title">Review status — ${allA.filter(n=>t.reviews?.[n]).length} of ${allA.length} confirmed</div>${allA.map(n=>`<span class="task-reviewer ${t.reviews?.[n]?'done':'pending'}">${t.reviews?.[n]?'✅':'⏳'} ${esc(n.split(' ').pop())}</span>`).join('')}</div>`;
-      }
+      const dueLabel=!p.due?'No deadline':daysLeft<0?`${Math.abs(daysLeft)}d overdue`:daysLeft===0?'Due today':daysLeft===1?'Due tomorrow':`Due in ${daysLeft}d`;
+      const hasAck=p.acknowledged?.[viewAs];
+      const phase=p.phase||'Not Started';
+
       html+=`<div class="task-card ${urg==='overdue'?'overdue':urg==='due-soon'?'due-soon':''}">
-        <div class="task-card-head"><div class="task-card-title">${esc(t.title)}</div>
-        <span class="task-type ${t.type==='review'?'task-type-review':'task-type-action'}">${t.type==='review'?'👁 Review':'✅ Action'}</span></div>
-        <div class="task-project"><i class="ti ti-folder" style="font-size:11px"></i> ${esc(t.projectName)}</div>
-        ${t.desc?`<div style="font-size:13px;color:var(--text2);margin-bottom:.5rem;line-height:1.5">${esc(t.desc)}</div>`:''}
+        <div class="task-card-head">
+          <div>
+            <div class="task-card-title">${esc(p.name)}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(p.category||'—')}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <span style="font-size:12px;font-weight:700;color:${statusColor[phase]||'var(--text2)'}">${statusIcon[phase]||''} ${phase}</span>
+            ${hasAck?`<span style="font-size:10px;color:var(--text3)">✓ Acknowledged ${fmtS(hasAck)}</span>`:'<span style="font-size:10px;font-weight:700;color:var(--ou-gold)">⚠ Needs acknowledgment</span>'}
+          </div>
+        </div>
+        ${p.description?`<div style="font-size:13px;color:var(--text2);margin:.4rem 0 .6rem;line-height:1.5">${esc(p.description)}</div>`:''}
         <div class="task-meta" style="margin-bottom:.75rem">
           <span class="task-due" style="color:${dueColor}"><i class="ti ti-calendar" style="font-size:11px;vertical-align:-1px"></i> ${dueLabel}</span>
-          <span style="font-size:11px;color:var(--text3)">From ${esc(t.createdBy.split(' ').pop())}</span>
+          <span style="font-size:11px;color:var(--text3)">Assigned by ${esc((p.createdBy||'Brian').split(' ')[0])}</span>
         </div>
-        ${reviewStatus}
-        <div class="task-actions">
-          ${t.type==='review'&&!t.reviews?.[viewAs]&&!isPreview?`<button class="btn pri" style="font-size:13px;height:38px;padding:0 18px" onclick="markTaskReviewed('${t.projectId}','${t.id}')"><i class="ti ti-eye-check"></i> Confirm review</button>`:''}
-          ${t.type==='action'&&!t.completions?.[viewAs]&&!isPreview?`<button class="btn pri" style="font-size:13px;height:38px;padding:0 18px" onclick="markTaskDone('${t.projectId}','${t.id}')"><i class="ti ti-check"></i> Mark complete</button>`:''}
-          ${isPreview?`<span style="font-size:12px;color:var(--text3);font-style:italic">Preview mode — buttons disabled</span>`:''}
+        <div class="task-actions" style="flex-wrap:wrap;gap:8px">
+          ${!hasAck&&!isPreview?`<button class="btn" style="font-size:12px" onclick="acknowledgeItem('${p.id}')"><i class="ti ti-eye-check"></i> Acknowledge</button>`:''}
+          ${phase!=='Completed'&&!isPreview?`<select style="height:34px;font-size:12px;border-color:var(--border2)" onchange="updateItemStatus('${p.id}',this.value)">
+            ${['Not Started','In Progress','Completed'].map(s=>`<option value="${s}" ${phase===s?'selected':''}>${statusIcon[s]} ${s}</option>`).join('')}
+          </select>`:''}
+          ${phase==='Completed'?`<span style="font-size:12px;color:var(--green-text);font-weight:700">✅ Completed</span>`:''}
+          ${!isPreview?`<button class="btn sm" onclick="openPerformerNote('${p.id}')"><i class="ti ti-notes" style="font-size:12px"></i> Add note</button>`:''}
+          ${isPreview?`<span style="font-size:11px;color:var(--text3);font-style:italic">Preview mode</span>`:''}
         </div>
       </div>`;
     });
+    html+=`</div>`;
   }
-  html+=`</div>`;
-  if(doneTasks.length&&!isPreview){
-    html+=`<div class="perf-section"><div class="perf-section-title" style="border-bottom-color:var(--green-border);cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><i class="ti ti-checks" style="font-size:16px;color:var(--green-text)"></i> Recently completed <span style="background:var(--green-border)">${doneTasks.length}</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">click to expand</span></div><div style="display:none">${doneTasks.slice(0,5).map(t=>`<div class="task-card done-card"><div class="task-card-head"><div class="task-card-title">${esc(t.title)}</div></div><div class="task-project"><i class="ti ti-folder" style="font-size:11px"></i> ${esc(t.projectName)}</div></div>`).join('')}</div></div>`;
+
+  if(doneItems.length){
+    html+=`<div class="perf-section"><div class="perf-section-title" style="border-bottom-color:var(--green-border);cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><i class="ti ti-checks" style="font-size:16px;color:var(--green-text)"></i> Completed <span style="background:var(--green-border)">${doneItems.length}</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">click to expand</span></div>
+    <div style="display:none">${doneItems.map(p=>`<div class="task-card done-card"><div class="task-card-title">${esc(p.name)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(p.category||'—')}</div></div>`).join('')}</div></div>`;
   }
+
   html+=`</div>`;
   el.innerHTML=html;
 }
 window.renderPerformerDash=renderPerformerDash;
+
+window.acknowledgeItem=async id=>{
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  if(!p.acknowledged)p.acknowledged={};
+  p.acknowledged[CU]=today();
+  await saveP(p);
+  renderPerformerDash();
+  toast('Acknowledged ✓');
+};
+
+window.updateItemStatus=async(id,status)=>{
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  p.phase=status;p.status=status;
+  if(status==='Completed'){p.completed=true;p.completedDate=today();}
+  else{p.completed=false;p.completedDate=null;}
+  p.notes=p.notes||[];
+  p.notes.push({date:today(),text:`Status changed to: ${status}`,author:CU});
+  await saveP(p);
+  renderPerformerDash();
+  if(currentTab==='dash')renderDash();
+  toast(`Status updated to ${status}`);
+};
+
+window.openPerformerNote=id=>{
+  showOv(`<div class="modal" style="max-width:440px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2>Add update note</h2><p class="msub">Share a progress update on this item.</p>
+    <div class="fr"><label class="fl">Note</label><textarea id="perf-note" rows="3" style="width:100%" placeholder="What's the latest update?"></textarea></div>
+    <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button>
+    <button class="btn pri" onclick="savePerformerNote('${id}')"><i class="ti ti-check"></i> Save note</button></div>
+  </div>`);
+  setTimeout(()=>document.getElementById('perf-note')?.focus(),80);
+};
+
+window.savePerformerNote=async id=>{
+  const text=document.getElementById('perf-note')?.value.trim();
+  if(!text){toast('Enter a note.');return;}
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  p.notes=p.notes||[];
+  p.notes.push({date:today(),text,author:CU});
+  await saveP(p);
+  closeOv();
+  renderPerformerDash();
+  toast('Note saved.');
+};
 
 function tip_html(label,text){
   return`<div style="background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius);padding:.6rem .85rem;font-size:12px;color:var(--text);line-height:1.5"><strong style="color:var(--ou-green)">${label}</strong><br>${text}</div>`;
@@ -2304,16 +2357,17 @@ function completeLogin(name){
     document.getElementById('add-item-btn').style.display='';
     document.getElementById('tab-bar-wrap').style.display='';
     document.getElementById('perf-app').style.display='none';
+    startRemListener();startCardsListener();startExpenseListener();startMemListener();startListeners();
+    // Default to My Tasks tab for Brian
+    setTimeout(()=>switchTab('tasks'),100);
   } else {
     document.getElementById('tab-bar-wrap').style.display='none';
     document.getElementById('perf-app').style.display='block';
-    // Start performer data listener
     startListeners();
     renderPerformerDash();
   }
   startPresence();
   startTodoListener();
-  if(isAdmin()){startRemListener();startCardsListener();startExpenseListener();startMemListener();startListeners();}
 }
 window.doSignOut=function(){
   clearPresence();
@@ -2572,41 +2626,52 @@ function renderDash(){
 
   html+=`<div class="tw"><table>
     <thead><tr>
-      <th style="width:20%">Name</th>
-      <th style="width:8%">Visibility</th>
-      <th style="width:8%">Owner</th>
-      <th style="width:9%">Category</th>
-      <th style="width:8%">Phase</th>
-      <th style="width:9%">Risk</th>
-      <th style="width:8%">Deadline</th>
-      <th style="width:18%">Next step</th>
-      <th style="width:5%;text-align:center">Appr.</th>
-      <th style="width:4%;text-align:center">Done</th>
+      <th style="width:25%">Name</th>
+      <th style="width:10%">Category</th>
+      <th style="width:10%">Status</th>
+      <th style="width:9%">Deadline</th>
+      <th style="width:20%">Description</th>
+      <th style="width:16%">Assigned to</th>
+      <th style="width:7%;text-align:center">Acknowledged</th>
       <th style="width:3%"></th>
     </tr></thead><tbody>`;
-  if(!rows.length){html+=`<tr><td colspan="11"><div class="empty"><i class="ti ti-search"></i><p>No items match your filters.</p></div></td></tr>`}
+  if(!rows.length){html+=`<tr><td colspan="8"><div class="empty"><i class="ti ti-search"></i><p>No items match your filters.</p></div></td></tr>`}
   else{
-    let lg=null;
-    const gl=p=>{if(p.flag)return'⭐ Eric review';const r=cRisk(p);if(r==='b')return'⚫ Past due';if(r==='r')return'🔴 High risk';if(r==='y')return'🟡 Caution';return'🟢 On track'};
+    const statusIcon={'Not Started':'🔵','In Progress':'🟡','Completed':'✅'};
+    const statusColor={'Not Started':'var(--text2)','In Progress':'var(--ou-gold)','Completed':'var(--green-text)'};
     rows.forEach(p=>{
-      const grp=gl(p);if(grp!==lg){html+=`<tr class="pdiv"><td colspan="11">${esc(grp)}</td></tr>`;lg=grp}
-      const r=cRisk(p),days=dU(p.due),dc=days<0?'var(--red-text)':days<=14?'var(--red-text)':days<=30?'var(--yellow-text)':'var(--text)';
-      const ce=isAdmin()||p.createdBy===CU,at=aTrig(p);
+      const days=dU(p.due);
+      const dc=days<0?'var(--red-text)':days<=14?'var(--red-text)':days<=30?'var(--yellow-text)':'var(--text)';
+      const ce=isAdmin()||p.createdBy===CU;
+      const phase=p.phase||'Not Started';
+      const assignedTo=p.assignedTo||[];
+      const ackCount=assignedTo.filter(n=>p.acknowledged?.[n]).length;
+      const ackColor=ackCount===assignedTo.length&&assignedTo.length>0?'var(--green-text)':ackCount>0?'var(--ou-gold)':'var(--text3)';
       html+=`<tr class="${rowCls(p)}" onclick="openDetail('${p.id}')" style="cursor:pointer;${p.completed?'opacity:.6':''}">
         <td><div style="font-weight:700;font-size:12px;${p.completed?'text-decoration:line-through;color:var(--text3)':''}">${esc(p.name)}</div>
-        ${p.flag?`<span class="flag-eric" style="margin-top:2px;display:inline-flex;font-size:9px"><i class="ti ti-user" style="font-size:8px"></i> Eric</span>`:''}
-        ${at.length&&(p.recipients||[]).length?`<span class="pdot" style="margin-left:3px"></span>`:''}
-        ${p.completed&&p.completedDate?`<div style="font-size:10px;color:var(--green-text);font-weight:600;margin-top:1px">✅ ${esc(fmtS(p.completedDate))}</div>`:''}</td>
-        <td onclick="event.stopPropagation()">${p.visibility==='private'?`<span class="vbadge vpriv" style="font-size:9px"><i class="ti ti-lock" style="font-size:9px"></i> Private</span>`:`<span class="vbadge vgrp" style="font-size:9px">${esc(p.group||'Group')}</span>`}</td>
-        <td onclick="event.stopPropagation()">${ce?`<select class="ie" style="font-size:11px" onchange="inlineE('${p.id}','owner',this.value)" onclick="event.stopPropagation()"><option value="">—</option>${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(p.owner||'')===o.name?'selected':''}>${esc(o.name.split(' ').pop())}</option>`).join('')}</select>`:`<span style="font-size:11px;color:var(--text2)">${esc((p.owner||'').split(' ').pop()||'—')}</span>`}</td>
+          ${p.completed&&p.completedDate?`<div style="font-size:10px;color:var(--green-text);font-weight:600;margin-top:1px">✅ ${esc(fmtS(p.completedDate))}</div>`:''}
+        </td>
         <td><span style="font-size:11px;color:var(--text2)">${esc(p.category||'—')}</span></td>
-        <td onclick="event.stopPropagation()">${ce?`<select class="ie" style="font-size:11px" onchange="inlineE('${p.id}','phase',this.value)" onclick="event.stopPropagation()">${PHASES.map(ph=>`<option value="${ph}" ${p.phase===ph?'selected':''}>${ph}</option>`).join('')}</select>`:`<span style="font-size:11px;color:var(--text2)">${esc(p.phase)}</span>`}</td>
-        <td>${rBadge(p)}</td>
-        <td><span style="color:${dc};font-size:11px;font-weight:700">${fmtS(p.due)||'—'}</span>${(r==='r'||r==='b')&&ce?`<div><button class="btn ext" style="margin-top:3px;font-size:10px;height:20px;padding:1px 6px" onclick="event.stopPropagation();extD('${p.id}',14)">+14d</button></div>`:''}</td>
-        <td onclick="event.stopPropagation()">${ce?`<input type="text" class="ie" value="${esc(p.nextStep||'')}" placeholder="Next step…" style="width:100%;font-size:11px" onchange="inlineE('${p.id}','nextStep',this.value)" onclick="event.stopPropagation()">`:`<span style="font-size:11px;color:var(--text2)">${esc(p.nextStep||'—')}</span>`}</td>
-        <td style="text-align:center">${p.approvalRequired?`<span class="flag-eric" style="font-size:9px"><i class="ti ti-check" style="font-size:9px"></i></span>`:`<span style="color:var(--text3);font-size:11px">—</span>`}</td>
-        <td style="text-align:center" onclick="event.stopPropagation()">${ce?`<input type="checkbox" ${p.completed?'checked':''} onchange="toggleC('${p.id}',this.checked)" onclick="event.stopPropagation()" style="width:14px;height:14px">`:`<span style="font-size:11px;color:var(--text3)">${p.completed?'✅':'—'}</span>`}</td>
-        <td onclick="event.stopPropagation()" style="white-space:nowrap">${ce?`<button class="ibtn" onclick="event.stopPropagation();openEdit('${p.id}')" style="padding:3px"><i class="ti ti-edit" style="font-size:13px"></i></button><button class="ibtn" onclick="event.stopPropagation();doDelP('${p.id}')" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button>`:`<button class="ibtn" onclick="openDetail('${p.id}')" style="padding:3px"><i class="ti ti-eye" style="font-size:13px"></i></button>`}</td>
+        <td onclick="event.stopPropagation()">${ce
+          ?`<select class="ie" style="font-size:11px" onchange="inlineE('${p.id}','phase',this.value);inlineE('${p.id}','status',this.value)" onclick="event.stopPropagation()">${PHASES.map(ph=>`<option value="${ph}" ${phase===ph?'selected':''}>${statusIcon[ph]||''} ${ph}</option>`).join('')}</select>`
+          :`<span style="font-size:11px;font-weight:700;color:${statusColor[phase]||'var(--text2)'}">${statusIcon[phase]||''} ${phase}</span>`}
+        </td>
+        <td><span style="color:${dc};font-size:11px;font-weight:700">${fmtS(p.due)||'—'}</span></td>
+        <td><span style="font-size:11px;color:var(--text2)">${esc((p.description||p.nextStep||'').slice(0,80))}${(p.description||p.nextStep||'').length>80?'…':''}</span></td>
+        <td onclick="event.stopPropagation()">
+          <div style="display:flex;flex-wrap:wrap;gap:3px">
+            ${assignedTo.length?assignedTo.map(n=>{
+              const color=PRESENCE_COLORS[n]||'#555';
+              const acked=p.acknowledged?.[n];
+              return`<div title="${esc(n)}${acked?' (acknowledged)':' (pending)'}" style="width:22px;height:22px;border-radius:50%;background:${color};color:#fff;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid ${acked?'var(--ou-green)':'transparent'}">${ini(n)}</div>`;
+            }).join(''):'<span style="font-size:11px;color:var(--text3)">Unassigned</span>'}
+          </div>
+        </td>
+        <td style="text-align:center"><span style="font-size:11px;font-weight:700;color:${ackColor}">${assignedTo.length?`${ackCount}/${assignedTo.length}`:'—'}</span></td>
+        <td onclick="event.stopPropagation()" style="white-space:nowrap">${ce
+          ?`<button class="ibtn" onclick="event.stopPropagation();openEdit('${p.id}')" style="padding:3px"><i class="ti ti-edit" style="font-size:13px"></i></button><button class="ibtn" onclick="event.stopPropagation();doDelP('${p.id}')" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button>`
+          :`<button class="ibtn" onclick="openDetail('${p.id}')" style="padding:3px"><i class="ti ti-eye" style="font-size:13px"></i></button>`}
+        </td>
       </tr>`;
     });
   }
@@ -3421,50 +3486,72 @@ window.completeNoFU=id=>{const p=S.projects.find(x=>x.id===id);if(!p)return;clos
 window.cancelC=async id=>{const p=S.projects.find(x=>x.id===id);if(p){p.completed=false;p.completedDate=null;await saveP(p)}closeOv()};
 
 // ── Add/Edit form ──
-window.openAdd=()=>{_ed={id:String(Date.now()),name:'',category:CATEGORIES[0],phase:'Planned',due:'',owner:OWNERS.find(o=>o.name===CU)?CU:'',approvalRequired:false,nextStep:'',flag:false,description:'',completed:false,completedDate:null,followUp:null,notes:[],steps:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},visibility:'group',group:GROUPS[0],createdBy:CU};renderForm('add')};
+window.openAdd=()=>{_ed={id:String(Date.now()),name:'',category:CATEGORIES[0],phase:'Not Started',status:'Not Started',due:'',owner:CU,assignedTo:[],description:'',completed:false,completedDate:null,followUp:null,notes:[],steps:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},acknowledged:{},visibility:'group',group:GROUPS[0],createdBy:CU};renderForm('add')};
 window.openEdit=id=>{const p=S.projects.find(x=>x.id===id);if(!p)return;_ed=JSON.parse(JSON.stringify(p));closeOv();renderForm('edit')};
-function renderForm(mode){const f=_ed,isE=mode==='edit';showOv(`<div class="modal"><button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
-  <h2>${isE?'Edit item':'New item'}</h2><p class="msub">${isE?'Update item details and settings.':'Add a new item with visibility settings.'}</p>
+function renderForm(mode){
+  const f=_ed,isE=mode==='edit';
+  const assignedTo=f.assignedTo||[];
+  const statusIcon={'Not Started':'🔵','In Progress':'🟡','Completed':'✅'};
+  showOv(`<div class="modal"><button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+  <h2>${isE?'Edit item':'New item'}</h2>
+  <p class="msub">${isE?'Update details, assignment, and status.':'Create a new item and assign it to the team.'}</p>
+
   <div class="sdiv"><i class="ti ti-file-description"></i> Item details</div>
-  <div class="fr"><label class="fl">Name</label><input type="text" id="f-name" value="${esc(f.name)}" placeholder="Item name"></div>
+  <div class="fr"><label class="fl">Name *</label><input type="text" id="f-name" value="${esc(f.name)}" placeholder="Item name" style="width:100%"></div>
   <div class="f2">
-    <div class="fr"><label class="fl">Owner</label><select id="f-owner"><option value="">— Unassigned —</option>${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(f.owner||'')===o.name?'selected':''}>${esc(o.name)}</option>`).join('')}</select></div>
-    <div class="fr"><label class="fl">Category</label><select id="f-category">${CATEGORIES.map(c=>`<option value="${c}" ${(f.category||CATEGORIES[0])===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="fr"><label class="fl">Category</label>
+      <select id="f-category" style="width:100%">${CATEGORIES.map(c=>`<option value="${c}" ${(f.category||CATEGORIES[0])===c?'selected':''}>${c}</option>`).join('')}</select>
+    </div>
+    <div class="fr"><label class="fl">Deadline</label><input type="date" id="f-due" value="${esc(f.due)}" style="width:100%"></div>
   </div>
-  <div class="f2">
-    <div class="fr"><label class="fl">Phase</label><select id="f-phase">${PHASES.map(p=>`<option value="${p}" ${f.phase===p?'selected':''}>${p}</option>`).join('')}</select></div>
-    <div class="fr"><label class="fl">Deadline</label><input type="date" id="f-due" value="${esc(f.due)}"></div>
+  <div class="fr"><label class="fl">Status</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      ${PHASES.map(p=>`<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:6px 12px;border:.5px solid var(--border2);border-radius:var(--radius);background:${(f.phase||'Not Started')===p?'var(--ou-green)':'var(--bg2)'};color:${(f.phase||'Not Started')===p?'#fff':'var(--text)'}">
+        <input type="radio" name="f-phase" value="${p}" ${(f.phase||'Not Started')===p?'checked':''} style="display:none" onchange="document.querySelectorAll('[name=f-phase]').forEach((el,i)=>{el.parentElement.style.background=el.checked?'var(--ou-green)':'var(--bg2)';el.parentElement.style.color=el.checked?'#fff':'var(--text)'})">
+        ${statusIcon[p]||''} ${p}
+      </label>`).join('')}
+    </div>
   </div>
-  <div class="fr"><label class="fl">Next step</label><input type="text" id="f-next" value="${esc(f.nextStep||'')}" placeholder="What happens next?"></div>
-  <div class="fr"><label class="fl">Description</label><textarea id="f-desc" rows="2">${esc(f.description)}</textarea></div>
-  <div class="f2">
-    <div class="fr"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:4px"><input type="checkbox" id="f-flag" ${f.flag?'checked':''}> Flag for Eric review</label></div>
-    <div class="fr"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:4px"><input type="checkbox" id="f-appr" ${f.approvalRequired?'checked':''}> Approval required</label></div>
+  <div class="fr"><label class="fl">Description / next step</label>
+    <textarea id="f-desc" rows="2" placeholder="What is this item about? What needs to happen next?" style="width:100%">${esc(f.description||f.nextStep||'')}</textarea>
   </div>
-  <div class="sdiv"><i class="ti ti-eye"></i> Visibility</div>
-  <div class="vis-opts" id="vis-opts">
-    <div class="vopt${(f.visibility||'group')==='private'?' sel-priv':''}" onclick="selVis('private')"><div class="vi">🔒</div><h4>Private</h4><p>Only you can see this project</p></div>
-    <div class="vopt${(f.visibility||'group')==='group'?' sel-grp':''}" onclick="selVis('group')"><div class="vi">👥</div><h4>For the group</h4><p>Visible to all team members</p></div>
+
+  <div class="sdiv"><i class="ti ti-users"></i> Assign to <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text3)">— select everyone who needs to act on this</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:.75rem" id="assignee-chips">
+    ${OWNERS.map(o=>{
+      const sel=assignedTo.includes(o.name);
+      const color=PRESENCE_COLORS[o.name]||'#555';
+      return`<label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;cursor:pointer;padding:6px 12px;border:1.5px solid ${sel?color:'var(--border2)'};border-radius:20px;background:${sel?color:'var(--bg)'};color:${sel?'#fff':'var(--text2)'}">
+        <input type="checkbox" value="${esc(o.name)}" ${sel?'checked':''} style="display:none" onchange="updateAssigneeChip(this)">
+        <div style="width:18px;height:18px;border-radius:50%;background:${sel?'rgba(255,255,255,.3)':color};color:#fff;font-size:8px;font-weight:900;display:flex;align-items:center;justify-content:center">${ini(o.name)}</div>
+        ${esc(o.name.split(' ').pop())}
+      </label>`;
+    }).join('')}
   </div>
-  <div id="grp-row" class="fr" style="display:${(f.visibility||'group')==='group'?'':'none'}">
-    <label class="fl">Group / team</label>
-    <select id="f-grp">${GROUPS.map(g=>`<option value="${esc(g)}" ${(f.group||GROUPS[0])===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
-  </div>
-  <div class="sdiv"><i class="ti ti-users"></i> Notification recipients</div>
-  <div id="rl">${renderRL(f.recipients||[])}</div>
-  ${S.contacts.length?`<div class="fr" style="margin-top:6px"><label class="fl">Add from contacts</label><div style="display:flex;gap:8px"><select id="rc-sel" style="flex:1"><option value="">— Select —</option>${S.contacts.map((c,i)=>`<option value="${i}">${esc(c.name)} — ${esc(c.email)}</option>`).join('')}</select><button class="btn" onclick="addRC()"><i class="ti ti-user-plus"></i> Add</button></div></div>`:''}
-  <div class="f3" style="margin-top:6px">
-    <div><label class="fl">Name</label><input type="text" id="r-n" placeholder="Full name"></div>
-    <div><label class="fl">Email</label><input type="email" id="r-e" placeholder="email@ohio.edu" onkeydown="if(event.key==='Enter'){event.preventDefault();addR()}"></div>
-    <button class="btn" style="margin-top:21px" onclick="addR()"><i class="ti ti-plus"></i> Add</button>
-  </div>
+
   <div class="sdiv"><i class="ti ti-bell"></i> Email triggers</div>
   <div class="tgrid" id="tg">${renderTG(f.triggers||{t30:true,t14:true,t1:false,tc:true})}</div>
-  <div class="sdiv"><i class="ti ti-list-check"></i> Steps &amp; timeline <span style="font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">— add ordered steps with deadlines and assignments</span></div>
+
+  <div class="sdiv"><i class="ti ti-list-check"></i> Steps <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text3)">— optional ordered steps; check "Add to my to-do" to track personally</span></div>
   <div id="form-steps">${renderFormSteps(f.steps||[])}</div>
   <button class="btn sm" style="margin-top:6px" onclick="formAddStep()"><i class="ti ti-plus"></i> Add step</button>
+
   <div class="mfoot"><button class="btn gh" onclick="closeOv()">Cancel</button><button class="btn pri" onclick="submitP('${isE?f.id:'null'}')">${isE?'Save changes':'Add item'}</button></div>
-</div>`)}
+</div>`);
+  window._formMode=mode;
+}
+
+window.updateAssigneeChip=function(el){
+  const label=el.parentElement;
+  const name=el.value;
+  const color=PRESENCE_COLORS[name]||'#555';
+  const checked=el.checked;
+  label.style.borderColor=checked?color:'var(--border2)';
+  label.style.background=checked?color:'var(--bg)';
+  label.style.color=checked?'#fff':'var(--text2)';
+  const av=label.querySelector('div');
+  if(av)av.style.background=checked?'rgba(255,255,255,.3)':color;
+};
 function renderRL(rs){if(!rs.length)return`<p style="font-size:13px;color:var(--text2);margin-bottom:.5rem">No recipients yet.</p>`;return rs.map((r,i)=>`<div class="rrow"><span class="rn">${esc(r.name)}</span><span class="re">${esc(r.email)}</span><button class="btn xs gh" onclick="rmR(${i})"><i class="ti ti-x"></i></button></div>`).join('')}
 function renderTG(t){return TRIGGERS.map(tr=>`<div class="tcard${t[tr.id]?' on':''}" onclick="togT('${tr.id}')"><input type="checkbox" ${t[tr.id]?'checked':''} onclick="event.stopPropagation();togT('${tr.id}')"><div><label style="cursor:pointer;font-weight:600">${tr.l}</label><div class="td">${tr.d}</div></div></div>`).join('')}
 window.selVis=v=>{_ed.visibility=v;const opts=document.querySelectorAll('.vopt');opts[0].className='vopt'+(v==='private'?' sel-priv':'');opts[1].className='vopt'+(v==='group'?' sel-grp':'');document.getElementById('grp-row').style.display=v==='group'?'':'none'};
@@ -3475,7 +3562,7 @@ window.rmR=i=>{_ed.recipients.splice(i,1);document.getElementById('rl').innerHTM
 
 // ── Form-inline step management ──
 function renderFormSteps(steps){
-  if(!steps.length)return`<div style="font-size:13px;color:var(--text3);padding:.5rem 0">No steps yet — click "Add step" below to build your timeline.</div>`;
+  if(!steps.length)return`<div style="font-size:13px;color:var(--text3);padding:.5rem 0">No steps yet — click "Add step" below.</div>`;
   return steps.map((s,i)=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:.6rem .75rem;background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px">
     <div style="width:22px;height:22px;border-radius:50%;background:var(--ou-green);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">${i+1}</div>
     <div style="flex:1;min-width:0">
@@ -3486,6 +3573,10 @@ function renderFormSteps(steps){
         ${s.due?`<span>📅 ${esc(fmtS(s.due))}</span>`:''}
         ${(s.tags||[]).length?`<span>🏷 ${s.tags.join(', ')}</span>`:''}
       </div>
+      <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ou-green);cursor:pointer;margin-top:5px">
+        <input type="checkbox" ${s.addToTodo?'checked':''} onchange="_ed.steps[${i}].addToTodo=this.checked" style="accent-color:var(--ou-green);width:13px;height:13px">
+        Add to my to-do list
+      </label>
     </div>
     <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="ibtn" style="padding:3px" onclick="formEditStep(${i})"><i class="ti ti-edit" style="font-size:13px"></i></button>
@@ -3576,10 +3667,56 @@ window.fsSaveStep=async idx=>{
   renderForm(window._formMode||'add');
 };
 window.submitP=async eid=>{
-  const name=document.getElementById('f-name').value.trim();if(!name){toast('Name required.');return}
-  const vis=_ed.visibility||'group',grp=vis==='group'&&document.getElementById('f-grp')?document.getElementById('f-grp').value:GROUPS[0];
-  const obj={..._ed,name,category:document.getElementById('f-category').value,phase:document.getElementById('f-phase').value,owner:document.getElementById('f-owner').value,due:document.getElementById('f-due').value,nextStep:document.getElementById('f-next').value.trim(),description:document.getElementById('f-desc').value.trim(),flag:document.getElementById('f-flag').checked,approvalRequired:document.getElementById('f-appr').checked,visibility:vis,group:vis==='group'?grp:'',triggers:_ed.triggers,recipients:_ed.recipients||[],createdBy:_ed.createdBy||CU};
-  await saveP(obj);closeOv();toast(eid!=='null'?'Item updated.':'Item added.');refreshDash();
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){toast('Name required.');return;}
+  const phase=document.querySelector('[name=f-phase]:checked')?.value||'Not Started';
+  const assignedTo=[...document.querySelectorAll('#assignee-chips input:checked')].map(x=>x.value);
+  const description=document.getElementById('f-desc').value.trim();
+  const obj={
+    ..._ed,name,
+    category:document.getElementById('f-category').value,
+    phase,
+    status:phase,
+    due:document.getElementById('f-due').value,
+    description,nextStep:description,
+    assignedTo,
+    owner:CU,
+    visibility:'group',
+    group:GROUPS[0],
+    triggers:_ed.triggers||{t30:true,t14:true,t1:false,tc:true},
+    recipients:assignedTo.map(n=>OWNERS.find(o=>o.name===n)).filter(Boolean).map(o=>({name:o.name,email:o.email})),
+    createdBy:_ed.createdBy||CU,
+    acknowledged:{},
+    flag:false,approvalRequired:false
+  };
+  const isNew=eid==='null';
+  const prevAssigned=isNew?[]:(_ed.assignedTo||[]);
+  await saveP(obj);
+
+  // Notify newly assigned people via email
+  const newlyAssigned=assignedTo.filter(n=>!prevAssigned.includes(n)&&n!==CU);
+  if(newlyAssigned.length){
+    newlyAssigned.forEach(name=>{
+      const owner=OWNERS.find(o=>o.name===name);if(!owner)return;
+      const sub=encodeURIComponent(`[Assigned] ${obj.name}`);
+      const body=encodeURIComponent(`Hi ${name.split(' ')[0]},\n\nYou have been assigned to: ${obj.name}\n\nCategory: ${obj.category}\nStatus: ${phase}${obj.due?'\nDeadline: '+fmtD(obj.due):''}\n${description?'\nDetails: '+description:''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
+      window.open(`mailto:${owner.email}?subject=${sub}&body=${body}`,'_blank');
+    });
+  }
+
+  // Auto-add checked steps to Brian's to-do list
+  (obj.steps||[]).forEach(async s=>{
+    if(s.addToTodo&&!s.todoId){
+      const todoItem={id:String(Date.now()+Math.random()),text:`${s.title} — ${obj.name}`,priority:'medium',due:s.due||'',done:false,doneDate:null,createdDate:today(),fromStep:true,stepId:s.id,projectId:obj.id};
+      _todos.push(todoItem);
+      s.todoId=todoItem.id;
+    }
+  });
+  if((obj.steps||[]).some(s=>s.addToTodo)) await saveTodos();
+
+  closeOv();
+  toast(isNew?'Item added & team notified.':'Item updated.');
+  refreshDash();
 };
 window.doDelP=async id=>{const p=S.projects.find(x=>x.id===id);if(!isAdmin()&&p&&p.createdBy!==CU){toast('You can only delete your own items.');return}if(!confirm('Delete this item?'))return;await delP(id);toast('Deleted.');refreshDash()};
 
