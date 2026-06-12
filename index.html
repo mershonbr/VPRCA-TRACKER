@@ -904,6 +904,11 @@ window.acknowledgeItem=async id=>{
   p.acknowledged[CU]=today();
   logActivity(p,`Acknowledged by ${CU}`);
   await saveP(p);
+  // Notify Brian via the notification log
+  if(!isAdmin()){
+    S.notifLog.unshift({date:today(),project:p.name,trigger:`${CU} acknowledged this item`,daysLeft:p.due?dU(p.due):null,recipients:ADMIN,href:null});
+    await saveLog(S.notifLog);updateNotifBadge();
+  }
   if(isAdmin())renderDash(); else renderPerformerDash();
   updatePerfLogBadge();
   toast('Acknowledged ✓');
@@ -1010,23 +1015,34 @@ window.savePerformerDetailUpdate=async id=>{
   const status=document.querySelector('[name=pd-status]:checked')?.value;
   const p=S.projects.find(x=>x.id===id);if(!p)return;
   let changed=false;
+  let logMsgs=[];
   if(status&&status!==p.phase){
     p.phase=status;p.status=status;
     if(status==='Completed'){p.completed=true;p.completedDate=today();}
     else{p.completed=false;p.completedDate=null;}
     logActivity(p,`Status changed to "${status}" by ${CU}`);
+    logMsgs.push(`${CU} changed status to "${status}"`);
     changed=true;
   }
   if(note){
     p.notes=p.notes||[];
     p.notes.push({date:today(),text:note,author:CU});
     logActivity(p,`Note added by ${CU}: "${note.slice(0,80)}${note.length>80?'…':''}"`);
+    logMsgs.push(`${CU} added a note: "${note.slice(0,60)}${note.length>60?'…':''}"`);
     changed=true;
   }
   if(!changed){toast('Nothing to save.');return;}
   await saveP(p);
+  // Notify Brian via notification log
+  if(!isAdmin()&&logMsgs.length){
+    logMsgs.forEach(msg=>{
+      S.notifLog.unshift({date:today(),project:p.name,trigger:msg,daysLeft:p.due?dU(p.due):null,recipients:ADMIN,href:null});
+    });
+    await saveLog(S.notifLog);updateNotifBadge();
+  }
   closeOv();
   renderPerformerDash();
+  if(_perfTab==='done')renderPerfDone();
   toast('Update saved.');
 };
 
@@ -1922,6 +1938,9 @@ window.submitComplete=async id=>{
       const sub=encodeURIComponent(`[Follow-up step] ${p.name}`);
       const body=encodeURIComponent(`Hi Brian,\n\n${CU} has completed a step on "${p.name}" and added a follow-up:\n\nNext step: ${nsDesc}${nsDue?'\nNew deadline: '+fmtD(nsDue):''}\n\nThe item remains active on the dashboard.\n\nThanks,\n${CU}`);
       window.open(`mailto:${brian?.email||'mershon@ohio.edu'}?subject=${sub}&body=${body}`,'_blank');
+      // Log to notification bell
+      S.notifLog.unshift({date:today(),project:p.name,trigger:`${CU} completed a step — next step: "${nsDesc.slice(0,60)}${nsDesc.length>60?'…':''}"`,daysLeft:nsDue?dU(nsDue):null,recipients:ADMIN,href:null});
+      await saveLog(S.notifLog);updateNotifBadge();
     }
 
     closeOv();
@@ -1935,6 +1954,12 @@ window.submitComplete=async id=>{
     p.notes.push({date:today(),text:`Marked complete by ${CU}.`,author:CU});
     logActivity(p,`Marked complete by ${CU}`);
     await saveP(p);
+
+    // Notify Brian via notification log when a performer completes an item
+    if(!isAdmin()){
+      S.notifLog.unshift({date:today(),project:p.name,trigger:`${CU} marked this item complete ✅`,daysLeft:null,recipients:ADMIN,href:null});
+      await saveLog(S.notifLog);updateNotifBadge();
+    }
 
     if(generateSOP){
       closeOv();
@@ -3370,6 +3395,49 @@ window.openNotifLog=()=>{
     </div>
   </div>`);
 };
+
+// ── Deadline trigger checker ────────────────────────────────────────────────
+// Scans visible projects for approaching deadlines and logs entries to the
+// notification log when 30/14/1-day or completion thresholds are crossed.
+// Runs for admin only (called from project listener + 60s interval).
+async function checkNotify(){
+  if(!isAdmin()||!CU)return;
+  if(!S.projects.length)return;
+  let logChanged=false;
+  const toUpdate=[];
+  const td=today();
+
+  S.projects.filter(p=>!p.completed&&p.due).forEach(p=>{
+    const days=dU(p.due);
+    const trig=p.triggers||{};
+    const notified=p.notified||{};
+    const recipients=(p.assignedTo||[]).join(', ')||'—';
+    let pChanged=false;
+
+    const fire=(key,label,cond)=>{
+      if(cond&&!notified[key]){
+        S.notifLog.unshift({date:td,project:p.name,trigger:label,daysLeft:days,recipients,href:null});
+        notified[key]=td;
+        logChanged=true;pChanged=true;
+      }
+    };
+
+    if(trig.t30) fire('t30','30-day reminder',days===30);
+    if(trig.t14) fire('t14','14-day reminder',days===14);
+    if(trig.t1)  fire('t1','1-day reminder — due tomorrow',days===1);
+    if(days<0)   fire('overdue','Item is now overdue',true);
+
+    if(pChanged){p.notified=notified;toUpdate.push(p);}
+  });
+
+  for(const p of toUpdate){
+    try{await setDoc(doc(db,'projects',String(p.id)),p);}catch(e){/* ignore */}
+  }
+  if(logChanged){
+    await saveLog(S.notifLog);
+    updateNotifBadge();
+  }
+}
 
 window.removeLogEntry=async i=>{
   S.notifLog.splice(i,1);
