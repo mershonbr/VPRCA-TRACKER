@@ -1087,6 +1087,7 @@ window.previewAs=function(name){
       <button class="btn sm" onclick="exitPreview()" style="background:#fff;color:#7C3AED;border-color:#fff;font-weight:700"><i class="ti ti-x" style="font-size:12px"></i> Exit preview</button>`;
   }
   document.getElementById('tab-bar-wrap').style.display='none';
+  document.getElementById('admin-btn').style.display='none';
   document.getElementById('add-item-btn').style.display='none';
   document.getElementById('contacts-btn').style.display='none';
   document.getElementById('sop-lib-btn').style.display='none';
@@ -1113,6 +1114,7 @@ window.exitPreview=function(){
   const adminMain=document.getElementById('tab-bar-wrap').nextElementSibling;
   if(adminMain)adminMain.style.display='';
   document.getElementById('perf-app').style.display='none';
+  document.getElementById('admin-btn').style.display='';
   document.getElementById('perf-log-btn').style.display='none';
   document.getElementById('notif-log-btn').style.display='';
   document.getElementById('contacts-btn').style.display='';
@@ -1737,76 +1739,6 @@ window.viewSavedSOP=id=>{
   if(p){closeOv();setTimeout(()=>openSOPGenerator(s.projectId),100);}
   else toast('Original event no longer exists.');
 }
-const DESIGN_LOG=[
-  {date:'May 2026',title:'Project started',tag:'feature',text:'The VPRCA Team Project Tracker was conceived and begun as a collaboration between Brian Mershon and Claude (Anthropic). The goal was a real-time shared dashboard for the 5-person VPRCA leadership team that required no IT installation — just a single HTML file hosted on GitHub Pages backed by Firebase Firestore.'},
-  {date:'May 2026',title:'Core dashboard & project table',tag:'feature',text:'Built the main dashboard with a project table, metric cards, inline editing, and risk color coding. Risk levels: On Track (30d+), Caution (≤30d), High Risk (≤14d), Past Due, Complete.'},
-  {date:'May 2026',title:'Firebase authentication (custom)',tag:'decision',text:'Chose custom SHA-256 password hashing over Firebase Auth. Rationale: simpler setup for a small known team. Known limitation: not suitable for scaling beyond ~20 users. If extended to 30+ staff, Firebase Auth with Ohio University SSO would be required.'},
-  {date:'May 2026',title:'Private vs group visibility',tag:'feature',text:'Every item has two visibility modes: Private (creator + Brian only) and Group (all team, with sub-group selection). Visibility is enforced client-side — not by Firebase security rules. Acceptable for a small trusted team.'},
-  {date:'May 2026',title:'Email notification triggers',tag:'feature',text:'Items can have up to 4 email triggers: 30-day alert, 14-day alert, day-before reminder, and completion notice. When a trigger fires it opens Outlook with a pre-composed message. Automatic sending via EmailJS was evaluated but declined — the user preferred no external service dependency.'},
-  {date:'May 2026',title:'Live presence avatars',tag:'feature',text:'Colored initials avatars in the topbar show who is currently in the app. Each user has a unique color. Implemented via 30-second Firebase heartbeat with 90-second timeout. Your own avatar shows a gold ring.'},
-  {date:'May 2026',title:'Admin panel (Brian only)',tag:'feature',text:'Brian Mershon has an Admin Panel showing all accounts, pending password resets, and all private items across the team. Password reset workflow: user requests via "Forgot password?", Brian sets a temporary password in the panel, communicates it directly.'},
-  {date:'May 2026',title:'Category tabs added',tag:'feature',text:'Category filtering was upgraded from a dropdown to prominent pill-shaped tabs (All / Event / Policies/Procedures / Major Initiative / Personal). Active tab is highlighted in OU green. "Project" category was renamed to "Policies/Procedures" to better reflect VPRCA work.'},
-  {date:'May 2026',title:'Filter bar redesigned',tag:'feature',text:'All filter dropdowns now have labels above them (Visibility, Group, Owner, Phase, Risk). Active filters turn green. A red "Clear filters" button appears when any filter is active.'},
-  {date:'May 2026',title:'SOP & Timeline tabs built then removed',tag:'removed',text:'A step-by-step SOP builder and Gantt chart Timeline tab were built with drag-and-drop step reordering, tagging, and Word export. Both tabs were removed because sync and dropdown persistence after live Firebase updates was not reliable. The steps[] data structure is preserved on each project in Firebase. These tabs can be restored in a future iteration.'},
-  {date:'May 2026',title:'Personal to-do list',tag:'feature',text:'Each user has a private to-do list in the Personal tab. Fully private — not visible to anyone including Brian. Sorted by priority then due date. Completed items move to a "Completed" section automatically. Dashboard alert panel shows to-dos due within 7 days.'},
-  {date:'May 2026',title:'Message board',tag:'feature',text:'A Messages tab with Team / Group / Direct message types was built. Threaded inline replies. Unread badge on tab. Deletion follows Teams/Messenger model: only author (and Brian) can delete, deleted messages show a placeholder. "Add to my to-do" button on every message and reply. "Assign as to-do" toggle auto-adds to recipients\' to-do lists on send.'},
-  {date:'May 2026',title:'File upload deferred',tag:'removed',text:'File attachments per project were built but then removed from the live app. Requires Firebase Storage which requires adding a billing account. Free tier is 5GB — sufficient for a 5-person team — but user preferred not to add billing at this time. Can be re-enabled when ready.'},
-  {date:'May 2026',title:'In-app help guide',tag:'feature',text:'A Help button in the topbar opens a scrollable quick reference guide covering all features. Static content baked into the HTML — no database reads required.'},
-  {date:'June 2026',title:'Notification log fixed',tag:'fix',text:'The checkNotify() function was missing entirely — it was called but never defined, which is why no deadline alerts were firing. Fixed and improved: red bell badge on Log button, per-entry dismiss, color-coded urgency (red for overdue/today, yellow for 14-day), days remaining shown on each entry.'},
-  {date:'June 2026',title:'VS Code + GitHub connected',tag:'feature',text:'Brian set up Visual Studio Code connected to the GitHub repository (mershonbr/VPRCA-TRACKER). New workflow: paste updated code into index.html in VS Code → Ctrl+S → Commit → Sync Changes → live in 60 seconds. No more manual copy-paste into GitHub website.'},
-  {date:'June 2026',title:'Design Log tab added',tag:'feature',text:'This Design Log tab was added to the app to serve as an in-app changelog. The full Product Design Document (Word) was also produced covering architecture, feature rationale, Firebase config, and future roadmap.'},
-  {date:'Future',title:'SOPs & Timeline — planned restore',tag:'future',text:'The SOP builder and Gantt chart tabs are planned for a future iteration with improved rendering and sync reliability. The underlying steps[] data is intact in Firebase.'},
-  {date:'Future',title:'File uploads — planned',tag:'future',text:'Firebase Storage file attachments per project. Requires enabling billing account. Free tier (5GB) is sufficient for the team.'},
-  {date:'Future',title:'Scale to 30 users — consideration',tag:'future',text:'If extended to the broader Ohio University research team, would require: Firebase Authentication with OU SSO, server-enforced security rules, pagination, and Ohio University IT review. Estimated cost: $0–15/month on Firebase Blaze plan.'},
-];
-
-function renderDesignLog(){
-  const el=document.getElementById('log-view');if(!el)return;
-  const tagLabel={feature:'Feature',decision:'Design decision',removed:'Removed/deferred',future:'Future',fix:'Bug fix'};
-  const tagCls={feature:'tag-feature',decision:'tag-decision',removed:'tag-removed',future:'tag-future',fix:'tag-fix'};
-  const entryCls={feature:'',decision:'decision',removed:'removed',future:'future',fix:'fix'};
-
-  const groups={'May 2026':[],'June 2026':[],'Future':[]};
-  DESIGN_LOG.forEach(e=>{
-    const g=e.date.startsWith('May')?'May 2026':e.date.startsWith('Jun')?'June 2026':'Future';
-    groups[g].push(e);
-  });
-
-  let html=`<div class="log-wrap">
-    <div class="log-page-header">
-      <div>
-        <h2><i class="ti ti-history" style="color:var(--ou-green)"></i> Design Log</h2>
-        <p style="font-size:12px;color:var(--text2);margin-top:3px">Full history of features built, decisions made, and what's coming next</p>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        <span style="font-size:11px;color:var(--text3)">Legend:</span>
-        <span class="log-entry-tag tag-feature">Feature</span>
-        <span class="log-entry-tag tag-decision">Decision</span>
-        <span class="log-entry-tag tag-fix">Fix</span>
-        <span class="log-entry-tag tag-removed">Removed</span>
-        <span class="log-entry-tag tag-future">Future</span>
-      </div>
-    </div>`;
-
-  Object.entries(groups).forEach(([period,entries])=>{
-    if(!entries.length)return;
-    html+=`<div class="log-section-label"><i class="ti ti-calendar" style="font-size:11px"></i> ${period}</div>`;
-    entries.forEach(e=>{
-      html+=`<div class="log-entry ${entryCls[e.tag]||''}">
-        <div class="log-entry-head">
-          <span class="log-entry-title">${esc(e.title)}</span>
-          <span class="log-entry-tag ${tagCls[e.tag]||'tag-feature'}">${tagLabel[e.tag]||e.tag}</span>
-          <span class="log-entry-date">${esc(e.date)}</span>
-        </div>
-        <div class="log-entry-body">${esc(e.text)}</div>
-      </div>`;
-    });
-  });
-
-  html+=`</div>`;
-  el.innerHTML=html;
-}
-window.renderDesignLog=renderDesignLog;
 
 // ── My Tasks tab ────────────────────────────────────────────────────────────
 // Reminders stored in meta/reminders_{userKey}
@@ -1853,41 +1785,6 @@ function buildTodoListHTML(){
   return h;
 }
 
-function buildReminderListHTML(){
-  const td=today();
-  const active=_reminders.filter(r=>!r.done).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
-  const done=_reminders.filter(r=>r.done);
-  if(!active.length&&!done.length){
-    return`<div style="text-align:center;padding:1rem;color:var(--text3);font-size:12px">No reminders yet — add one above.</div>`;
-  }
-  let h='';
-  active.forEach(r=>{
-    const overdue=r.date&&r.date<td;
-    const isToday=r.date===td;
-    const days=r.date?Math.ceil((new Date(r.date)-new Date())/86400000):null;
-    const dueColor=overdue?'var(--red-text)':isToday?'var(--ou-gold)':'var(--text3)';
-    const dueLabel=!r.date?'':overdue?`${Math.abs(days)}d overdue`:isToday?'Today':days===1?'Tomorrow':fmtS(r.date);
-    h+=`<div style="display:flex;align-items:center;gap:8px;padding:.45rem 0;border-bottom:.5px solid var(--border)">
-      <input type="checkbox" style="accent-color:var(--ou-gold);width:15px;height:15px;cursor:pointer;flex-shrink:0" onchange="doneReminder('${r.id}',this.checked)">
-      <span style="flex:1;font-size:12px;color:var(--text);line-height:1.4">${esc(r.text)}</span>
-      ${r.date?`<span style="font-size:10px;font-weight:700;color:${dueColor};white-space:nowrap">${dueLabel}</span>`:''}
-      <button class="ibtn" onclick="deleteReminder('${r.id}')" style="padding:2px;flex-shrink:0"><i class="ti ti-x" style="font-size:11px"></i></button>
-    </div>`;
-  });
-  if(done.length){
-    h+=`<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:.6rem 0 .3rem;display:flex;justify-content:space-between;align-items:center">
-      Done (${done.length}) <button class="btn xs dng" onclick="clearDoneReminders()" style="font-size:10px;padding:1px 6px">Clear</button>
-    </div>`;
-    done.slice(0,3).forEach(r=>{
-      h+=`<div style="display:flex;align-items:center;gap:8px;padding:.35rem 0;opacity:.5">
-        <input type="checkbox" checked style="accent-color:var(--ou-gold);width:15px;height:15px;cursor:pointer;flex-shrink:0" onchange="doneReminder('${r.id}',this.checked)">
-        <span style="flex:1;font-size:12px;color:var(--text3);text-decoration:line-through">${esc(r.text)}</span>
-      </div>`;
-    });
-  }
-  return h;
-}
-
 window.clearDoneTodos=async()=>{
   _todos=_todos.filter(t=>!t.done);
   await saveTodos();
@@ -1919,7 +1816,6 @@ function startRemListener(){
     if(currentTab==='dash')renderDash();
   });
 }
-async function saveReminders(){await setDoc(doc(db,'meta',remKey()),{items:_reminders,owner:CU,updated:today()});}
 
 function updateTasksBadge(){
   const badge=document.getElementById('tasks-badge');if(!badge)return;
@@ -2306,84 +2202,6 @@ window.submitComplete=async id=>{
   updatePerfLogBadge();
 };
 
-// ── To-do due alert panel (shown on main dashboard) ──
-function renderTodoDueAlerts(){
-  if(!_todosLoaded||!_todos.length) return '';
-
-  const todayStr=today();
-  const priColor={high:'#B91C1C',medium:'#C5962B',low:'#1B5E20'};
-  const priLabel={high:'High',medium:'Med',low:'Low'};
-  const priOrder={high:0,medium:1,low:2};
-
-  // Gather active todos that are overdue, due today, due tomorrow, or within 7 days
-  const alertTodos=_todos
-    .filter(t=>!t.done&&t.due)
-    .map(t=>({...t,days:daysUntilStr(t.due)}))
-    .filter(t=>t.days<=7)
-    .sort((a,b)=>{
-      if(a.days!==b.days) return a.days-b.days;
-      return (priOrder[a.priority||'medium'])-(priOrder[b.priority||'medium']);
-    });
-
-  if(!alertTodos.length) return '';
-
-  const overdueCount=alertTodos.filter(t=>t.days<0).length;
-  const todayCount=alertTodos.filter(t=>t.days===0).length;
-  const upcomingCount=alertTodos.filter(t=>t.days>0).length;
-
-  // Build summary badge label
-  const badges=[];
-  if(overdueCount) badges.push(`<span class="tad-chip" style="background:var(--red-bg);color:var(--red-text)">${overdueCount} overdue</span>`);
-  if(todayCount)   badges.push(`<span class="tad-chip" style="background:var(--yellow-bg);color:var(--yellow-text)">${todayCount} due today</span>`);
-  if(upcomingCount)badges.push(`<span class="tad-chip" style="background:var(--bg3);color:var(--text2)">${upcomingCount} upcoming</span>`);
-
-  const dueLabel=days=>{
-    if(days<0)  return{text:`${Math.abs(days)}d overdue`,color:'var(--red-text)'};
-    if(days===0)return{text:'Due today',color:'var(--yellow-text)'};
-    if(days===1)return{text:'Due tomorrow',color:'var(--yellow-text)'};
-    return{text:`Due in ${days}d`,color:'var(--text2)'};
-  };
-
-  const rowClass=days=>{
-    if(days<0)  return 'overdue';
-    if(days===0)return 'today';
-    return 'soon';
-  };
-
-  let rows=alertTodos.map(t=>{
-    const dl=dueLabel(t.days);
-    return`<div class="todo-alert-row ${rowClass(t.days)}" onclick="document.getElementById('dash-todo-section')?.scrollIntoView({behavior:'smooth'})">
-      <div class="tad-pri" style="background:${priColor[t.priority||'medium']}"></div>
-      <span class="tad-text">${esc(t.text)}</span>
-      <span class="tad-chip" style="background:var(--bg3);color:var(--text3)">${priLabel[t.priority||'medium']}</span>
-      <span class="tad-due" style="color:${dl.color}">${dl.text}</span>
-    </div>`;
-  }).join('');
-
-  return`<div class="todo-alert-wrap" id="todo-alert-panel">
-    <div class="todo-alert-header" onclick="toggleTodoAlerts()">
-      <div class="todo-alert-title">
-        <i class="ti ti-checkbox" style="font-size:15px;color:${overdueCount?'var(--red-text)':'var(--ou-gold)'}"></i>
-        My to-dos needing attention
-        <div style="display:flex;gap:5px;margin-left:4px">${badges.join('')}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:11px;color:var(--text3)">Click to go to My Tasks tab</span>
-        <i class="ti ti-chevron-down" id="todo-alert-chevron" style="font-size:14px;color:var(--text3);transition:transform .2s"></i>
-      </div>
-    </div>
-    <div class="todo-alert-body" id="todo-alert-body">${rows}</div>
-  </div>`;
-}
-
-window.toggleTodoAlerts=function(){
-  const body=document.getElementById('todo-alert-body');
-  const chev=document.getElementById('todo-alert-chevron');
-  if(!body)return;
-  const isHidden=body.style.display==='none';
-  body.style.display=isHidden?'':'none';
-  if(chev)chev.style.transform=isHidden?'':'rotate(-90deg)';
-};
 // Stored in Firestore: meta/todos_{userKey} as {items:[...]}
 function todoKey(){return'todos_'+(CU||'').replace(/\s/g,'_')}
 let _todos=[]; // local cache for current user
@@ -2403,83 +2221,6 @@ function startTodoListener(){
 async function saveTodos(){
   await setDoc(doc(db,'meta',todoKey()),{items:_todos,owner:CU,updated:today()});
 }
-
-function renderTodoPanel(){
-  const active=_todos.filter(t=>!t.done).sort((a,b)=>{
-    const po={high:0,medium:1,low:2};
-    if(po[a.priority]!==po[b.priority])return po[a.priority]-po[b.priority];
-    if(a.due&&b.due)return a.due.localeCompare(b.due);
-    if(a.due)return -1;if(b.due)return 1;
-    return 0;
-  });
-  const done=_todos.filter(t=>t.done).sort((a,b)=>(b.doneDate||'').localeCompare(a.doneDate||''));
-
-  const priBadge=p=>{
-    if(p==='high')return`<span class="pri-badge pri-high">High</span>`;
-    if(p==='medium')return`<span class="pri-badge pri-med">Medium</span>`;
-    return`<span class="pri-badge pri-low">Low</span>`;
-  };
-  const todayStr=today();
-  const dueLabel=(due,isDone)=>{
-    if(!due)return'';
-    const d=daysUntilStr(due);
-    const overdue=due<todayStr&&!isDone;
-    if(d===0&&!isDone)return`<span class="todo-due overdue">Due today</span>`;
-    if(d===1&&!isDone)return`<span class="todo-due overdue">Due tomorrow</span>`;
-    if(overdue)return`<span class="todo-due overdue">Overdue · ${fmtS(due)}</span>`;
-    return`<span class="todo-due">${fmtS(due)}</span>`;
-  };
-
-  let html=`<div class="todo-wrap">
-    <div class="todo-header">
-      <h3><i class="ti ti-checkbox" style="color:var(--ou-green)"></i> My To-Do List <span style="font-size:12px;font-weight:500;color:var(--text2)">(private — only you see this)</span></h3>
-      <span style="font-size:12px;color:var(--text2)">${active.length} active · ${done.length} completed</span>
-    </div>
-    <div class="todo-add-row" style="display:flex;gap:8px;align-items:center;margin-bottom:.85rem">
-      <input type="text" id="todo-inp" placeholder="What do you need to do? (press Enter to save)" style="flex:1;height:38px;font-size:13px" onkeydown="if(event.key==='Enter')addTodo()">
-      <input type="date" id="todo-due" title="Deadline (optional)" style="height:38px;font-size:13px;width:145px">
-      <button class="btn pri" onclick="addTodo()" style="height:38px;white-space:nowrap"><i class="ti ti-plus"></i> Add</button>
-    </div>`;
-
-  if(!active.length&&!done.length){
-    html+=`<div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:13px"><i class="ti ti-checkbox" style="font-size:28px;display:block;margin:0 auto 8px;color:var(--text3)"></i>No to-dos yet. Add your first item above.</div>`;
-  } else {
-    if(active.length){
-      html+=`<div class="todo-section-label"><i class="ti ti-circle-dot" style="font-size:12px"></i> Active (${active.length})</div>`;
-      active.forEach(t=>{
-        const ov=t.due&&t.due<todayStr;
-        html+=`<div class="todo-item${t.done?' done':''}" id="todo-${t.id}">
-          <input type="checkbox" class="todo-cb" ${t.done?'checked':''} onchange="toggleTodo('${t.id}',this.checked)">
-          <span class="todo-text">${esc(t.text)}</span>
-          <div class="todo-meta">
-            ${dueLabel(t.due,t.done)}
-            ${priBadge(t.priority||'medium')}
-            <button class="ibtn" onclick="editTodo('${t.id}')" title="Edit" style="padding:3px"><i class="ti ti-edit" style="font-size:13px"></i></button>
-            <button class="ibtn" onclick="deleteTodo('${t.id}')" title="Delete" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button>
-          </div>
-        </div>`;
-      });
-    }
-    if(done.length){
-      html+=`<div class="todo-section-label" style="margin-top:1rem"><i class="ti ti-checks" style="font-size:12px;color:var(--green-text)"></i> Completed (${done.length}) <button class="btn xs dng" style="margin-left:auto" onclick="clearDoneTodos()"><i class="ti ti-trash" style="font-size:11px"></i> Clear</button></div>`;
-      done.forEach(t=>{
-        html+=`<div class="todo-item done" id="todo-${t.id}">
-          <input type="checkbox" class="todo-cb" checked onchange="toggleTodo('${t.id}',this.checked)">
-          <span class="todo-text">${esc(t.text)}</span>
-          <div class="todo-meta">
-            ${t.doneDate?`<span class="todo-due">Done ${fmtS(t.doneDate)}</span>`:''}
-            ${priBadge(t.priority||'medium')}
-            <button class="ibtn" onclick="deleteTodo('${t.id}')" title="Delete" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button>
-          </div>
-        </div>`;
-      });
-    }
-  }
-  html+=`</div>`;
-  return html;
-}
-
-function daysUntilStr(d){return Math.ceil((new Date(d)-new Date())/86400000)}
 
 window.addTodo=async()=>{
   const inp=document.getElementById('todo-inp');
@@ -2612,43 +2353,6 @@ window.clearDoneTodos=async()=>{
   await saveTodos();
   renderDash();
   toast('Completed to-dos cleared.');
-};
-
-window.editTodo=id=>{
-  const t=_todos.find(x=>x.id===id);if(!t)return;
-  showOv(`<div class="modal" style="max-width:440px">
-    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
-    <h2>Edit to-do</h2><p class="msub">Update this to-do item.</p>
-    <div class="fr"><label class="fl">Task</label><input type="text" id="edit-todo-text" value="${esc(t.text)}" style="width:100%" onkeydown="if(event.key==='Enter')saveTodoEdit('${id}')"></div>
-    <div class="f2">
-      <div class="fr"><label class="fl">Priority</label>
-        <select id="edit-todo-pri" style="width:100%">
-          <option value="high" ${t.priority==='high'?'selected':''}>🔴 High</option>
-          <option value="medium" ${(t.priority||'medium')==='medium'?'selected':''}>⚡ Medium</option>
-          <option value="low" ${t.priority==='low'?'selected':''}>🟢 Low</option>
-        </select>
-      </div>
-      <div class="fr"><label class="fl">Due date</label><input type="date" id="edit-todo-due" value="${esc(t.due||'')}" style="width:100%"></div>
-    </div>
-    <div class="mfoot">
-      <button class="btn gh" onclick="closeOv()">Cancel</button>
-      <button class="btn pri" onclick="saveTodoEdit('${id}')"><i class="ti ti-check"></i> Save</button>
-    </div>
-  </div>`);
-  setTimeout(()=>{const el=document.getElementById('edit-todo-text');if(el){el.focus();el.select();}},100);
-};
-
-window.saveTodoEdit=async id=>{
-  const text=document.getElementById('edit-todo-text')?.value.trim();
-  if(!text){toast('Task text is required.');return;}
-  const t=_todos.find(x=>x.id===id);if(!t)return;
-  t.text=text;
-  t.priority=document.getElementById('edit-todo-pri')?.value||'medium';
-  t.due=document.getElementById('edit-todo-due')?.value||'';
-  await saveTodos();
-  closeOv();
-  renderDash();
-  toast('To-do updated.');
 };
 
 // ── Tab navigation ──
@@ -3012,6 +2716,30 @@ window.closeOv=()=>{document.getElementById('ovr').innerHTML=''};
 
 // ── In-app help ──
 window.openHelp=function(){
+  const cardLogSection=isAdmin()?`
+      <div class="help-section">
+        <h3><i class="ti ti-credit-card"></i> Card Log &amp; Check Log</h3>
+        <div class="help-two-col">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">Card Log <span style="color:var(--text3);font-weight:500">(shared with Keith)</span></div>
+            <div class="hc-desc">Track credit card purchases — Entry name, Date, Amount, Description. Both you and Keith see the same shared log and can add entries.</div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">Check Log <span style="color:var(--text3);font-weight:500">(Brian only)</span></div>
+            <div class="hc-desc">Same layout as Card Log, for tracking checks written. Only you can see and edit this.</div>
+          </div>
+        </div>
+        <div class="help-tip"><strong>Fiscal years:</strong> Both logs run July 1 – June 30. Use the FY dropdown to view past years — older years are read-only and preserved permanently. The current FY is always editable.</div>
+      </div>
+` : '';
+
+  const cardLogPerfSection=(CU==='Keith Leffler')?`
+      <div class="help-section">
+        <h3><i class="ti ti-credit-card"></i> Card Log</h3>
+        <div class="hc-desc">Your <strong>Card Log</strong> tab is shared with Brian — both of you see the same entries. Add Entry name, Date, Amount, and Description for each purchase. Use the FY dropdown to view past fiscal years (read-only).</div>
+      </div>
+` : '';
+
   showOv(`<div class="modal help-modal">
     <div class="help-header">
       <div>
@@ -3041,133 +2769,112 @@ window.openHelp=function(){
         </div>
       </div>
 
-      <!-- Navigation -->
-      <div class="help-section">
-        <h3><i class="ti ti-layout-navbar"></i> Navigation</h3>
-        <div class="help-grid">
-          <div class="help-card">
-            <div class="hc-label"><i class="ti ti-layout-dashboard" style="color:var(--ou-green)"></i> Dashboard</div>
-            <div class="hc-desc">Main view — all items, metrics, filters, and your to-do alert panel</div>
-          </div>
-          <div class="help-card">
-            <div class="hc-label"><i class="ti ti-messages" style="color:var(--ou-green)"></i> Messages</div>
-            <div class="hc-desc">Team, group, or direct messages. Red badge = unread messages</div>
-          </div>
-        </div>
-      </div>
-
       <!-- Dashboard -->
       <div class="help-section">
         <h3><i class="ti ti-layout-dashboard"></i> Dashboard — Key Features</h3>
         <div class="help-two-col">
           <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Category tabs</div>
-            <div class="hc-desc" style="margin-bottom:.6rem">Click <strong>All · Events · Policies/Procedures · Major Initiatives · Personal · Memberships</strong> to filter instantly. Count shows next to each tab.</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Status filter</div>
+            <div class="hc-desc" style="margin-bottom:.6rem">Use the dropdown to filter the project table by <strong>Not Started · In Progress · Completed</strong>. Click <strong>Clear</strong> to reset.</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">View buttons</div>
+            <div class="hc-desc">Switch between <strong>All Projects</strong>, <strong>My Projects</strong> (items assigned to or created by you), and <strong>Completed</strong> (finished projects and to-dos together).</div>
+          </div>
+          <div>
             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Risk colors</div>
-            <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:.6rem">
               <div style="font-size:12px">🟢 <strong>On Track</strong> — due in 30+ days</div>
               <div style="font-size:12px">🟡 <strong>Caution</strong> — due within 30 days</div>
               <div style="font-size:12px">🔴 <strong>High Risk</strong> — due within 14 days</div>
               <div style="font-size:12px">⚫ <strong>Past Due</strong> — deadline passed</div>
               <div style="font-size:12px">✅ <strong>Complete</strong> — marked done</div>
             </div>
-          </div>
-          <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Filters</div>
-            <div class="hc-desc" style="margin-bottom:.5rem">Use the labeled dropdowns to filter by Visibility, Group, Owner, Phase, or Risk. Active filters turn <strong style="color:var(--ou-green)">green</strong>. Click <strong>Clear filters</strong> to reset.</div>
             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Inline editing</div>
-            <div class="hc-desc">Click Owner, Phase, Deadline, or Next Step directly in the table row to edit without opening the full form. Only item creators and Brian can edit.</div>
+            <div class="hc-desc">Click Owner, Status, Deadline, or Next Step directly in the table to edit without opening the full form.</div>
           </div>
         </div>
-        <div class="help-tip"><strong>To-do alerts:</strong> When you have to-dos due within 7 days, a panel appears at the top of the Dashboard. Click any row to jump to your Personal tab.</div>
+        <div class="help-tip"><strong>+14 day extend:</strong> High Risk and Past Due items show an "Extend +14 days" button in the detail view — one click pushes the deadline back two weeks.</div>
+      </div>
+
+      <!-- To-Do -->
+      <div class="help-section">
+        <h3><i class="ti ti-checkbox"></i> To-Do List</h3>
+        <div class="help-two-col">
+          <div>
+            <div class="hc-desc" style="margin-bottom:.5rem">The To-Do box at the top of the Dashboard is your personal task list — only you can see it. Type a task, optionally set a due date and tag a teammate, then press <span class="help-kbd">Enter</span> or click <strong>Add</strong>.</div>
+            <div class="hc-desc">Checking an item done opens a quick popup: it asks whether follow-up is needed (creates a new to-do with a new deadline if so) and whether this step belongs to a project or event.</div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">Linking to a project</div>
+            <div class="hc-desc" style="margin-bottom:.6rem">If you link a completed to-do to a project or event, it's added as a note and logged to that item's activity history — useful for building SOPs from Events later.</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">Completed items</div>
+            <div class="hc-desc">Finished to-dos and completed projects appear together in the <strong>Completed</strong> view, sorted by date. Click the reopen arrow (↩) to undo.</div>
+          </div>
+        </div>
       </div>
 
       <!-- Adding items -->
       <div class="help-section">
-        <h3><i class="ti ti-plus"></i> Adding &amp; Editing Items</h3>
+        <h3><i class="ti ti-plus"></i> Adding &amp; Completing Items</h3>
         <div class="help-two-col">
           <div>
             <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Click the gold <strong>Add item</strong> button in the topbar</div></div>
-            <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Fill in Name, Owner, Category, Phase, Deadline, Next Step</div></div>
-            <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Choose <strong>🔒 Private</strong> (only you + Brian) or <strong>👥 Group</strong> (select a team group)</div></div>
+            <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Fill in Name, Owner, Category, Status, Deadline, Next Step</div></div>
+            <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Choose <strong>🔒 Private</strong> (only you + Brian) or <strong>👥 Group</strong></div></div>
             <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Optionally add steps, recipients, and email triggers</div></div>
             <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Click <strong>Add item</strong> to save</div></div>
           </div>
           <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Email triggers</div>
-            <div class="hc-desc" style="margin-bottom:.5rem">Set automatic email alerts: 30-day, 2-week, day-before, or completion. Opens your email client with a pre-composed message.</div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Completing an item</div>
-            <div class="hc-desc">Check the <strong>Done</strong> checkbox in the table. You'll be asked if follow-up is needed — Yes reactivates with new deadline, No shows a completion message.</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.5rem">Marking an item complete</div>
+            <div class="hc-desc" style="margin-bottom:.6rem">Check the <strong>Done</strong> box. A popup asks if any follow-up is needed:</div>
+            <div class="help-card" style="margin-bottom:6px"><div class="hc-label">✅ No — close this item</div><div class="hc-desc">Moves the item to Completed.</div></div>
+            <div class="help-card" style="margin-bottom:6px"><div class="hc-label">🔄 Yes — follow-up needed</div><div class="hc-desc">Item stays active with an updated next step and deadline; the newly assigned person and Brian get an email.</div></div>
+            <div class="help-card"><div class="hc-label">📋 Generate SOP <span style="color:var(--text3);font-weight:500">(Events only)</span></div><div class="hc-desc">Marks complete and opens the SOP builder for that event.</div></div>
           </div>
         </div>
       </div>
 
-      <!-- To-do & Messages -->
+      <!-- Acknowledgments & notifications -->
       <div class="help-section">
-        <h3><i class="ti ti-checkbox"></i> Personal To-Do List</h3>
+        <h3><i class="ti ti-bell"></i> Acknowledgments &amp; Notifications</h3>
         <div class="help-two-col">
           <div>
-            <div class="hc-desc" style="margin-bottom:.5rem">Click the <strong>👤 Personal</strong> tab to access your private to-do list. Only you can see it — not even Brian.</div>
-            <div class="hc-desc">Type a task, set priority and due date, press <span class="help-kbd">Enter</span> or click <strong>Add</strong>. Completed to-dos move to the bottom automatically.</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">Acknowledge</div>
+            <div class="hc-desc">When an item is assigned to you, click <strong>Acknowledge</strong> in its detail view to confirm you've seen it. This logs a notification to Brian and updates the Ack count on his dashboard.</div>
           </div>
           <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">Add to your to-do from Messages</div>
-            <div class="hc-desc">On any message or reply, click <strong><i class="ti ti-checkbox" style="font-size:11px;color:var(--ou-green)"></i> Add to my to-do</strong> to save it as a personal task — pre-filled with the message text.</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:.4rem">Notification log</div>
+            <div class="hc-desc">The <strong>Log</strong> button (bell icon) shows a running history: acknowledgments, completions, status updates, and deadline alerts (30/14/1-day and overdue). A red badge shows unread entries.</div>
           </div>
         </div>
       </div>
-
-      <!-- Messages -->
-      <div class="help-section">
-        <h3><i class="ti ti-messages"></i> Message Board</h3>
-        <div class="help-grid">
-          <div class="help-card">
-            <div class="hc-label">📢 Team message</div>
-            <div class="hc-desc">Visible to all 5 team members</div>
-          </div>
-          <div class="help-card">
-            <div class="hc-label">👥 Group message</div>
-            <div class="hc-desc">Visible to sender, people you select, and Brian</div>
-          </div>
-          <div class="help-card">
-            <div class="hc-label">👤 Direct message</div>
-            <div class="hc-desc">Private — only sender, selected people, and Brian</div>
-          </div>
-          <div class="help-card">
-            <div class="hc-label"><i class="ti ti-checkbox" style="color:var(--ou-green)"></i> Assign as to-do</div>
-            <div class="hc-desc">Toggle when composing to auto-add the message to recipients' to-do lists on send</div>
-          </div>
-        </div>
-        <div class="help-tip" style="margin-top:.75rem"><strong>Deleting:</strong> Only the message author (and Brian) can delete a message. Deleted messages show a placeholder — "This message was deleted" — so the conversation thread stays intact.</div>
-      </div>
-
+${cardLogSection}${cardLogPerfSection}
       <!-- Quick tips -->
       <div class="help-section">
         <h3><i class="ti ti-bulb"></i> Quick Tips</h3>
         <div class="help-grid">
           <div class="help-card">
             <div class="hc-label">🟡 Who is online</div>
-            <div class="hc-desc">Colored initials avatars in the topbar show who is currently in the app. Your avatar has a gold ring.</div>
+            <div class="hc-desc">Colored initials in the topbar show who is currently in the app. Your avatar has a gold ring.</div>
           </div>
           <div class="help-card">
             <div class="hc-label">🔄 Refresh button</div>
-            <div class="hc-desc">Click <strong>Refresh</strong> in the topbar to pull the latest data from the database manually.</div>
+            <div class="hc-desc">Click <strong>Refresh</strong> in the topbar to pull the latest data manually.</div>
           </div>
           <div class="help-card">
             <div class="hc-label">⭐ Eric review flag</div>
-            <div class="hc-desc">Check "Flag for Eric review" on any item to surface it as the #1 priority at the top of the dashboard.</div>
+            <div class="hc-desc">Items flagged for Eric review surface as the #1 priority banner at the top of the dashboard.</div>
           </div>
           <div class="help-card">
             <div class="hc-label">🔒 Private vs Group</div>
             <div class="hc-desc">Private items are visible only to you and Brian. Group items are visible to the whole team.</div>
           </div>
           <div class="help-card">
-            <div class="hc-label">+14d extend button</div>
-            <div class="hc-desc">Appears on High Risk and Past Due items. Extends the deadline by 14 days with one click.</div>
+            <div class="hc-label">📋 SOP Generator <span style="color:var(--text3);font-weight:500">(Events)</span></div>
+            <div class="hc-desc">Every action on an Events item is logged automatically. Generate a Word doc SOP anytime from the item's detail view.</div>
           </div>
           <div class="help-card">
             <div class="hc-label">🛡 Admin (Brian only)</div>
-            <div class="hc-desc">Brian sees all private items, resets passwords, and can delete any message or item.</div>
+            <div class="hc-desc">Brian can preview any teammate's exact dashboard view, reset passwords, manage contacts, and view saved SOPs.</div>
           </div>
         </div>
       </div>
@@ -3183,14 +2890,6 @@ window.openHelp=function(){
 // ── Inline edit ──
 window.inlineE=async(id,f,v)=>{const p=S.projects.find(x=>x.id===id);if(!p)return;p[f]=v;await saveP(p)};
 window.extD=async(id,days)=>{const p=S.projects.find(x=>x.id===id);if(!p||!p.due)return;const d=new Date(p.due);d.setDate(d.getDate()+days);p.due=d.toISOString().slice(0,10);await saveP(p);S.notifLog.unshift({date:today(),project:p.name,trigger:'Deadline extended +'+days+' days',recipients:'(leadership)',href:null});await saveLog(S.notifLog);toast('Deadline extended +'+days+' days.')};
-
-// ── Complete ──
-window.toggleC=async(id,checked)=>{const p=S.projects.find(x=>x.id===id);if(!p)return;if(!checked){p.completed=false;p.completedDate=null;p.followUp=null;await saveP(p);toast('↩ Marked incomplete.');return}p.completed=true;p.completedDate=today();await saveP(p);showFUModal(id)};
-function showFUModal(id){const p=S.projects.find(x=>x.id===id);if(!p)return;showOv(`<div class="modal" style="max-width:480px;text-align:center"><div style="font-size:40px;margin-bottom:.75rem">🎉</div><h2>Project completed!</h2><p class="msub">Will there be any follow-up required for <strong>${esc(p.name)}</strong>?</p><div style="display:flex;gap:10px;justify-content:center"><button class="btn pri" style="min-width:100px;height:40px" onclick="showFUForm('${id}')"><i class="ti ti-check"></i> Yes</button><button class="btn" style="min-width:100px;height:40px" onclick="completeNoFU('${id}')"><i class="ti ti-x"></i> No</button></div></div>`)}
-window.showFUForm=id=>{const p=S.projects.find(x=>x.id===id);if(!p)return;showOv(`<div class="modal" style="max-width:480px"><button class="ibtn mclose" onclick="cancelC('${id}')"><i class="ti ti-x"></i></button><div style="font-size:30px;margin-bottom:.5rem">📋</div><h2>Follow-up details</h2><p class="msub">Describe follow-up for <strong>${esc(p.name)}</strong> and set a new deadline.</p><div class="fr"><label class="fl">Description</label><textarea id="fu-d" rows="3" style="width:100%" placeholder="What follow-up is needed?"></textarea></div><div class="fr"><label class="fl">New deadline</label><input type="date" id="fu-dt" style="width:100%" value="${p.due||''}"></div><div class="mfoot"><button class="btn gh" onclick="cancelC('${id}')">Cancel</button><button class="btn pri" onclick="saveFU('${id}')"><i class="ti ti-arrow-right"></i> Save &amp; reactivate</button></div></div>`);setTimeout(()=>{const e=document.getElementById('fu-d');if(e)e.focus()},100)};
-window.saveFU=async id=>{const desc=document.getElementById('fu-d').value.trim(),date=document.getElementById('fu-dt').value;if(!desc){toast('Add a description.');return}if(!date){toast('Set a deadline.');return}const p=S.projects.find(x=>x.id===id);if(!p)return;p.completed=false;p.completedDate=null;p.due=date;p.nextStep=desc;p.phase='In Progress';p.followUp={desc,date,addedDate:today()};await saveP(p);closeOv();showOv(`<div class="modal" style="max-width:420px;text-align:center"><div style="font-size:40px;margin-bottom:.75rem">✅</div><h2>Follow-up saved</h2><p class="msub"><strong>${esc(p.name)}</strong> reactivated with new deadline.</p><button class="btn pri" onclick="closeOv()">Got it</button></div>`)};
-window.completeNoFU=id=>{const p=S.projects.find(x=>x.id===id);if(!p)return;closeOv();showOv(`<div class="modal" style="max-width:420px;text-align:center"><div style="font-size:48px;margin-bottom:.75rem">🏆</div><h2>Thank you!</h2><p class="msub" style="font-size:15px;line-height:1.7">Thank you for all your hard work on<br><strong style="color:var(--ou-green);font-size:15px">${esc(p.name)}</strong>.</p><button class="btn pri" onclick="closeOv()">Close</button></div>`)};
-window.cancelC=async id=>{const p=S.projects.find(x=>x.id===id);if(p){p.completed=false;p.completedDate=null;await saveP(p)}closeOv()};
 
 // ── Add/Edit form ──
 window.openAdd=()=>{_ed={id:String(Date.now()),name:'',category:CATEGORIES[0],phase:'Not Started',status:'Not Started',due:'',owner:CU,assignedTo:[],description:'',completed:false,completedDate:null,followUp:null,notes:[],steps:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},acknowledged:{},visibility:'group',group:GROUPS[0],createdBy:CU};renderForm('add')};
@@ -4030,334 +3729,6 @@ function renderGantt(){
 window.renderGantt=renderGantt;
 
 function toast(msg){const el=document.getElementById('toast');el.innerHTML='<i class="ti ti-check"></i> '+msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
-
-// ── Message board ──────────────────────────────────────────────────────────
-let _messages=[];
-let _msgReadKey=()=>'msgread_'+(CU||'').replace(/\s/g,'_');
-let _unsubMsgs=null;
-let _msgAssignTodo=false;
-
-function canSeeMsgRecord(m){
-  if(m.type==='team') return true;
-  if(m.author===CU) return true;
-  if(CU===ADMIN) return true;
-  if((m.to||[]).includes(CU)) return true;
-  return false;
-}
-function canDeleteMsg(m){return m.author===CU||CU===ADMIN;}
-function canDeleteReply(r){return r.author===CU||CU===ADMIN;}
-
-function msgTimestamp(ts){
-  const d=new Date(ts),now=new Date(),diff=Math.floor((now-d)/1000);
-  if(diff<60)return'Just now';
-  if(diff<3600)return Math.floor(diff/60)+'m ago';
-  if(diff<86400)return Math.floor(diff/3600)+'h ago';
-  const days=Math.floor(diff/86400);
-  if(days===1)return'Yesterday';
-  if(days<7)return days+'d ago';
-  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-}
-
-function getReadSet(){try{return new Set(JSON.parse(localStorage.getItem(_msgReadKey())||'[]'));}catch(e){return new Set();}}
-function saveReadSet(s){try{localStorage.setItem(_msgReadKey(),JSON.stringify([...s]));}catch(e){}}
-
-function markMsgsRead(){
-  const read=getReadSet();
-  _messages.filter(canSeeMsgRecord).forEach(m=>read.add(m.id));
-  saveReadSet(read);updateMsgBadge();
-}
-function updateMsgBadge(){
-  const badge=document.getElementById('msg-badge');if(!badge)return;
-  const read=getReadSet();
-  const unread=_messages.filter(canSeeMsgRecord).filter(m=>!read.has(m.id)).length;
-  if(unread>0){badge.textContent=unread>9?'9+':unread;badge.style.display='';}
-  else{badge.style.display='none';}
-}
-
-function startMsgListener(){
-  if(_unsubMsgs)_unsubMsgs();
-  _unsubMsgs=onSnapshot(collection(db,'messages'),sn=>{
-    _messages=sn.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>b.ts-a.ts);
-    updateMsgBadge();
-    if(currentTab==='msg')renderMessages();
-  });
-}
-async function saveMsg(msg){await setDoc(doc(db,'messages',msg.id),msg);}
-async function delMsg(id){await deleteDoc(doc(db,'messages',id));}
-
-// ── Compose state ──
-let _msgType='team';
-let _msgTo=[];
-
-function renderMessages(){
-  const el=document.getElementById('msg-view');if(!el)return;
-  const read=getReadSet();
-  const visible=_messages.filter(canSeeMsgRecord);
-  const typeHints={
-    team:'📢 Visible to all 5 team members',
-    group:'👥 Visible to sender, selected members, and Brian',
-    direct:'👤 Visible only to sender, selected members, and Brian'
-  };
-
-  const recpHTML=(_msgType==='group'||_msgType==='direct')?`
-    <div style="margin-bottom:.85rem">
-      <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Select recipients</div>
-      <div class="msg-recipients">
-        ${OWNERS.filter(o=>o.name!==CU).map(o=>{
-          const sel=_msgTo.includes(o.name);
-          const color=PRESENCE_COLORS[o.name]||'#555';
-          return`<div class="msg-rec-chip${sel?' sel':''}" onclick="toggleMsgTo('${esc(o.name)}')" style="${sel?'border-color:var(--ou-green)':''}">
-            <div class="rc-av" style="background:${color}">${ini(o.name)}</div>
-            ${esc(o.name.split(' ').pop())}${o.name===ADMIN?' (Admin)':''}
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`:'';
-
-  let html=`<div class="msg-wrap">
-    <div class="msg-page-header">
-      <h2><i class="ti ti-messages" style="color:var(--ou-green)"></i> Message Board</h2>
-      <span style="font-size:12px;color:var(--text2)">${visible.length} message${visible.length!==1?'s':''} visible to you</span>
-    </div>
-    <div class="msg-compose">
-      <div style="font-size:11px;font-weight:800;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem">New message</div>
-      <div class="msg-type-row">
-        <button class="msg-type-btn${_msgType==='team'?' sel-team':''}" onclick="setMsgType('team')">📢 Team</button>
-        <button class="msg-type-btn${_msgType==='group'?' sel-group':''}" onclick="setMsgType('group')">👥 Group</button>
-        <button class="msg-type-btn${_msgType==='direct'?' sel-direct':''}" onclick="setMsgType('direct')">👤 Direct</button>
-      </div>
-      ${recpHTML}
-      <textarea class="msg-textarea" id="msg-body" placeholder="Write your message…"></textarea>
-      <div style="margin-top:.6rem">
-        <label class="assign-toggle">
-          <input type="checkbox" id="msg-assign-todo" ${_msgAssignTodo?'checked':''} onchange="_msgAssignTodo=this.checked">
-          <i class="ti ti-checkbox" style="font-size:13px;color:var(--ou-green)"></i>
-          <span>Add this message to recipients' to-do lists automatically when sent</span>
-        </label>
-      </div>
-      <div class="msg-send-row">
-        <span class="type-hint"><i class="ti ti-info-circle" style="font-size:11px;vertical-align:-1px"></i> ${typeHints[_msgType]}</span>
-        <button class="btn pri" onclick="sendMsg()"><i class="ti ti-send"></i> Send message</button>
-      </div>
-    </div>`;
-
-  if(!visible.length){
-    html+=`<div class="msg-empty"><i class="ti ti-messages"></i><p style="font-size:14px;font-weight:600;margin-bottom:6px">No messages yet</p><p style="font-size:13px">Send the first message above.</p></div>`;
-  } else {
-    html+=`<div class="msg-list">`;
-    visible.forEach(m=>{
-      const isUnread=!read.has(m.id);
-      const color=PRESENCE_COLORS[m.author]||'#555';
-      const typeBadge={
-        team:`<span class="msg-type-badge mtb-team">📢 Team</span>`,
-        group:`<span class="msg-type-badge mtb-group">👥 Group</span>`,
-        direct:`<span class="msg-type-badge mtb-direct">👤 Direct</span>`
-      }[m.type]||'';
-      const toRow=(m.type!=='team'&&(m.to||[]).length)?`
-        <div class="msg-to-row">
-          <span class="msg-to-label">To:</span>
-          ${[m.author,...(m.to||[])].filter((v,i,a)=>a.indexOf(v)===i).map(n=>`<span class="msg-to-chip"><div style="width:12px;height:12px;border-radius:50%;background:${PRESENCE_COLORS[n]||'#555'};display:inline-block;vertical-align:-2px;margin-right:3px"></div>${esc(n.split(' ').pop())}</span>`).join('')}
-        </div>`:'';
-      const replies=(m.replies||[]).filter(r=>!r.deleted);
-      const replyCount=replies.length;
-      const canDel=canDeleteMsg(m);
-      const msgBody=m.deleted
-        ?`<div class="msg-deleted"><i class="ti ti-message-off" style="font-size:11px;vertical-align:-1px"></i> This message was deleted</div>`
-        :`<div class="msg-body">${esc(m.body).replace(/\n/g,'<br>')}</div>`;
-
-      html+=`<div class="msg-card${isUnread?' unread':''}" id="msgcard-${m.id}">
-        <div class="msg-card-head">
-          <div class="msg-av" style="background:${color}">${ini(m.author)}</div>
-          <div class="msg-meta">
-            <span class="msg-author">${esc(m.author)}</span>
-            <span class="msg-time">${msgTimestamp(m.ts)}</span>
-            ${typeBadge}
-            ${isUnread?`<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ou-green);margin-left:6px;vertical-align:1px"></span>`:''}
-            ${m.assignedTodo?`<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--ou-green-light);color:var(--ou-green);margin-left:5px"><i class="ti ti-checkbox" style="font-size:9px"></i> Added to to-dos</span>`:''}
-          </div>
-          ${canDel&&!m.deleted?`<button class="ibtn" onclick="deleteMsgCard('${m.id}')" title="Delete message" style="padding:4px;margin-left:auto;flex-shrink:0"><i class="ti ti-trash" style="font-size:13px"></i></button>`:'<div style="margin-left:auto"></div>'}
-        </div>
-        ${toRow}
-        ${msgBody}
-        ${!m.deleted?`
-        <div class="msg-actions">
-          <button class="msg-reply-btn" onclick="toggleReplyThread('${m.id}')">
-            <i class="ti ti-message-reply" style="font-size:12px"></i>
-            ${replyCount>0?`${replyCount} repl${replyCount===1?'y':'ies'}`:'Reply'}
-          </button>
-          <button class="msg-reply-btn" onclick="toggleAddTodoForm('msg','${m.id}','')">
-            <i class="ti ti-checkbox" style="font-size:12px;color:var(--ou-green)"></i> Add to my to-do
-          </button>
-        </div>
-        <div class="msg-add-todo-form" id="todo-form-msg-${m.id}">
-          <div style="font-size:11px;font-weight:700;color:var(--ou-green);margin-bottom:.5rem"><i class="ti ti-checkbox"></i> Add to my to-do list</div>
-          <input type="text" id="todo-text-msg-${m.id}" value="${esc((m.body||'').slice(0,80))}" style="width:100%;margin-bottom:6px" placeholder="Task description">
-          <div class="form-row-inline">
-            <select id="todo-pri-msg-${m.id}" style="height:30px;font-size:12px">
-              <option value="medium">⚡ Medium</option>
-              <option value="high">🔴 High</option>
-              <option value="low">🟢 Low</option>
-            </select>
-            <input type="date" id="todo-due-msg-${m.id}" style="height:30px;font-size:12px">
-            <button class="btn sm pri" onclick="saveTodoFromMsg('msg','${m.id}','')"><i class="ti ti-check"></i> Save</button>
-            <button class="btn sm gh" onclick="toggleAddTodoForm('msg','${m.id}','')">Cancel</button>
-          </div>
-        </div>`:'' }
-        <div id="thread-${m.id}" style="display:none">
-          <div class="msg-thread">
-            ${replies.map(r=>{
-              const rc=PRESENCE_COLORS[r.author]||'#555';
-              const canDelR=canDeleteReply(r);
-              const replyBody=r.deleted
-                ?`<div class="msg-deleted"><i class="ti ti-message-off" style="font-size:10px;vertical-align:-1px"></i> This reply was deleted</div>`
-                :`<div class="msg-reply-text">${esc(r.text).replace(/\n/g,'<br>')}</div>`;
-              return`<div class="msg-reply">
-                <div class="msg-reply-av" style="background:${rc}">${ini(r.author)}</div>
-                <div class="msg-reply-body" style="flex:1;min-width:0">
-                  <div><span class="msg-reply-author">${esc(r.author)}</span><span class="msg-reply-time">${msgTimestamp(r.ts)}</span></div>
-                  ${replyBody}
-                  ${!r.deleted?`<div style="margin-top:3px">
-                    <button class="msg-reply-btn" style="font-size:11px" onclick="toggleAddTodoForm('reply','${m.id}','${r.ts}')">
-                      <i class="ti ti-checkbox" style="font-size:11px;color:var(--ou-green)"></i> Add to my to-do
-                    </button>
-                  </div>
-                  <div class="msg-add-todo-form" id="todo-form-reply-${m.id}-${r.ts}">
-                    <div style="font-size:11px;font-weight:700;color:var(--ou-green);margin-bottom:.5rem"><i class="ti ti-checkbox"></i> Add to my to-do list</div>
-                    <input type="text" id="todo-text-reply-${m.id}-${r.ts}" value="${esc((r.text||'').slice(0,80))}" style="width:100%;margin-bottom:6px">
-                    <div class="form-row-inline">
-                      <select id="todo-pri-reply-${m.id}-${r.ts}" style="height:30px;font-size:12px">
-                        <option value="medium">⚡ Medium</option>
-                        <option value="high">🔴 High</option>
-                        <option value="low">🟢 Low</option>
-                      </select>
-                      <input type="date" id="todo-due-reply-${m.id}-${r.ts}" style="height:30px;font-size:12px">
-                      <button class="btn sm pri" onclick="saveTodoFromMsg('reply','${m.id}','${r.ts}')"><i class="ti ti-check"></i> Save</button>
-                      <button class="btn sm gh" onclick="toggleAddTodoForm('reply','${m.id}','${r.ts}')">Cancel</button>
-                    </div>
-                  </div>`:''}
-                </div>
-                ${canDelR&&!r.deleted?`<button class="ibtn" onclick="deleteReply('${m.id}',${r.ts})" style="padding:3px;flex-shrink:0"><i class="ti ti-trash" style="font-size:11px"></i></button>`:''}
-              </div>`;
-            }).join('')}
-            <div class="msg-reply-input">
-              <textarea id="reply-inp-${m.id}" placeholder="Write a reply… (Enter to send)" rows="1"
-                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendReply('${m.id}')}"></textarea>
-              <button class="btn sm pri" onclick="sendReply('${m.id}')"><i class="ti ti-send" style="font-size:12px"></i></button>
-            </div>
-          </div>
-        </div>
-      </div>`;
-    });
-    html+=`</div>`;
-  }
-  html+=`</div>`;
-  el.innerHTML=html;
-}
-window.renderMessages=renderMessages;
-
-window.setMsgType=type=>{
-  _msgType=type;_msgTo=[];
-  renderMessages();
-  setTimeout(()=>{const t=document.getElementById('msg-body');if(t)t.focus();},80);
-};
-
-window.toggleMsgTo=name=>{
-  if(_msgTo.includes(name)){_msgTo=_msgTo.filter(n=>n!==name);}
-  else{_msgTo.push(name);}
-  renderMessages();
-};
-
-window.sendMsg=async()=>{
-  const body=document.getElementById('msg-body')?.value.trim();
-  if(!body){toast('Write a message first.');return;}
-  if((_msgType==='group'||_msgType==='direct')&&_msgTo.length===0){toast('Select at least one recipient.');return;}
-  const assignTodo=_msgAssignTodo;
-  const recipients=_msgType==='team'?OWNERS.map(o=>o.name).filter(n=>n!==CU):_msgTo;
-  const msg={id:String(Date.now()),author:CU,type:_msgType,to:_msgType==='team'?[]:_msgTo,body,ts:Date.now(),replies:[],assignedTodo:assignTodo,deleted:false};
-  await saveMsg(msg);
-
-  // Auto-assign to recipients' to-do lists
-  if(assignTodo&&recipients.length){
-    for(const recip of recipients){
-      const tkey='todos_'+recip.replace(/\s/g,'_');
-      try{
-        const sn=await getDocs(collection(db,'meta'));
-        const ud=sn.docs.find(d=>d.id===tkey);
-        const items=ud?ud.data().items||[]:[];
-        items.push({id:String(Date.now()+Math.random()),text:body.slice(0,120)+(body.length>120?'…':''),priority:'medium',due:'',done:false,doneDate:null,createdDate:today(),fromMsg:true,msgFrom:CU});
-        await setDoc(doc(db,'meta',tkey),{items,owner:recip,updated:today()});
-      }catch(e){console.warn('Could not assign to-do for',recip,e);}
-    }
-    toast('Message sent & added to '+recipients.length+' to-do list'+(recipients.length>1?'s':'')+'.');
-  } else {
-    toast('Message sent.');
-  }
-  _msgTo=[];_msgAssignTodo=false;
-  renderMessages();
-};
-
-window.deleteMsgCard=async id=>{
-  const m=_messages.find(x=>x.id===id);
-  if(!m||!canDeleteMsg(m)){toast('You can only delete your own messages.');return;}
-  if(!confirm('Delete this message? It will show as "deleted" for everyone.'))return;
-  m.deleted=true;m.body='';
-  await saveMsg(m);
-  toast('Message deleted.');
-};
-
-window.toggleReplyThread=id=>{
-  const t=document.getElementById('thread-'+id);if(!t)return;
-  const isOpen=t.style.display!=='none';
-  t.style.display=isOpen?'none':'';
-  if(!isOpen){setTimeout(()=>{const inp=document.getElementById('reply-inp-'+id);if(inp)inp.focus();},80);}
-};
-
-window.sendReply=async id=>{
-  const inp=document.getElementById('reply-inp-'+id);
-  const text=inp?.value.trim();
-  if(!text){toast('Write a reply first.');return;}
-  const m=_messages.find(x=>x.id===id);if(!m)return;
-  if(!m.replies)m.replies=[];
-  m.replies.push({author:CU,text,ts:Date.now(),deleted:false});
-  await saveMsg(m);
-  inp.value='';
-  toast('Reply sent.');
-};
-
-window.deleteReply=async(msgId,replyTs)=>{
-  const m=_messages.find(x=>x.id===msgId);if(!m)return;
-  const r=m.replies?.find(x=>x.ts===replyTs);
-  if(!r||!canDeleteReply(r)){toast('You can only delete your own replies.');return;}
-  if(!confirm('Delete this reply?'))return;
-  r.deleted=true;r.text='';
-  await saveMsg(m);
-  toast('Reply deleted.');
-};
-
-// ── Add to my to-do from message/reply ──
-window.toggleAddTodoForm=(type,msgId,replyTs)=>{
-  const key=type==='msg'?`todo-form-msg-${msgId}`:`todo-form-reply-${msgId}-${replyTs}`;
-  const el=document.getElementById(key);if(!el)return;
-  el.classList.toggle('open');
-  if(el.classList.contains('open')){
-    const inp=document.getElementById(key.replace('todo-form-','todo-text-'));
-    if(inp){inp.focus();inp.select();}
-  }
-};
-
-window.saveTodoFromMsg=async(type,msgId,replyTs)=>{
-  const key=type==='msg'?`todo-form-msg-${msgId}`:`todo-form-reply-${msgId}-${replyTs}`;
-  const textEl=document.getElementById(key.replace('todo-form-','todo-text-'));
-  const priEl =document.getElementById(key.replace('todo-form-','todo-pri-'));
-  const dueEl =document.getElementById(key.replace('todo-form-','todo-due-'));
-  const text=textEl?.value.trim();
-  if(!text){toast('Enter a task description.');return;}
-  const item={id:String(Date.now()),text,priority:priEl?.value||'medium',due:dueEl?.value||'',done:false,doneDate:null,createdDate:today(),fromMsg:true,msgFrom:type==='msg'?(_messages.find(x=>x.id===msgId)?.author||''):'reply'};
-  _todos.push(item);
-  await saveTodos();
-  const formEl=document.getElementById(key);if(formEl)formEl.classList.remove('open');
-  toast('✅ Added to your to-do list!');
-};
 
 // ── Auth ──────────────────────────────────────────────────────────────────
 
