@@ -771,9 +771,14 @@ function updatePerfLogBadge(){
   const btn=document.getElementById('perf-log-btn');if(!btn)return;
   const viewAs=_previewingAs||CU;
   const unacked=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&!p.completed&&!(p.acknowledged||{})[viewAs]).length;
+  // Also count notification log entries addressed to this user that haven't been read
+  const readCount=getNotifReadCount();
+  const myLogEntries=S.notifLog.filter(l=>(l.recipients||'').split(',').map(s=>s.trim()).includes(viewAs)).length;
+  const unreadLog=Math.max(0,myLogEntries-readCount);
+  const total=unacked+unreadLog;
   const badge=btn.querySelector('.log-badge');
   if(badge){
-    if(unacked>0){badge.textContent=unacked>9?'9+':unacked;badge.style.display='';}
+    if(total>0){badge.textContent=total>9?'9+':total;badge.style.display='';}
     else badge.style.display='none';
   }
 }
@@ -875,25 +880,31 @@ window.renderPerformerDash=renderPerformerDash;
 function renderPerfDone(){
   const el=document.getElementById('perf-done');if(!el)return;
   const viewAs=_previewingAs||CU;
-  const doneItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&p.completed);
+  const doneItems=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&p.completed)
+    .map(p=>({type:'project',id:p.id,name:p.name,category:p.category||'—',completedDate:p.completedDate||''}));
+  const doneTodos=(_previewingAs?[]:_todos.filter(t=>t.done))
+    .map(t=>({type:'todo',id:t.id,name:t.text,category:'To-Do',completedDate:t.doneDate||''}));
+  const allDone=[...doneItems,...doneTodos].sort((a,b)=>(b.completedDate||'').localeCompare(a.completedDate||''));
+
   let html=`<div class="perf-wrap">
     <div style="margin-bottom:1rem">
       <h2 style="font-size:18px;font-weight:800;color:var(--text)"><i class="ti ti-checks" style="color:var(--green-text);font-size:18px"></i> Completed items</h2>
-      <p style="font-size:13px;color:var(--text2);margin-top:4px">${doneItems.length} item${doneItems.length!==1?'s':''} completed</p>
+      <p style="font-size:13px;color:var(--text2);margin-top:4px">${allDone.length} item${allDone.length!==1?'s':''} completed</p>
     </div>`;
-  if(!doneItems.length){
-    html+=`<div class="perf-empty"><i class="ti ti-checks" style="color:var(--text3);font-size:32px"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px">No completed items yet</p><p style="font-size:13px">Completed items will appear here.</p></div>`;
+  if(!allDone.length){
+    html+=`<div class="perf-empty"><i class="ti ti-checks" style="color:var(--text3);font-size:32px"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px">No completed items yet</p><p style="font-size:13px">Completed items and to-dos will appear here.</p></div>`;
   } else {
-    doneItems.sort((a,b)=>(b.completedDate||'').localeCompare(a.completedDate||'')).forEach(p=>{
-      html+=`<div class="task-card done-card" style="cursor:pointer;opacity:.75" onclick="openPerformerDetail('${p.id}')">
+    allDone.forEach(item=>{
+      const isTodo=item.type==='todo';
+      html+=`<div class="task-card done-card" style="cursor:${isTodo?'default':'pointer'};opacity:.75" ${isTodo?'':`onclick="openPerformerDetail('${item.id}')"`}>
         <div class="task-card-head">
           <div>
-            <div class="task-card-title" style="text-decoration:line-through">${esc(p.name)}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(p.category||'—')}</div>
+            <div class="task-card-title" style="text-decoration:line-through">${esc(item.name)}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(item.category)}</div>
           </div>
-          <span style="font-size:12px;font-weight:700;color:var(--green-text)">✅ Completed</span>
+          <span style="font-size:12px;font-weight:700;color:var(--green-text)">${isTodo?'☑️':'✅'} Completed</span>
         </div>
-        ${p.completedDate?`<div style="font-size:11px;color:var(--text3);margin-top:4px">Completed ${fmtS(p.completedDate)}</div>`:''}
+        ${item.completedDate?`<div style="font-size:11px;color:var(--text3);margin-top:4px;display:flex;align-items:center;justify-content:space-between">Completed ${fmtS(item.completedDate)} ${isTodo?`<button class="ibtn" onclick="reopenTodo('${item.id}')" style="padding:3px" title="Reopen"><i class="ti ti-arrow-back-up" style="font-size:12px"></i></button>`:''}</div>`:''}
       </div>`;
     });
   }
@@ -1821,7 +1832,7 @@ function renderDash(){
   // ── Dashboard view buttons ──
   const allCount=S.projects.filter(canSee).filter(p=>!p.completed).length;
   const myCount=S.projects.filter(canSee).filter(p=>!p.completed&&((p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU)).length;
-  const doneCount=S.projects.filter(canSee).filter(p=>p.completed&&((p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU)).length;
+  const doneCount=S.projects.filter(canSee).filter(p=>p.completed&&((p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU)).length+_todos.filter(t=>t.done).length;
   const dashView=S.fMyProjects?'mine':S.fCategory==='__done__'?'done':'all';
   html+=`<div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
     <button class="dash-view-btn${dashView==='all'?' active':''}" onclick="setDashView('all')"><i class="ti ti-layout-list" style="font-size:14px"></i> All Projects <span class="ctc" style="background:${dashView==='all'?'rgba(255,255,255,.3)':'var(--bg3)'};color:${dashView==='all'?'#fff':'var(--text3)'}">${allCount}</span></button>
@@ -1865,18 +1876,24 @@ function renderDash(){
 
   // ── Completed view ──
   if(dashView==='done'){
-    const doneProjects=S.projects.filter(canSee).filter(p=>p.completed&&((p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU));
-    if(!doneProjects.length){
-      html+=`<div class="empty"><i class="ti ti-checks"></i><p style="font-weight:600;font-size:14px;margin-bottom:4px">No completed items yet</p><p style="font-size:13px">Items you complete will appear here.</p></div>`;
+    const doneProjects=S.projects.filter(canSee).filter(p=>p.completed&&((p.assignedTo||[]).includes(CU)||(p.createdBy||'')===CU))
+      .map(p=>({type:'project',id:p.id,name:p.name,category:p.category||'—',completedDate:p.completedDate||''}));
+    const doneTodos=_todos.filter(t=>t.done)
+      .map(t=>({type:'todo',id:t.id,name:t.text,category:'To-Do',completedDate:t.doneDate||''}));
+    const allDone=[...doneProjects,...doneTodos].sort((a,b)=>(b.completedDate||'').localeCompare(a.completedDate||''));
+
+    if(!allDone.length){
+      html+=`<div class="empty"><i class="ti ti-checks"></i><p style="font-weight:600;font-size:14px;margin-bottom:4px">No completed items yet</p><p style="font-size:13px">Items and to-dos you complete will appear here.</p></div>`;
     } else {
-      doneProjects.sort((a,b)=>(b.completedDate||'').localeCompare(a.completedDate||'')).forEach(p=>{
-        html+=`<div style="display:flex;align-items:center;gap:12px;padding:.75rem 1rem;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;opacity:.75;cursor:pointer" onclick="openDetail('${p.id}')">
-          <span style="font-size:18px">✅</span>
+      allDone.forEach(item=>{
+        const isTodo=item.type==='todo';
+        html+=`<div style="display:flex;align-items:center;gap:12px;padding:.75rem 1rem;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;opacity:.75;cursor:${isTodo?'default':'pointer'}" ${isTodo?'':`onclick="openDetail('${item.id}')"`}>
+          <span style="font-size:18px">${isTodo?'☑️':'✅'}</span>
           <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:700;color:var(--text);text-decoration:line-through">${esc(p.name)}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:1px">${esc(p.category||'—')} · Completed ${p.completedDate?fmtS(p.completedDate):'—'}</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);text-decoration:line-through">${esc(item.name)}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px">${esc(item.category)} · Completed ${item.completedDate?fmtS(item.completedDate):'—'}</div>
           </div>
-          <button class="ibtn" onclick="event.stopPropagation();reopenItem('${p.id}')" style="padding:4px" title="Reopen"><i class="ti ti-arrow-back-up" style="font-size:13px"></i></button>
+          <button class="ibtn" onclick="event.stopPropagation();${isTodo?`reopenTodo('${item.id}')`:`reopenItem('${item.id}')`}" style="padding:4px" title="Reopen"><i class="ti ti-arrow-back-up" style="font-size:13px"></i></button>
         </div>`;
       });
     }
@@ -1963,6 +1980,15 @@ window.reopenItem=async id=>{
   renderDash();
   if(!isAdmin())renderPerformerDash();
   toast('Item reopened.');
+};
+
+window.reopenTodo=async id=>{
+  const t=_todos.find(x=>x.id===id);if(!t)return;
+  t.done=false;t.doneDate=null;
+  await saveTodos();
+  updateTasksBadge();
+  renderDash();
+  toast('To-do reopened.');
 };
 
 // ── Completion dialog ────────────────────────────────────────────────────────
@@ -3614,7 +3640,8 @@ window.rmGC=async email=>{const c=S.contacts.find(x=>x.email===email);if(!confir
 window.openNotifLog=()=>{
   // Mark all as read
   saveNotifReadCount(S.notifLog.length);
-  updateNotifBadge();
+  if(isAdmin())updateNotifBadge();
+  else updatePerfLogBadge();
 
   const urgColor=days=>{
     if(days<0)  return'var(--red-text)';
@@ -4417,7 +4444,11 @@ function startListeners(){
     }
   });
   onSnapshot(collection(db,'contacts'),sn=>{S.contacts=sn.docs.map(d=>d.data())});
-  onSnapshot(doc(db,'meta','notifLog'),sn=>{if(sn.exists())S.notifLog=sn.data().entries||[];updateNotifBadge();});
+  onSnapshot(doc(db,'meta','notifLog'),sn=>{
+    if(sn.exists())S.notifLog=sn.data().entries||[];
+    if(isAdmin())updateNotifBadge();
+    else updatePerfLogBadge();
+  });
   onSnapshot(collection(db,'presence'),sn=>{renderPresence(sn)});
 }
 
