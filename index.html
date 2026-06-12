@@ -555,7 +555,7 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
         <div id="lerr" class="lerr"></div>
         <div id="linfo" class="linfo"></div>
         <div class="lf"><label>Your name</label>
-          <select id="lu">
+          <select id="lu" onchange="_luChangeHandler()">
             <option value="">— Select your name —</option>
             <option value="G. Jason Jolley">G. Jason Jolley</option>
             <option value="Keith Leffler">Keith Leffler</option>
@@ -3413,6 +3413,76 @@ async function getUsers(){try{const sn=await getDocs(collection(db,'meta'));cons
 async function saveUsers(u){await setDoc(doc(db,'meta','users'),u)}
 async function saveResetReq(name){await setDoc(doc(db,'passwordResets',name.replace(/\s/g,'_')),{userName:name,requestDate:today(),status:'pending'})}
 
+// ── Login flow ────────────────────────────────────────────────────────────
+window.showForgot=function(){
+  document.getElementById('login-panel').style.display='none';
+  document.getElementById('forgot-panel').style.display='';
+};
+window.showLogin=function(){
+  document.getElementById('forgot-panel').style.display='none';
+  document.getElementById('login-panel').style.display='';
+};
+
+// When the name dropdown changes, check if user has a password set and show the right fields
+window._luChangeHandler=async function(){
+  const name=document.getElementById('lu').value;
+  const pwRow=document.getElementById('pw-row');
+  const cpwRow=document.getElementById('cpw-row');
+  document.getElementById('lerr').textContent='';
+  document.getElementById('linfo').textContent='';
+  if(!name){pwRow.style.display='none';cpwRow.style.display='none';return;}
+  const users=await getUsers();
+  const key=name.replace(/\s/g,'_');
+  pwRow.style.display='';
+  if(!users[key]){
+    // First-time login — show confirm password field
+    cpwRow.style.display='';
+    document.getElementById('linfo').textContent='First time signing in — set a password below.';
+  } else {
+    cpwRow.style.display='none';
+  }
+  document.getElementById('lpw').value='';
+  document.getElementById('lcpw').value='';
+  setTimeout(()=>document.getElementById('lpw')?.focus(),50);
+};
+
+window.doLogin=async function(){
+  const name=document.getElementById('lu').value;
+  const pw=document.getElementById('lpw').value;
+  const errEl=document.getElementById('lerr');
+  errEl.textContent='';
+  if(!name){errEl.textContent='Please select your name.';return;}
+  if(!pw){errEl.textContent='Please enter a password.';return;}
+  const users=await getUsers();
+  const key=name.replace(/\s/g,'_');
+  const hashed=await sha256(pw);
+  if(!users[key]){
+    // First-time setup — require confirm password
+    const cpw=document.getElementById('lcpw').value;
+    if(!cpw){errEl.textContent='Please confirm your password.';return;}
+    if(pw!==cpw){errEl.textContent='Passwords do not match.';return;}
+    if(pw.length<4){errEl.textContent='Password must be at least 4 characters.';return;}
+    users[key]={hash:hashed,created:today()};
+    await saveUsers(users);
+    completeLogin(name);
+  } else if(users[key].hash===hashed){
+    completeLogin(name);
+  } else {
+    errEl.textContent='Incorrect password. Please try again.';
+  }
+};
+
+window.doForgot=async function(){
+  const name=document.getElementById('fu').value;
+  const errEl=document.getElementById('ferr');
+  const succEl=document.getElementById('fsucc');
+  errEl.textContent='';succEl.textContent='';
+  if(!name){errEl.textContent='Please select your name.';return;}
+  await saveResetReq(name);
+  succEl.textContent=`Reset request sent. Brian will reset your password shortly.`;
+  setTimeout(()=>{showLogin();succEl.textContent='';},2500);
+};
+
 async function bootstrap(){
   const sn=await getDocs(collection(db,'projects'));
   if(sn.empty){
@@ -3429,59 +3499,16 @@ async function bootstrap(){
   }
   // Check for saved session
   const saved=sessionStorage.getItem('vprca_user');
-  if(saved&&OWNERS.find(o=>o.name===saved)){completeLogin(saved);return}
-  // Show login
-  const users=await getUsers();
-  const ls=document.getElementById('login-screen');
-  if(ls)ls.style.display='flex';
+  if(saved&&OWNERS.find(o=>o.name===saved)){completeLogin(saved);return;}
+  // Show login screen
   document.getElementById('loading-screen').style.display='none';
-  // Render user list
-  const ul=document.getElementById('user-list');
-  if(ul)ul.innerHTML=OWNERS.map(o=>`<button class="user-btn" onclick="selectUser('${esc(o.name)}')">${ini(o.name)}<span>${esc(o.name)}</span></button>`).join('');
+  document.getElementById('login-wrap').className='show';
 }
-
-window.selectUser=function(name){
-  document.getElementById('login-name').textContent=name;
-  document.getElementById('user-select-step').style.display='none';
-  document.getElementById('password-step').style.display='';
-  document.getElementById('pw-input').value='';
-  setTimeout(()=>document.getElementById('pw-input')?.focus(),100);
-  window._loginUser=name;
-};
-window.goBack=function(){
-  document.getElementById('user-select-step').style.display='';
-  document.getElementById('password-step').style.display='none';
-};
-window.submitLogin=async function(){
-  const name=window._loginUser;const pw=document.getElementById('pw-input')?.value||'';
-  if(!pw){toast('Enter your password.');return;}
-  const users=await getUsers();
-  const key=name.replace(/\s/g,'_');
-  const hashed=await sha256(pw);
-  if(!users[key]){
-    // First login — set password
-    users[key]={hash:hashed,created:today()};
-    await saveUsers(users);
-    completeLogin(name);
-  } else if(users[key].hash===hashed){
-    completeLogin(name);
-  } else {
-    document.getElementById('pw-err').style.display='';
-    setTimeout(()=>{const e=document.getElementById('pw-err');if(e)e.style.display='none'},3000);
-  }
-};
-window.forgotPw=async function(){
-  const name=window._loginUser;if(!name)return;
-  await saveResetReq(name);
-  toast('Reset request sent to Brian.');
-};
-
-
 
 function completeLogin(name){
   CU=name;sessionStorage.setItem('vprca_user',name);
-  document.getElementById('login-screen')&&(document.getElementById('login-screen').style.display='none');
-  document.getElementById('login-wrap')&&(document.getElementById('login-wrap').className='');
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('login-wrap').className='';
   document.getElementById('app').style.display='block';
   document.getElementById('uav').textContent=ini(name);
   document.getElementById('uname').textContent=name;
@@ -3536,11 +3563,12 @@ function doSignOut(){
   _todos=[];_todosLoaded=false;_reminders=[];_cards=[];_expenseLog={};_sops=[];
   S.projects=[];S.contacts=[];S.notifLog=[];
   document.getElementById('app').style.display='none';
-  document.getElementById('login-wrap')&&(document.getElementById('login-wrap').className='show');
-  document.getElementById('login-screen')&&(document.getElementById('login-screen').style.display='flex');
+  document.getElementById('login-wrap').className='show';
   location.reload();
 }
 window.doSignOut=doSignOut;
+
+
 
 // ── Admin ──────────────────────────────────────────────────────────────────
 window.adminReset=async function(name){
