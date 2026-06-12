@@ -1523,6 +1523,7 @@ function buildTodoListHTML(){
     h+=`<div style="display:flex;align-items:center;gap:8px;padding:.45rem 0;border-bottom:.5px solid var(--border)">
       <input type="checkbox" style="accent-color:var(--ou-green);width:15px;height:15px;cursor:pointer;flex-shrink:0" onchange="toggleTodo('${t.id}',this.checked)">
       <span style="flex:1;font-size:12px;color:var(--text);line-height:1.4">${esc(t.text)}</span>
+      ${t.assignTo?`<span style="font-size:10px;font-weight:700;color:${PRESENCE_COLORS[t.assignTo]||'#888'};white-space:nowrap;background:var(--bg2);padding:1px 6px;border-radius:10px">${esc(t.assignTo.split(' ').pop())}</span>`:''}
       ${t.due?`<span style="font-size:10px;font-weight:700;color:${dueColor};white-space:nowrap">${dueLabel}</span>`:''}
       <button class="ibtn" onclick="deleteTodo('${t.id}')" style="padding:2px;flex-shrink:0"><i class="ti ti-x" style="font-size:11px"></i></button>
     </div>`;
@@ -1676,11 +1677,16 @@ function renderDash(){
         <span style="font-size:11px;font-weight:500;color:var(--text3)">${_todos.filter(t=>!t.done).length} active</span>
       </div>
     </div>
-    <div style="display:flex;gap:6px">
-      <input type="text" id="todo-inp" placeholder="Add a to-do item… (press Enter to save)" style="flex:1;height:34px;font-size:13px" onkeydown="if(event.key==='Enter')addTodo()">
+    <div style="display:flex;gap:6px;margin-bottom:.75rem;flex-wrap:wrap">
+      <input type="text" id="todo-inp" placeholder="Add a to-do item… (press Enter to save)" style="flex:1;min-width:200px;height:34px;font-size:13px" onkeydown="if(event.key==='Enter')addTodo()">
       <input type="date" id="todo-due" style="height:34px;font-size:12px;width:140px">
+      <select id="todo-assign" style="height:34px;font-size:12px;width:140px" title="Assign to (optional)">
+        <option value="">Assign to…</option>
+        ${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name.split(' ').pop())}</option>`).join('')}
+      </select>
       <button class="btn pri" onclick="addTodo()" style="height:34px;padding:0 14px;white-space:nowrap"><i class="ti ti-plus"></i> Add</button>
     </div>
+    ${buildTodoListHTML()}
   </div>`;
   // ── Welcome message ──
   html+=`<div style="margin-bottom:1rem;padding:.85rem 1.25rem;background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius-lg)">
@@ -2155,14 +2161,16 @@ window.addTodo=async()=>{
   const text=(inp?inp.value.trim():'');
   if(!text){toast('Enter a to-do item.');if(inp)inp.focus();return;}
   const due=document.getElementById('todo-due')?.value||'';
-  const item={id:String(Date.now()),text,priority:'medium',due,done:false,doneDate:null,createdDate:today()};
+  const assignTo=document.getElementById('todo-assign')?.value||'';
+  const item={id:String(Date.now()),text,priority:'medium',due,assignTo,done:false,doneDate:null,createdDate:today()};
   _todos.push(item);
   await saveTodos();
   if(inp)inp.value='';
   const duEl=document.getElementById('todo-due');if(duEl)duEl.value='';
+  const asEl=document.getElementById('todo-assign');if(asEl)asEl.value='';
   updateTasksBadge();
   renderDash();
-  toast('Added ✅');
+  toast(assignTo?`Added ✅ — tagged for ${assignTo.split(' ')[0]}`:'Added ✅');
   setTimeout(()=>{const el=document.getElementById('todo-inp');if(el)el.focus();},80);
 };
 
