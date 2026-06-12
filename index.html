@@ -614,18 +614,21 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
   <div id="preview-banner" style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:.6rem 1.5rem;background:#7C3AED;color:#fff;border-bottom:2px solid #5B21B6;position:sticky;top:64px;z-index:90;flex-wrap:wrap"></div>
     <div class="tab-bar" id="tab-bar-wrap" style="display:none">
       <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+      <button class="tab-btn" id="tab-cardlog" onclick="switchTab('cardlog')"><i class="ti ti-credit-card"></i> Card Log</button>
       <button class="tab-btn" id="tab-fin" onclick="switchTab('fin')" style="display:none"><i class="ti ti-credit-card"></i> Finance</button>
       <button class="tab-btn" id="tab-agenda" onclick="switchTab('agenda')" style="display:none"><i class="ti ti-calendar-event"></i> Agenda</button>
     </div>
-    <div class="main"><div id="dash"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
+    <div class="main"><div id="dash"></div><div id="cardlog-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
   </div>
   <div id="perf-app" style="display:none">
     <div class="tab-bar" id="perf-tab-bar">
       <button class="tab-btn active" id="ptab-dash" onclick="switchPerfTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+      <button class="tab-btn" id="ptab-cardlog" onclick="switchPerfTab('cardlog')" style="display:none"><i class="ti ti-credit-card"></i> Card Log</button>
       <button class="tab-btn" id="ptab-done" onclick="switchPerfTab('done')"><i class="ti ti-checks"></i> Completed</button>
     </div>
     <div class="main">
       <div id="perf-dash"></div>
+      <div id="perf-cardlog" style="display:none"></div>
       <div id="perf-done" style="display:none"></div>
     </div>
   </div>
@@ -753,13 +756,14 @@ window.deleteTask=async(projectId,taskId)=>{
 let _perfTab='dash';
 window.switchPerfTab=function(tab){
   _perfTab=tab;
-  ['dash','done'].forEach(t=>{
+  ['dash','cardlog','done'].forEach(t=>{
     const btn=document.getElementById('ptab-'+t);
     if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById('perf-'+t);
     if(el)el.style.display=tab===t?'':'none';
   });
   if(tab==='dash')renderPerformerDash();
+  if(tab==='cardlog')renderCardLog();
   if(tab==='done')renderPerfDone();
 };
 
@@ -1122,6 +1126,171 @@ function updateNotifBadge(){
 }
 
 // ── Notification check — fires on every project load and every minute ──
+// ── Card Log (Brian + Keith shared FY expense log) ──────────────────────────
+let _cardLog=[]; // current FY entries
+let _unsubCardLog=null;
+let _cardLogFY=null; // selected FY, e.g. "FY2026"
+const CARDLOG_USERS=['Brian Mershon','Keith Leffler'];
+
+// FY runs July 1 – June 30. FY2026 = Jul 1 2025 – Jun 30 2026.
+function currentFY(){
+  const d=new Date();
+  const y=d.getFullYear(),m=d.getMonth(); // 0-indexed month
+  return m>=6 ? `FY${y+1}` : `FY${y}`; // July(6) or later -> next FY label
+}
+function fyOptions(){
+  const cur=parseInt(currentFY().slice(2),10);
+  const opts=[];
+  for(let y=cur;y>=cur-4;y--)opts.push(`FY${y}`);
+  return opts;
+}
+function fyDateRange(fy){
+  const y=parseInt(fy.slice(2),10);
+  return{start:`${y-1}-07-01`,end:`${y}-06-30`};
+}
+
+function startCardLogListener(){
+  if(_unsubCardLog)_unsubCardLog();
+  _cardLogFY=_cardLogFY||currentFY();
+  _unsubCardLog=onSnapshot(doc(db,'meta','cardLog_'+_cardLogFY),sn=>{
+    _cardLog=sn.exists()?(sn.data().entries||[]):[];
+    if(isAdmin()&&currentTab==='cardlog')renderCardLog();
+    if(!isAdmin()&&_perfTab==='cardlog')renderCardLog();
+  });
+}
+function switchCardLogFY(fy){
+  _cardLogFY=fy;
+  startCardLogListener();
+  renderCardLog();
+}
+async function saveCardLog(){
+  await setDoc(doc(db,'meta','cardLog_'+_cardLogFY),{entries:_cardLog,updated:today()});
+}
+
+function canEditCardLog(){
+  return CARDLOG_USERS.includes(CU);
+}
+
+function renderCardLog(){
+  const elId=isAdmin()?'cardlog-view':'perf-cardlog';
+  const el=document.getElementById(elId);if(!el)return;
+  if(!canEditCardLog()&&!isAdmin()){el.innerHTML='';return;}
+
+  const fy=_cardLogFY||currentFY();
+  const isCurrentFY=fy===currentFY();
+  const{start,end}=fyDateRange(fy);
+  const total=_cardLog.reduce((sum,e)=>sum+(parseFloat(e.amount)||0),0);
+  const canEdit=canEditCardLog()&&isCurrentFY;
+
+  let html=`<div style="max-width:1000px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:10px">
+      <div>
+        <h2 style="font-size:18px;font-weight:800;color:var(--text)"><i class="ti ti-credit-card" style="color:var(--ou-green)"></i> Credit Card Log</h2>
+        <p style="font-size:12px;color:var(--text2);margin-top:3px">${esc(fy)} · ${fmtD(start)} – ${fmtD(end)}${!isCurrentFY?' · <strong style="color:var(--ou-gold)">Read-only (past fiscal year)</strong>':''}</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select onchange="switchCardLogFY(this.value)" style="height:36px;font-size:13px">
+          ${fyOptions().map(f=>`<option value="${f}" ${f===fy?'selected':''}>${f}${f===currentFY()?' (current)':''}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap">
+      <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:.85rem 1.25rem;box-shadow:var(--shadow)">
+        <div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Total this FY</div>
+        <div style="font-size:24px;font-weight:800;color:var(--ou-green)">$${total.toFixed(2)}</div>
+      </div>
+      <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:.85rem 1.25rem;box-shadow:var(--shadow)">
+        <div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Entries</div>
+        <div style="font-size:24px;font-weight:800;color:var(--text)">${_cardLog.length}</div>
+      </div>
+    </div>`;
+
+  if(canEdit){
+    html+=`<div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow);margin-bottom:1.25rem">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:.65rem"><i class="ti ti-plus" style="color:var(--ou-green)"></i> Add entry</div>
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 2fr auto;gap:8px;align-items:end">
+        <div><label style="display:block;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Entry name</label><input type="text" id="cl-name" placeholder="e.g. Office Depot" style="width:100%;height:34px"></div>
+        <div><label style="display:block;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Date</label><input type="date" id="cl-date" value="${today()}" style="width:100%;height:34px"></div>
+        <div><label style="display:block;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Amount</label><input type="number" id="cl-amount" step="0.01" placeholder="0.00" style="width:100%;height:34px"></div>
+        <div><label style="display:block;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Description</label><input type="text" id="cl-desc" placeholder="What was this for?" style="width:100%;height:34px"></div>
+        <button class="btn pri" onclick="addCardLogEntry()" style="height:34px;white-space:nowrap"><i class="ti ti-plus"></i> Add</button>
+      </div>
+    </div>`;
+  }
+
+  if(!_cardLog.length){
+    html+=`<div class="empty"><i class="ti ti-credit-card"></i><p style="font-weight:600;font-size:14px;margin-bottom:4px">No entries for ${esc(fy)}</p><p style="font-size:13px">${canEdit?'Add your first entry above.':'No entries were logged this fiscal year.'}</p></div>`;
+  } else {
+    html+=`<div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:var(--bg2)">
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Entry name</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Date</th>
+          <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Amount</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Description</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Added by</th>
+          ${canEdit?'<th style="padding:8px 12px;width:40px;border-bottom:.5px solid var(--border)"></th>':''}
+        </tr></thead><tbody>`;
+
+    _cardLog.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(e=>{
+      const color=PRESENCE_COLORS[e.addedBy]||'#555';
+      html+=`<tr style="border-bottom:.5px solid var(--border)">
+        <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--text)">${esc(e.name)}</td>
+        <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${fmtS(e.date)}</td>
+        <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--ou-green);text-align:right">$${(parseFloat(e.amount)||0).toFixed(2)}</td>
+        <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${esc(e.description||'—')}</td>
+        <td style="padding:10px 12px;font-size:11px"><span style="display:inline-flex;align-items:center;gap:5px"><div style="width:16px;height:16px;border-radius:50%;background:${color};color:#fff;font-size:7px;font-weight:900;display:flex;align-items:center;justify-content:center">${ini(e.addedBy||'')}</div>${esc((e.addedBy||'').split(' ').pop())}</span></td>
+        ${canEdit?`<td style="padding:10px 12px;text-align:center"><button class="ibtn" onclick="deleteCardLogEntry('${e.id}')" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button></td>`:''}
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+window.renderCardLog=renderCardLog;
+window.switchCardLogFY=switchCardLogFY;
+
+window.addCardLogEntry=async()=>{
+  const name=document.getElementById('cl-name')?.value.trim();
+  const date=document.getElementById('cl-date')?.value||today();
+  const amount=document.getElementById('cl-amount')?.value;
+  const desc=document.getElementById('cl-desc')?.value.trim()||'';
+  if(!name){toast('Enter an entry name.');return;}
+  if(!amount||isNaN(parseFloat(amount))){toast('Enter a valid amount.');return;}
+
+  const entry={id:String(Date.now()),name,date,amount:parseFloat(amount).toFixed(2),description:desc,addedBy:CU,addedDate:today()};
+  _cardLog.push(entry);
+  await saveCardLog();
+
+  // Notify Brian + Keith only
+  S.notifLog.unshift({date:today(),project:'Card Log',trigger:`${CU} added a $${entry.amount} entry: "${name}"`,daysLeft:null,recipients:CARDLOG_USERS.join(', '),href:null});
+  await saveLog(S.notifLog);updateNotifBadge();
+
+  // Clear form
+  ['cl-name','cl-desc','cl-amount'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const dateEl=document.getElementById('cl-date');if(dateEl)dateEl.value=today();
+
+  renderCardLog();
+  toast(`Entry added — $${entry.amount}`);
+};
+
+window.deleteCardLogEntry=async id=>{
+  if(!confirm('Delete this entry?'))return;
+  const entry=_cardLog.find(e=>e.id===id);
+  _cardLog=_cardLog.filter(e=>e.id!==id);
+  await saveCardLog();
+
+  if(entry){
+    S.notifLog.unshift({date:today(),project:'Card Log',trigger:`${CU} removed a $${entry.amount} entry: "${entry.name}"`,daysLeft:null,recipients:CARDLOG_USERS.join(', '),href:null});
+    await saveLog(S.notifLog);updateNotifBadge();
+  }
+
+  renderCardLog();
+  toast('Entry removed.');
+};
+
 // ── SOP Engine ───────────────────────────────────────────────────────────────
 let _sops=[]; // in-memory cache — loaded from Firebase
 let _unsubSOPs=null;
@@ -2330,12 +2499,13 @@ window.saveTodoEdit=async id=>{
 let currentTab='dash';
 window.switchTab=function(tab){
   currentTab=tab;
-  ['dash','fin','agenda'].forEach(t=>{
+  ['dash','cardlog','fin','agenda'].forEach(t=>{
     const btn=document.getElementById('tab-'+t);
     if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById(t==='dash'?'dash':t+'-view');
     if(el)el.style.display=tab===t?'':'none';
   });
+  if(tab==='cardlog')renderCardLog();
   if(tab==='fin'&&typeof renderFinance==='function')renderFinance();
   if(tab==='agenda'&&typeof renderAgenda==='function')renderAgenda();
 };
@@ -4155,7 +4325,7 @@ function completeLogin(name){
     const dv=document.getElementById('dash');
     if(dv)dv.innerHTML=`<div style="max-width:900px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your dashboard…</div></div>`;
     startTodoListener();
-    startRemListener();startSOPListener();
+    startRemListener();startSOPListener();startCardLogListener();
     if(typeof startCardsListener==='function')startCardsListener();
     if(typeof startExpenseListener==='function')startExpenseListener();
     if(typeof startMemListener==='function')startMemListener();
@@ -4169,9 +4339,13 @@ function completeLogin(name){
     document.getElementById('perf-log-btn').style.display='';
     document.getElementById('tab-bar-wrap').style.display='none';
     document.getElementById('perf-app').style.display='block';
+    // Card Log tab is visible to Keith Leffler only
+    const pcl=document.getElementById('ptab-cardlog');
+    if(pcl)pcl.style.display=(CU==='Keith Leffler')?'':'none';
     const pd=document.getElementById('perf-dash');
     if(pd)pd.innerHTML=`<div style="max-width:860px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your items…</div></div>`;
     startTodoListener();
+    startCardLogListener();
     startListeners();
   }
   startPresence();
