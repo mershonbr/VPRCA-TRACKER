@@ -615,10 +615,11 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
     <div class="tab-bar" id="tab-bar-wrap" style="display:none">
       <button class="tab-btn active" id="tab-dash" onclick="switchTab('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
       <button class="tab-btn" id="tab-cardlog" onclick="switchTab('cardlog')"><i class="ti ti-credit-card"></i> Card Log</button>
+      <button class="tab-btn" id="tab-checklog" onclick="switchTab('checklog')"><i class="ti ti-receipt"></i> Check Log</button>
       <button class="tab-btn" id="tab-fin" onclick="switchTab('fin')" style="display:none"><i class="ti ti-credit-card"></i> Finance</button>
       <button class="tab-btn" id="tab-agenda" onclick="switchTab('agenda')" style="display:none"><i class="ti ti-calendar-event"></i> Agenda</button>
     </div>
-    <div class="main"><div id="dash"></div><div id="cardlog-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
+    <div class="main"><div id="dash"></div><div id="cardlog-view" style="display:none"></div><div id="checklog-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
   </div>
   <div id="perf-app" style="display:none">
     <div class="tab-bar" id="perf-tab-bar">
@@ -1096,6 +1097,9 @@ window.previewAs=function(name){
   if(adminMain)adminMain.style.display='none';
   // Show performer view
   document.getElementById('perf-app').style.display='block';
+  // Card Log tab visible only when previewing Keith Leffler
+  const pcl=document.getElementById('ptab-cardlog');
+  if(pcl)pcl.style.display=(name==='Keith Leffler')?'':'none';
   switchPerfTab('dash');
   renderPerformerDash();
 };
@@ -1299,6 +1303,132 @@ window.deleteCardLogEntry=async id=>{
   }
 
   renderCardLog();
+  toast('Entry removed.');
+};
+
+// ── Check Log (Brian-only FY check log) ─────────────────────────────────────
+let _checkLog=[];
+let _unsubCheckLog=null;
+let _checkLogFY=null;
+
+function startCheckLogListener(){
+  if(_unsubCheckLog)_unsubCheckLog();
+  _checkLogFY=_checkLogFY||currentFY();
+  _unsubCheckLog=onSnapshot(doc(db,'meta','checkLog_'+_checkLogFY),sn=>{
+    _checkLog=sn.exists()?(sn.data().entries||[]):[];
+    if(isAdmin()&&currentTab==='checklog')renderCheckLog();
+  });
+}
+function switchCheckLogFY(fy){
+  _checkLogFY=fy;
+  startCheckLogListener();
+  renderCheckLog();
+}
+async function saveCheckLog(){
+  await setDoc(doc(db,'meta','checkLog_'+_checkLogFY),{entries:_checkLog,updated:today()});
+}
+
+function renderCheckLog(){
+  const el=document.getElementById('checklog-view');if(!el)return;
+  if(!isAdmin()){el.innerHTML='';return;}
+
+  const fy=_checkLogFY||currentFY();
+  const isCurrentFY=fy===currentFY();
+  const{start,end}=fyDateRange(fy);
+  const total=_checkLog.reduce((sum,e)=>sum+(parseFloat(e.amount)||0),0);
+  const canEdit=isCurrentFY;
+
+  let html=`<div style="max-width:1000px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:10px">
+      <div>
+        <h2 style="font-size:18px;font-weight:800;color:var(--text)"><i class="ti ti-receipt" style="color:var(--ou-green)"></i> Check Log</h2>
+        <p style="font-size:12px;color:var(--text2);margin-top:3px">${esc(fy)} · ${fmtD(start)} – ${fmtD(end)}${!isCurrentFY?' · <strong style="color:var(--ou-gold)">Read-only (past fiscal year)</strong>':''}</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select onchange="switchCheckLogFY(this.value)" style="height:36px;font-size:13px">
+          ${fyOptions().map(f=>`<option value="${f}" ${f===fy?'selected':''}>${f}${f===currentFY()?' (current)':''}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap">
+      <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:.85rem 1.25rem;box-shadow:var(--shadow)">
+        <div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Total this FY</div>
+        <div style="font-size:24px;font-weight:800;color:var(--ou-green)">$${total.toFixed(2)}</div>
+      </div>
+      <div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:.85rem 1.25rem;box-shadow:var(--shadow)">
+        <div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Entries</div>
+        <div style="font-size:24px;font-weight:800;color:var(--text)">${_checkLog.length}</div>
+      </div>
+    </div>`;
+
+  if(canEdit){
+    html+=`<div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow);margin-bottom:1.25rem">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:.65rem"><i class="ti ti-plus" style="color:var(--ou-green)"></i> Add entry</div>
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 2fr auto;gap:8px;align-items:end">
+        <div><label style="display:block;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Entry name</label><input type="text" id="chk-name" placeholder="e.g. Check #1234" style="width:100%;height:34px"></div>
+        <div><label style="display:block;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Date</label><input type="date" id="chk-date" value="${today()}" style="width:100%;height:34px"></div>
+        <div><label style="display:block;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Amount</label><input type="number" id="chk-amount" step="0.01" placeholder="0.00" style="width:100%;height:34px"></div>
+        <div><label style="display:block;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Description</label><input type="text" id="chk-desc" placeholder="What was this for?" style="width:100%;height:34px"></div>
+        <button class="btn pri" onclick="addCheckLogEntry()" style="height:34px;white-space:nowrap"><i class="ti ti-plus"></i> Add</button>
+      </div>
+    </div>`;
+  }
+
+  if(!_checkLog.length){
+    html+=`<div class="empty"><i class="ti ti-receipt"></i><p style="font-weight:600;font-size:14px;margin-bottom:4px">No entries for ${esc(fy)}</p><p style="font-size:13px">${canEdit?'Add your first entry above.':'No entries were logged this fiscal year.'}</p></div>`;
+  } else {
+    html+=`<div style="background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:var(--bg2)">
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Entry name</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Date</th>
+          <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Amount</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Description</th>
+          ${canEdit?'<th style="padding:8px 12px;width:40px;border-bottom:.5px solid var(--border)"></th>':''}
+        </tr></thead><tbody>`;
+
+    _checkLog.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(e=>{
+      html+=`<tr style="border-bottom:.5px solid var(--border)">
+        <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--text)">${esc(e.name)}</td>
+        <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${fmtS(e.date)}</td>
+        <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--ou-green);text-align:right">$${(parseFloat(e.amount)||0).toFixed(2)}</td>
+        <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${esc(e.description||'—')}</td>
+        ${canEdit?`<td style="padding:10px 12px;text-align:center"><button class="ibtn" onclick="deleteCheckLogEntry('${e.id}')" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button></td>`:''}
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+window.renderCheckLog=renderCheckLog;
+window.switchCheckLogFY=switchCheckLogFY;
+
+window.addCheckLogEntry=async()=>{
+  const name=document.getElementById('chk-name')?.value.trim();
+  const date=document.getElementById('chk-date')?.value||today();
+  const amount=document.getElementById('chk-amount')?.value;
+  const desc=document.getElementById('chk-desc')?.value.trim()||'';
+  if(!name){toast('Enter an entry name.');return;}
+  if(!amount||isNaN(parseFloat(amount))){toast('Enter a valid amount.');return;}
+
+  const entry={id:String(Date.now()),name,date,amount:parseFloat(amount).toFixed(2),description:desc,addedBy:CU,addedDate:today()};
+  _checkLog.push(entry);
+  await saveCheckLog();
+
+  ['chk-name','chk-desc','chk-amount'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const dateEl=document.getElementById('chk-date');if(dateEl)dateEl.value=today();
+
+  renderCheckLog();
+  toast(`Entry added — $${entry.amount}`);
+};
+
+window.deleteCheckLogEntry=async id=>{
+  if(!confirm('Delete this entry?'))return;
+  _checkLog=_checkLog.filter(e=>e.id!==id);
+  await saveCheckLog();
+  renderCheckLog();
   toast('Entry removed.');
 };
 
@@ -2525,13 +2655,14 @@ window.saveTodoEdit=async id=>{
 let currentTab='dash';
 window.switchTab=function(tab){
   currentTab=tab;
-  ['dash','cardlog','fin','agenda'].forEach(t=>{
+  ['dash','cardlog','checklog','fin','agenda'].forEach(t=>{
     const btn=document.getElementById('tab-'+t);
     if(btn)btn.className='tab-btn'+(tab===t?' active':'');
     const el=document.getElementById(t==='dash'?'dash':t+'-view');
     if(el)el.style.display=tab===t?'':'none';
   });
   if(tab==='cardlog')renderCardLog();
+  if(tab==='checklog')renderCheckLog();
   if(tab==='fin'&&typeof renderFinance==='function')renderFinance();
   if(tab==='agenda'&&typeof renderAgenda==='function')renderAgenda();
 };
@@ -4352,7 +4483,7 @@ function completeLogin(name){
     const dv=document.getElementById('dash');
     if(dv)dv.innerHTML=`<div style="max-width:900px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your dashboard…</div></div>`;
     startTodoListener();
-    startRemListener();startSOPListener();startCardLogListener();
+    startRemListener();startSOPListener();startCardLogListener();startCheckLogListener();
     if(typeof startCardsListener==='function')startCardsListener();
     if(typeof startExpenseListener==='function')startExpenseListener();
     if(typeof startMemListener==='function')startMemListener();
