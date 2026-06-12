@@ -1060,6 +1060,10 @@ window.previewAs=function(name){
   document.getElementById('sop-lib-btn').style.display='none';
   document.getElementById('notif-log-btn').style.display='none';
   document.getElementById('perf-log-btn').style.display='';
+  // Hide Brian's admin dashboard entirely
+  const adminMain=document.getElementById('tab-bar-wrap').nextElementSibling;
+  if(adminMain)adminMain.style.display='none';
+  // Show performer view
   document.getElementById('perf-app').style.display='block';
   switchPerfTab('dash');
   renderPerformerDash();
@@ -1070,6 +1074,9 @@ window.exitPreview=function(){
   const banner=document.getElementById('preview-banner');
   if(banner)banner.style.display='none';
   document.getElementById('tab-bar-wrap').style.display='';
+  // Restore Brian's admin dashboard
+  const adminMain=document.getElementById('tab-bar-wrap').nextElementSibling;
+  if(adminMain)adminMain.style.display='';
   document.getElementById('perf-app').style.display='none';
   document.getElementById('perf-log-btn').style.display='none';
   document.getElementById('notif-log-btn').style.display='';
