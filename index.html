@@ -1676,19 +1676,17 @@ function renderDash(){
         <span style="font-size:11px;font-weight:500;color:var(--text3)">${_todos.filter(t=>!t.done).length} active</span>
       </div>
     </div>
-    <div style="display:flex;gap:6px;margin-bottom:.75rem">
+    <div style="display:flex;gap:6px">
       <input type="text" id="todo-inp" placeholder="Add a to-do item… (press Enter to save)" style="flex:1;height:34px;font-size:13px" onkeydown="if(event.key==='Enter')addTodo()">
       <input type="date" id="todo-due" style="height:34px;font-size:12px;width:140px">
       <button class="btn pri" onclick="addTodo()" style="height:34px;padding:0 14px;white-space:nowrap"><i class="ti ti-plus"></i> Add</button>
     </div>
-    ${buildTodoListHTML()}
   </div>`;
   // ── Welcome message ──
   html+=`<div style="margin-bottom:1rem;padding:.85rem 1.25rem;background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius-lg)">
     <div style="font-size:15px;font-weight:800;color:var(--ou-green)">Welcome, ${esc(CU.split(' ')[0])}!</div>
     <div style="font-size:13px;color:var(--text2);margin-top:3px">Below are your assigned projects. Please review, acknowledge and complete prior to the deadline.</div>
   </div>`;
-  html+=renderTodoDueAlerts();
 
   // ── Completed view ──
   if(dashView==='done'){
@@ -2170,9 +2168,102 @@ window.addTodo=async()=>{
 
 window.toggleTodo=async(id,checked)=>{
   const t=_todos.find(x=>x.id===id);if(!t)return;
-  t.done=checked;t.doneDate=checked?today():null;
+  if(!checked){
+    // Unchecking — just reopen, no popup needed
+    t.done=false;t.doneDate=null;
+    await saveTodos();
+    updateTasksBadge();
+    renderDash();
+    return;
+  }
+  // Checking — open completion dialog
+  openTodoCompleteDialog(id);
+};
+
+window.openTodoCompleteDialog=function(id){
+  const t=_todos.find(x=>x.id===id);if(!t)return;
+  const openProjects=S.projects.filter(p=>!p.completed).sort((a,b)=>a.name.localeCompare(b.name));
+
+  showOv(`<div class="modal" style="max-width:480px">
+    <button class="ibtn mclose" onclick="closeOv();renderDash()"><i class="ti ti-x"></i></button>
+    <h2><i class="ti ti-circle-check" style="color:var(--ou-green);font-size:18px;vertical-align:-2px"></i> Complete: ${esc(t.text)}</h2>
+    <p class="msub">Nice work! A couple quick questions before this is marked done.</p>
+
+    <div class="sdiv"><i class="ti ti-repeat"></i> Is there a follow-up needed?</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:.75rem">
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:.7rem .9rem;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--bg2)" id="tdc-no-label">
+        <input type="radio" name="tdc-followup" value="no" checked style="margin-top:2px;accent-color:var(--ou-green)" onchange="selectTodoFollowup('no')">
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">✅ No — this is done</div></div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:.7rem .9rem;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--bg2)" id="tdc-yes-label">
+        <input type="radio" name="tdc-followup" value="yes" style="margin-top:2px;accent-color:var(--ou-green)" onchange="selectTodoFollowup('yes')">
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">🔄 Yes — create a follow-up to-do</div></div>
+      </label>
+    </div>
+    <div id="tdc-followup-fields" style="display:none;background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:.75rem">
+      <div class="fr"><label class="fl">Follow-up to-do text</label><input type="text" id="tdc-followup-text" style="width:100%" placeholder="What's the next step?" value="${esc(t.text)}"></div>
+      <div class="fr"><label class="fl">New deadline</label><input type="date" id="tdc-followup-due" style="width:100%"></div>
+    </div>
+
+    <div class="sdiv"><i class="ti ti-folder"></i> Does this belong to a project or event?</div>
+    <div class="fr">
+      <select id="tdc-project" style="width:100%">
+        <option value="">No — just a personal to-do</option>
+        ${openProjects.map(p=>`<option value="${p.id}">${esc(p.name)} (${esc(p.category||'—')})</option>`).join('')}
+      </select>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">If selected, this will be added as a completed step / activity entry on that item.</div>
+    </div>
+
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv();renderDash()">Cancel</button>
+      <button class="btn pri" onclick="confirmTodoComplete('${id}')"><i class="ti ti-check"></i> Confirm</button>
+    </div>
+  </div>`);
+};
+
+window.selectTodoFollowup=function(val){
+  const fields=document.getElementById('tdc-followup-fields');
+  if(fields)fields.style.display=val==='yes'?'':'none';
+  ['no','yes'].forEach(opt=>{
+    const el=document.getElementById('tdc-'+opt+'-label');
+    if(el)el.style.borderColor=val===opt?'var(--ou-green)':'var(--border2)';
+  });
+};
+
+window.confirmTodoComplete=async id=>{
+  const t=_todos.find(x=>x.id===id);if(!t)return;
+  const hasFollowup=document.querySelector('[name=tdc-followup]:checked')?.value==='yes';
+  const projectId=document.getElementById('tdc-project')?.value;
+
+  // Mark this to-do as done
+  t.done=true;t.doneDate=today();
+
+  // Create follow-up to-do if requested
+  if(hasFollowup){
+    const fuText=document.getElementById('tdc-followup-text')?.value.trim()||t.text;
+    const fuDue=document.getElementById('tdc-followup-due')?.value||'';
+    _todos.push({id:String(Date.now()+1),text:fuText,due:fuDue,done:false,doneDate:null,priority:'medium',createdDate:today()});
+  }
+
   await saveTodos();
+
+  // Link to project/event if selected
+  if(projectId){
+    const p=S.projects.find(x=>x.id===projectId);
+    if(p){
+      p.notes=p.notes||[];
+      const noteText=`Completed step: "${t.text}"${hasFollowup?' — follow-up created':''}`;
+      p.notes.push({date:today(),text:noteText,author:CU});
+      logActivity(p,`Completed step (from to-do) by ${CU}: "${t.text}"`);
+      await saveP(p);
+      toast(`To-do completed ✅ — added to "${p.name}"`);
+    }
+  } else {
+    toast('To-do completed ✅');
+  }
+
   updateTasksBadge();
+  closeOv();
   renderDash();
 };
 
