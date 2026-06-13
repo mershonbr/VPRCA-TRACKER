@@ -1173,6 +1173,9 @@ function startCardLogListener(){
     _cardLog=sn.exists()?(sn.data().entries||[]):[];
     if(isAdmin()&&currentTab==='cardlog')renderCardLog();
     if(!isAdmin()&&_perfTab==='cardlog')renderCardLog();
+  },err=>{
+    console.error('Card Log listener error:',err);
+    toast('Could not load Card Log — check your connection and refresh.');
   });
 }
 function switchCardLogFY(fy){
@@ -1247,7 +1250,7 @@ function renderCardLog(){
           <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Amount</th>
           <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Description</th>
           <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Added by</th>
-          ${canEdit?'<th style="padding:8px 12px;width:40px;border-bottom:.5px solid var(--border)"></th>':''}
+          ${canEdit?'<th style="padding:8px 12px;width:70px;border-bottom:.5px solid var(--border)"></th>':''}
         </tr></thead><tbody>`;
 
     _cardLog.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(e=>{
@@ -1258,7 +1261,7 @@ function renderCardLog(){
         <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--ou-green);text-align:right">$${(parseFloat(e.amount)||0).toFixed(2)}</td>
         <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${esc(e.description||'—')}</td>
         <td style="padding:10px 12px;font-size:11px"><span style="display:inline-flex;align-items:center;gap:5px"><div style="width:16px;height:16px;border-radius:50%;background:${color};color:#fff;font-size:7px;font-weight:900;display:flex;align-items:center;justify-content:center">${ini(e.addedBy||'')}</div>${esc((e.addedBy||'').split(' ').pop())}</span></td>
-        ${canEdit?`<td style="padding:10px 12px;text-align:center"><button class="ibtn" onclick="deleteCardLogEntry('${e.id}')" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button></td>`:''}
+        ${canEdit?`<td style="padding:10px 12px;text-align:center;white-space:nowrap"><button class="ibtn" onclick="openEditCardLogEntry('${e.id}')" style="padding:3px" title="Edit"><i class="ti ti-edit" style="font-size:13px"></i></button> <button class="ibtn" onclick="deleteCardLogEntry('${e.id}')" style="padding:3px" title="Delete"><i class="ti ti-trash" style="font-size:13px"></i></button></td>`:''}
       </tr>`;
     });
     html+=`</tbody></table></div>`;
@@ -1306,6 +1309,49 @@ window.deleteCardLogEntry=async id=>{
 
   renderCardLog();
   toast('Entry removed.');
+};
+
+window.openEditCardLogEntry=id=>{
+  const e=_cardLog.find(x=>x.id===id);if(!e)return;
+  showOv(`<div class="modal" style="max-width:440px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2><i class="ti ti-edit" style="color:var(--ou-green);font-size:18px;vertical-align:-2px"></i> Edit entry</h2>
+    <p class="msub">Update this Card Log entry.</p>
+    <div class="fr"><label class="fl">Entry name</label><input type="text" id="ecl-name" value="${esc(e.name)}" style="width:100%"></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Date</label><input type="date" id="ecl-date" value="${esc(e.date)}" style="width:100%"></div>
+      <div class="fr"><label class="fl">Amount</label><input type="number" id="ecl-amount" step="0.01" value="${esc(e.amount)}" style="width:100%"></div>
+    </div>
+    <div class="fr"><label class="fl">Description</label><input type="text" id="ecl-desc" value="${esc(e.description||'')}" style="width:100%"></div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="saveCardLogEntryEdit('${id}')"><i class="ti ti-check"></i> Save</button>
+    </div>
+  </div>`);
+  setTimeout(()=>{const el=document.getElementById('ecl-name');if(el){el.focus();el.select();}},80);
+};
+
+window.saveCardLogEntryEdit=async id=>{
+  const e=_cardLog.find(x=>x.id===id);if(!e)return;
+  const name=document.getElementById('ecl-name')?.value.trim();
+  const date=document.getElementById('ecl-date')?.value;
+  const amount=document.getElementById('ecl-amount')?.value;
+  const desc=document.getElementById('ecl-desc')?.value.trim()||'';
+  if(!name){toast('Enter an entry name.');return;}
+  if(!date){toast('Enter a date.');return;}
+  if(!amount||isNaN(parseFloat(amount))){toast('Enter a valid amount.');return;}
+
+  const oldAmount=e.amount;
+  e.name=name;e.date=date;e.amount=parseFloat(amount).toFixed(2);e.description=desc;
+  e.editedBy=CU;e.editedDate=today();
+  await saveCardLog();
+
+  S.notifLog.unshift({date:today(),project:'Card Log',trigger:`${CU} edited an entry: "${name}" ($${oldAmount} → $${e.amount})`,daysLeft:null,recipients:CARDLOG_USERS.join(', '),href:null});
+  await saveLog(S.notifLog);updateNotifBadge();
+
+  closeOv();
+  renderCardLog();
+  toast('Entry updated ✅');
 };
 
 // ── Check Log (Brian-only FY check log) ─────────────────────────────────────
@@ -1387,7 +1433,7 @@ function renderCheckLog(){
           <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Date</th>
           <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Amount</th>
           <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border)">Description</th>
-          ${canEdit?'<th style="padding:8px 12px;width:40px;border-bottom:.5px solid var(--border)"></th>':''}
+          ${canEdit?'<th style="padding:8px 12px;width:70px;border-bottom:.5px solid var(--border)"></th>':''}
         </tr></thead><tbody>`;
 
     _checkLog.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(e=>{
@@ -1396,7 +1442,7 @@ function renderCheckLog(){
         <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${fmtS(e.date)}</td>
         <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--ou-green);text-align:right">$${(parseFloat(e.amount)||0).toFixed(2)}</td>
         <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${esc(e.description||'—')}</td>
-        ${canEdit?`<td style="padding:10px 12px;text-align:center"><button class="ibtn" onclick="deleteCheckLogEntry('${e.id}')" style="padding:3px"><i class="ti ti-trash" style="font-size:13px"></i></button></td>`:''}
+        ${canEdit?`<td style="padding:10px 12px;text-align:center;white-space:nowrap"><button class="ibtn" onclick="openEditCheckLogEntry('${e.id}')" style="padding:3px" title="Edit"><i class="ti ti-edit" style="font-size:13px"></i></button> <button class="ibtn" onclick="deleteCheckLogEntry('${e.id}')" style="padding:3px" title="Delete"><i class="ti ti-trash" style="font-size:13px"></i></button></td>`:''}
       </tr>`;
     });
     html+=`</tbody></table></div>`;
@@ -1432,6 +1478,45 @@ window.deleteCheckLogEntry=async id=>{
   await saveCheckLog();
   renderCheckLog();
   toast('Entry removed.');
+};
+
+window.openEditCheckLogEntry=id=>{
+  const e=_checkLog.find(x=>x.id===id);if(!e)return;
+  showOv(`<div class="modal" style="max-width:440px">
+    <button class="ibtn mclose" onclick="closeOv()"><i class="ti ti-x"></i></button>
+    <h2><i class="ti ti-edit" style="color:var(--ou-green);font-size:18px;vertical-align:-2px"></i> Edit entry</h2>
+    <p class="msub">Update this Check Log entry.</p>
+    <div class="fr"><label class="fl">Entry name</label><input type="text" id="eck-name" value="${esc(e.name)}" style="width:100%"></div>
+    <div class="f2">
+      <div class="fr"><label class="fl">Date</label><input type="date" id="eck-date" value="${esc(e.date)}" style="width:100%"></div>
+      <div class="fr"><label class="fl">Amount</label><input type="number" id="eck-amount" step="0.01" value="${esc(e.amount)}" style="width:100%"></div>
+    </div>
+    <div class="fr"><label class="fl">Description</label><input type="text" id="eck-desc" value="${esc(e.description||'')}" style="width:100%"></div>
+    <div class="mfoot">
+      <button class="btn gh" onclick="closeOv()">Cancel</button>
+      <button class="btn pri" onclick="saveCheckLogEntryEdit('${id}')"><i class="ti ti-check"></i> Save</button>
+    </div>
+  </div>`);
+  setTimeout(()=>{const el=document.getElementById('eck-name');if(el){el.focus();el.select();}},80);
+};
+
+window.saveCheckLogEntryEdit=async id=>{
+  const e=_checkLog.find(x=>x.id===id);if(!e)return;
+  const name=document.getElementById('eck-name')?.value.trim();
+  const date=document.getElementById('eck-date')?.value;
+  const amount=document.getElementById('eck-amount')?.value;
+  const desc=document.getElementById('eck-desc')?.value.trim()||'';
+  if(!name){toast('Enter an entry name.');return;}
+  if(!date){toast('Enter a date.');return;}
+  if(!amount||isNaN(parseFloat(amount))){toast('Enter a valid amount.');return;}
+
+  e.name=name;e.date=date;e.amount=parseFloat(amount).toFixed(2);e.description=desc;
+  e.editedBy=CU;e.editedDate=today();
+  await saveCheckLog();
+
+  closeOv();
+  renderCheckLog();
+  toast('Entry updated ✅');
 };
 
 // ── SOP Engine ───────────────────────────────────────────────────────────────
