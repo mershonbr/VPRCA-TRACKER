@@ -557,7 +557,7 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
         <div class="lf"><label>Your name</label>
           <select id="lu" onchange="_luChangeHandler()">
             <option value="">— Select your name —</option>
-            <option value="G. Jason Jolley">G. Jason Jolley</option>
+            <option value="G. Jason Jolley">Jason Jolley</option>
             <option value="Keith Leffler">Keith Leffler</option>
             <option value="Kim Littlefield">Kim Littlefield</option>
             <option value="Brian Mershon">Brian Mershon (Admin)</option>
@@ -576,7 +576,7 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
         <div class="lf"><label>Your name</label>
           <select id="fu">
             <option value="">— Select your name —</option>
-            <option value="G. Jason Jolley">G. Jason Jolley</option>
+            <option value="G. Jason Jolley">Jason Jolley</option>
             <option value="Keith Leffler">Keith Leffler</option>
             <option value="Kim Littlefield">Kim Littlefield</option>
             <option value="Eric Muth">Eric Muth</option>
@@ -649,7 +649,12 @@ const PHASES=['Not Started','In Progress','Completed'];
 const CATEGORIES=['Events','Policies','Initiatives','Memberships','Personal'];
 const GROUPS=['VPRCA Leadership Team','OSP','Research Compliance','Research Development','LAR','Other'];
 const TRIGGERS=[{id:'t30',l:'30-day deadline alert',d:'30 days before due date'},{id:'t14',l:'2-week notice',d:'14 days before due date'},{id:'t1',l:'Day-before reminder',d:'1 day before due date'},{id:'tc',l:'Completion notice',d:'When marked Complete'}];
-const OWNERS=[{name:'G. Jason Jolley',email:'jolleyg1@ohio.edu'},{name:'Keith Leffler',email:'leffler@ohio.edu'},{name:'Kim Littlefield',email:'kplittle@ohio.edu'},{name:'Brian Mershon',email:'mershon@ohio.edu'},{name:'Eric Muth',email:'vprca@ohio.edu'}];
+const OWNERS=[{name:'G. Jason Jolley',firstName:'Jason',email:'jolleyg1@ohio.edu'},{name:'Keith Leffler',firstName:'Keith',email:'leffler@ohio.edu'},{name:'Kim Littlefield',firstName:'Kim',email:'kplittle@ohio.edu'},{name:'Brian Mershon',firstName:'Brian',email:'mershon@ohio.edu'},{name:'Eric Muth',firstName:'Eric',email:'vprca@ohio.edu'}];
+
+// fn(name) — returns the correct first name for any owner (e.g. "Jason" not "G.")
+function fn(name){const o=OWNERS.find(x=>x.name===name);return o?o.firstName:(name||'').split(' ').pop();}
+// lastName(name) — last name only
+function lastName(name){return(name||'').split(' ').pop();}
 const ADMIN='Brian Mershon';
 
 const PRESENCE_COLORS={
@@ -797,7 +802,7 @@ function renderPerformerDash(){
 
   let html=`<div class="perf-wrap">
     <div style="margin-bottom:1rem;padding:.85rem 1.25rem;background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius-lg)">
-      <div style="font-size:15px;font-weight:800;color:var(--ou-green)">Welcome, ${esc(viewAs.split(' ')[0])}!</div>
+      <div style="font-size:15px;font-weight:800;color:var(--ou-green)">Welcome, ${esc(fn(viewAs))}!</div>
       <div style="font-size:13px;color:var(--text2);margin-top:3px">Below are your assigned projects. Please review, acknowledge and complete prior to the deadline.</div>
     </div>
 
@@ -1260,7 +1265,7 @@ function renderCardLog(){
         <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${fmtS(e.date)}</td>
         <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--ou-green);text-align:right">$${(parseFloat(e.amount)||0).toFixed(2)}</td>
         <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${esc(e.description||'—')}</td>
-        <td style="padding:10px 12px;font-size:11px"><span style="display:inline-flex;align-items:center;gap:5px"><div style="width:16px;height:16px;border-radius:50%;background:${color};color:#fff;font-size:7px;font-weight:900;display:flex;align-items:center;justify-content:center">${ini(e.addedBy||'')}</div>${esc((e.addedBy||'').split(' ').pop())}</span></td>
+        <td style="padding:10px 12px;font-size:11px"><span style="display:inline-flex;align-items:center;gap:5px"><div style="width:16px;height:16px;border-radius:50%;background:${color};color:#fff;font-size:7px;font-weight:900;display:flex;align-items:center;justify-content:center">${ini(e.addedBy||'')}</div>${esc(lastName(e.addedBy||''))}</span></td>
         ${canEdit?`<td style="padding:10px 12px;text-align:center;white-space:nowrap"><button class="ibtn" onclick="openEditCardLogEntry('${e.id}')" style="padding:3px" title="Edit"><i class="ti ti-edit" style="font-size:13px"></i></button> <button class="ibtn" onclick="deleteCardLogEntry('${e.id}')" style="padding:3px" title="Delete"><i class="ti ti-trash" style="font-size:13px"></i></button></td>`:''}
       </tr>`;
     });
@@ -1578,7 +1583,7 @@ window.openSOPGenerator=function(id){
   const logRows=log.length
     ?log.map(l=>`<div style="display:flex;gap:10px;padding:.35rem 0;border-bottom:.5px solid var(--border);font-size:12px">
         <span style="font-weight:700;color:var(--text);white-space:nowrap;min-width:80px">${esc(l.date)}</span>
-        <span style="color:var(--text3);white-space:nowrap;min-width:90px">${esc((l.author||'').split(' ').pop())}</span>
+        <span style="color:var(--text3);white-space:nowrap;min-width:90px">${esc(lastName(l.author||''))}</span>
         <span style="color:var(--text2)">${esc(l.text)}</span>
       </div>`).join('')
     :`<div style="font-size:12px;color:var(--text3);font-style:italic;padding:.5rem 0">No activity recorded yet.</div>`;
@@ -1628,7 +1633,7 @@ window.openSOPGenerator=function(id){
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           ${sop.assignedTo.map(n=>`<div style="display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border:.5px solid var(--border);border-radius:20px;background:var(--bg)">
             <div style="width:18px;height:18px;border-radius:50%;background:${PRESENCE_COLORS[n]||'#555'};color:#fff;font-size:8px;font-weight:900;display:flex;align-items:center;justify-content:center">${ini(n)}</div>
-            ${esc(n.split(' ').pop())} ${sop.acknowledged[n]?`<span style="color:var(--green-text);font-weight:700">✅ ${fmtS(sop.acknowledged[n])}</span>`:`<span style="color:var(--text3)">⏳ pending</span>`}
+            ${esc(lastName(n))} ${sop.acknowledged[n]?`<span style="color:var(--green-text);font-weight:700">✅ ${fmtS(sop.acknowledged[n])}</span>`:`<span style="color:var(--text3)">⏳ pending</span>`}
           </div>`).join('')}
         </div>
       </div>
@@ -1697,7 +1702,7 @@ window.downloadSOPWord=function(projectId){
 
   const logRows=log.map(l=>`<tr>
     <td style="padding:4pt 8pt;border-bottom:1pt solid #eee">${l.date}</td>
-    <td style="padding:4pt 8pt;border-bottom:1pt solid #eee">${(l.author||'').split(' ').pop()}</td>
+    <td style="padding:4pt 8pt;border-bottom:1pt solid #eee">${lastName(l.author||'')}</td>
     <td style="padding:4pt 8pt;border-bottom:1pt solid #eee">${l.text}</td>
   </tr>`).join('');
 
@@ -1791,7 +1796,7 @@ window.openSOPLibrary=function(){
         <i class="ti ti-file-text" style="font-size:22px;color:var(--ou-green);flex-shrink:0"></i>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(s.title)}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">Created ${fmtS(s.createdDate)} by ${esc((s.createdBy||'').split(' ').pop())}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Created ${fmtS(s.createdDate)} by ${esc(lastName(s.createdBy||''))}</div>
         </div>
         <div style="display:flex;gap:4px">
           <button class="btn xs pri" onclick="event.stopPropagation();redownloadSOP('${s.id}')"><i class="ti ti-download" style="font-size:11px"></i></button>
@@ -1850,7 +1855,7 @@ function buildTodoListHTML(){
     h+=`<div style="display:flex;align-items:center;gap:8px;padding:.45rem 0;border-bottom:.5px solid var(--border)">
       <input type="checkbox" style="accent-color:var(--ou-green);width:15px;height:15px;cursor:pointer;flex-shrink:0" onchange="toggleTodo('${t.id}',this.checked)">
       <span style="flex:1;font-size:12px;color:var(--text);line-height:1.4">${esc(t.text)}</span>
-      ${t.assignTo?`<span style="font-size:10px;font-weight:700;color:${PRESENCE_COLORS[t.assignTo]||'#888'};white-space:nowrap;background:var(--bg2);padding:1px 6px;border-radius:10px">${esc(t.assignTo.split(' ').pop())}</span>`:''}
+      ${t.assignTo?`<span style="font-size:10px;font-weight:700;color:${PRESENCE_COLORS[t.assignTo]||'#888'};white-space:nowrap;background:var(--bg2);padding:1px 6px;border-radius:10px">${esc(lastName(t.assignTo))}</span>`:''}
       ${t.due?`<span style="font-size:10px;font-weight:700;color:${dueColor};white-space:nowrap">${dueLabel}</span>`:''}
       <button class="ibtn" onclick="deleteTodo('${t.id}')" style="padding:2px;flex-shrink:0"><i class="ti ti-x" style="font-size:11px"></i></button>
     </div>`;
@@ -1973,7 +1978,7 @@ function renderDash(){
       <input type="date" id="todo-due" style="height:34px;font-size:12px;width:140px">
       <select id="todo-assign" style="height:34px;font-size:12px;width:140px" title="Assign to (optional)">
         <option value="">Assign to…</option>
-        ${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(o.name.split(' ').pop())}</option>`).join('')}
+        ${OWNERS.map(o=>`<option value="${esc(o.name)}">${esc(lastName(o.name))}</option>`).join('')}
       </select>
       <button class="btn pri" onclick="addTodo()" style="height:34px;padding:0 14px;white-space:nowrap"><i class="ti ti-plus"></i> Add</button>
     </div>
@@ -1981,7 +1986,7 @@ function renderDash(){
   </div>`;
   // ── Welcome message ──
   html+=`<div style="margin-bottom:1rem;padding:.85rem 1.25rem;background:var(--ou-green-light);border:.5px solid var(--ou-green);border-radius:var(--radius-lg)">
-    <div style="font-size:15px;font-weight:800;color:var(--ou-green)">Welcome, ${esc(CU.split(' ')[0])}!</div>
+    <div style="font-size:15px;font-weight:800;color:var(--ou-green)">Welcome, ${esc(fn(CU))}!</div>
     <div style="font-size:13px;color:var(--text2);margin-top:3px">Below are your assigned projects. Please review, acknowledge and complete prior to the deadline.</div>
   </div>`;
 
@@ -2159,7 +2164,7 @@ window.openCompleteDialog=function(id,checked){
         <div class="fr"><label class="fl">New deadline</label><input type="date" id="ns-due" style="width:100%"></div>
         <div class="fr"><label class="fl">Assign to</label>
           <select id="ns-assign" style="width:100%">
-            ${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(p.assignedTo||[]).includes(o.name)?'selected':''}>${esc(o.name.split(' ').pop())}</option>`).join('')}
+            ${OWNERS.map(o=>`<option value="${esc(o.name)}" ${(p.assignedTo||[]).includes(o.name)?'selected':''}>${esc(lastName(o.name))}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -2237,7 +2242,7 @@ window.submitComplete=async id=>{
       const owner=OWNERS.find(o=>o.name===newAssign);
       if(owner){
         const sub=encodeURIComponent(`[Next step assigned] ${p.name}`);
-        const body=encodeURIComponent(`Hi ${newAssign.split(' ')[0]},\n\nThere is a new step on: ${p.name}\n\nNext step: ${nsDesc}${nsDue?'\nNew deadline: '+fmtD(nsDue):''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
+        const body=encodeURIComponent(`Hi ${fn(newAssign)},\n\nThere is a new step on: ${p.name}\n\nNext step: ${nsDesc}${nsDue?'\nNew deadline: '+fmtD(nsDue):''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
         window.open(`mailto:${owner.email}?subject=${sub}&body=${body}`,'_blank');
       }
     }
@@ -2321,7 +2326,7 @@ window.addTodo=async()=>{
   const asEl=document.getElementById('todo-assign');if(asEl)asEl.value='';
   updateTasksBadge();
   renderDash();
-  toast(assignTo?`Added ✅ — tagged for ${assignTo.split(' ')[0]}`:'Added ✅');
+  toast(assignTo?`Added ✅ — tagged for ${fn(assignTo)}`:'Added ✅');
   setTimeout(()=>{const el=document.getElementById('todo-inp');if(el)el.focus();},80);
 };
 
@@ -3015,7 +3020,7 @@ function renderForm(mode){
       return`<label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;cursor:pointer;padding:6px 12px;border:1.5px solid ${sel?color:'var(--border2)'};border-radius:20px;background:${sel?color:'var(--bg)'};color:${sel?'#fff':'var(--text2)'}">
         <input type="checkbox" value="${esc(o.name)}" ${sel?'checked':''} style="display:none" onchange="updateAssigneeChip(this)">
         <div style="width:18px;height:18px;border-radius:50%;background:${sel?'rgba(255,255,255,.3)':color};color:#fff;font-size:8px;font-weight:900;display:flex;align-items:center;justify-content:center">${ini(o.name)}</div>
-        ${esc(o.name.split(' ').pop())}
+        ${esc(lastName(o.name))}
       </label>`;
     }).join('')}
   </div>
@@ -3198,7 +3203,7 @@ window.submitP=async eid=>{
     const owners=newlyAssigned.map(n=>OWNERS.find(o=>o.name===n)).filter(Boolean);
     if(owners.length){
       const to=owners.map(o=>o.email).join(',');
-      const names=owners.map(o=>o.name.split(' ')[0]).join(', ');
+      const names=owners.map(o=>fn(o.name)).join(', ');
       const sub=encodeURIComponent(`[Assigned] ${obj.name}`);
       const body=encodeURIComponent(`Hi ${names},\n\nYou have been assigned to: ${obj.name}\n\nCategory: ${obj.category}\nStatus: ${phase}${obj.due?'\nDeadline: '+fmtD(obj.due):''}\n${description?'\nDetails: '+description:''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
       window.open(`mailto:${to}?subject=${sub}&body=${body}`,'_blank');
@@ -3288,7 +3293,7 @@ window.openDetail=id=>{
           </div>
           ${t.desc?`<div style="font-size:12px;color:var(--text2);margin-bottom:5px">${esc(t.desc)}</div>`:''}
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            ${allA.map(n=>{const isDone=t.type==='review'?t.reviews?.[n]:t.completions?.[n];return`<span style="font-size:11px;font-weight:600;color:${isDone?'var(--green-text)':'var(--text3)'}">${isDone?'✅':'⏳'} ${esc(n.split(' ').pop())} ${isDone?`<span style="font-size:10px;color:var(--text3)">${fmtS(isDone)}</span>`:''}</span>`;}).join('')}
+            ${allA.map(n=>{const isDone=t.type==='review'?t.reviews?.[n]:t.completions?.[n];return`<span style="font-size:11px;font-weight:600;color:${isDone?'var(--green-text)':'var(--text3)'}">${isDone?'✅':'⏳'} ${esc(lastName(n))} ${isDone?`<span style="font-size:10px;color:var(--text3)">${fmtS(isDone)}</span>`:''}</span>`;}).join('')}
             ${t.dueDate?`<span style="font-size:11px;color:var(--text3);margin-left:auto"><i class="ti ti-calendar" style="font-size:10px"></i> ${fmtD(t.dueDate)}</span>`:''}
           </div>
         </div>`;
@@ -3527,7 +3532,7 @@ window.saveAssignTask=async function(projectId){
   const owner=OWNERS.find(o=>o.name===assignee);
   if(owner&&assignee!==CU){
     const sub=encodeURIComponent(`[Task assigned] ${title} — ${p.name}`);
-    const body=encodeURIComponent(`Hi ${assignee.split(' ')[0]},\n\nYou've been assigned a task on "${p.name}":\n\n${title}${desc?'\n\n'+desc:''}${due?'\n\nDue: '+fmtD(due):''}\n\nPlease log in to the tracker for details.\n\nThanks,\n${CU}`);
+    const body=encodeURIComponent(`Hi ${fn(assignee)},\n\nYou've been assigned a task on "${p.name}":\n\n${title}${desc?'\n\n'+desc:''}${due?'\n\nDue: '+fmtD(due):''}\n\nPlease log in to the tracker for details.\n\nThanks,\n${CU}`);
     window.open(`mailto:${owner.email}?subject=${sub}&body=${body}`,'_blank');
   }
 
@@ -3806,7 +3811,7 @@ function renderGantt(){
       <div class="gantt-legend-item"><div style="width:2px;height:14px;background:#EF4444;border-radius:1px"></div> Today</div>
       <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--ou-green);rotate:45deg"></div> Step milestone</div>
       <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--green-border)"></div> Completed</div>
-      ${Object.entries(PRESENCE_COLORS).map(([n,c])=>`<div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:${c};border-radius:50%"></div>${n.split(' ').pop()}</div>`).join('')}
+      ${Object.entries(PRESENCE_COLORS).map(([n,c])=>`<div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:${c};border-radius:50%"></div>${lastName(n)}</div>`).join('')}
     </div>
   </div>`;
   el.innerHTML=html;
@@ -3970,14 +3975,15 @@ function completeLogin(name){
 function doSignOut(){
   CU='';sessionStorage.removeItem('vprca_user');
   if(_unsubTodos){_unsubTodos();_unsubTodos=null;}
-  if(_unsubMsgs){_unsubMsgs();_unsubMsgs=null;}
+  if(_unsubRem){_unsubRem();_unsubRem=null;}
+  if(_unsubCardLog){_unsubCardLog();_unsubCardLog=null;}
+  if(_unsubCheckLog){_unsubCheckLog();_unsubCheckLog=null;}
+  if(_unsubSOPs){_unsubSOPs();_unsubSOPs=null;}
   if(typeof _unsubMem!=='undefined'&&_unsubMem){_unsubMem();_unsubMem=null;}
   if(typeof _unsubPol!=='undefined'&&_unsubPol){_unsubPol();_unsubPol=null;}
-  if(_unsubRem){_unsubRem();_unsubRem=null;}
   if(typeof _unsubCards!=='undefined'&&_unsubCards){_unsubCards();_unsubCards=null;}
   if(typeof _unsubExpenses!=='undefined'&&_unsubExpenses){_unsubExpenses();_unsubExpenses=null;}
-  if(_unsubSOPs){_unsubSOPs();_unsubSOPs=null;}
-  _todos=[];_todosLoaded=false;_reminders=[];_sops=[];
+  _todos=[];_todosLoaded=false;_reminders=[];_cardLog=[];_checkLog=[];_sops=[];
   S.projects=[];S.contacts=[];S.notifLog=[];
   document.getElementById('app').style.display='none';
   document.getElementById('login-wrap').className='show';
