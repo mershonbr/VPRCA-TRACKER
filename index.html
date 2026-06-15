@@ -777,10 +777,7 @@ function updatePerfLogBadge(){
   const btn=document.getElementById('perf-log-btn');if(!btn)return;
   const viewAs=_previewingAs||CU;
   const unacked=S.projects.filter(p=>(p.assignedTo||[]).includes(viewAs)&&!p.completed&&!(p.acknowledged||{})[viewAs]).length;
-  // Also count notification log entries addressed to this user that haven't been read
-  const readCount=getNotifReadCount();
-  const myLogEntries=S.notifLog.filter(l=>(l.recipients||'').split(',').map(s=>s.trim()).includes(viewAs)).length;
-  const unreadLog=Math.max(0,myLogEntries-readCount);
+  const unreadLog=countUnreadForUser(viewAs);
   const total=unacked+unreadLog;
   const badge=btn.querySelector('.log-badge');
   if(badge){
@@ -927,7 +924,7 @@ window.acknowledgeItem=async id=>{
   await saveP(p);
   // Notify Brian via the notification log
   if(!isAdmin()){
-    S.notifLog.unshift({date:today(),project:p.name,trigger:`${CU} acknowledged this item`,daysLeft:p.due?dU(p.due):null,recipients:ADMIN,href:null});
+    S.notifLog.unshift({ts:Date.now(),date:today(),project:p.name,trigger:`${CU} acknowledged this item`,daysLeft:p.due?dU(p.due):null,recipients:ADMIN,href:null});
     await saveLog(S.notifLog);updateNotifBadge();
   }
   if(isAdmin())renderDash(); else renderPerformerDash();
@@ -1060,7 +1057,7 @@ window.savePerformerDetailUpdate=async id=>{
   // Notify Brian via notification log
   if(!isAdmin()&&logMsgs.length){
     logMsgs.forEach(msg=>{
-      S.notifLog.unshift({date:today(),project:p.name,trigger:msg,daysLeft:p.due?dU(p.due):null,recipients:ADMIN,href:null});
+      S.notifLog.unshift({ts:Date.now(),date:today(),project:p.name,trigger:msg,daysLeft:p.due?dU(p.due):null,recipients:ADMIN,href:null});
     });
     await saveLog(S.notifLog);updateNotifBadge();
   }
@@ -1131,21 +1128,58 @@ window.exitPreview=function(){
 };
 async function saveC(c){await setDoc(doc(db,'contacts',c.email.replace(/[^a-zA-Z0-9]/g,'_')),c)}
 async function delC(email){await deleteDoc(doc(db,'contacts',email.replace(/[^a-zA-Z0-9]/g,'_')))}
-async function saveLog(l){await setDoc(doc(db,'meta','notifLog'),{entries:l.slice(0,200)});}
+async function saveLog(l){
+  // Stamp ts on any entries missing it
+  const now=Date.now();
+  l.forEach((e,i)=>{if(!e.ts)e.ts=now-i;});
+  await setDoc(doc(db,'meta','notifLog'),{entries:l.slice(0,200)});
+}
 
-// ── Per-user read tracking for notif badge ──
-function getNotifReadCount(){
-  try{return parseInt(localStorage.getItem('notif_read_'+(CU||'').replace(/\s/g,'_'))||'0',10);}catch(e){return 0;}
+// ── Per-user read tracking (Firestore-backed, not localStorage) ─────────────
+// Stored at meta/notifRead_{user} as {lastReadTs: number}
+let _notifLastReadTs=0;
+
+async function loadNotifReadTs(){
+  if(!CU)return;
+  try{
+    const key='notifRead_'+(CU).replace(/\s/g,'_');
+    const snap=await getDocs(collection(db,'meta'));
+    const d=snap.docs.find(x=>x.id===key);
+    _notifLastReadTs=d?(d.data().lastReadTs||0):0;
+  }catch(e){_notifLastReadTs=0;}
 }
-function saveNotifReadCount(n){
-  try{localStorage.setItem('notif_read_'+(CU||'').replace(/\s/g,'_'),String(n));}catch(e){}
+
+async function markNotifRead(){
+  if(!CU)return;
+  _notifLastReadTs=Date.now();
+  try{
+    await setDoc(doc(db,'meta','notifRead_'+(CU).replace(/\s/g,'_')),{lastReadTs:_notifLastReadTs,user:CU,updated:today()});
+  }catch(e){}
 }
+
+async function clearNotifRead(){
+  if(!CU)return;
+  _notifLastReadTs=0;
+  try{
+    await setDoc(doc(db,'meta','notifRead_'+(CU).replace(/\s/g,'_')),{lastReadTs:0,user:CU,updated:today()});
+  }catch(e){}
+}
+
+// Count log entries addressed to this user newer than last read
+function countUnreadForUser(user){
+  if(!user)return 0;
+  return S.notifLog.filter(l=>{
+    const recs=(l.recipients||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const addressed=recs.length===0||recs.includes(user)||recs.includes('ALL');
+    return addressed&&(l.ts||0)>_notifLastReadTs;
+  }).length;
+}
+
 function updateNotifBadge(){
   const badge=document.getElementById('notif-badge');if(!badge)return;
-  // Count entries relevant to this user (all for now since log is shared)
-  const unread=S.notifLog.length-getNotifReadCount();
+  const unread=countUnreadForUser(CU);
   if(unread>0){badge.textContent=unread>9?'9+':unread;badge.style.display='';}
-  else{badge.style.display='none';}
+  else badge.style.display='none';
 }
 
 // ── Notification check — fires on every project load and every minute ──
@@ -1291,7 +1325,7 @@ window.addCardLogEntry=async()=>{
   await saveCardLog();
 
   // Notify Brian + Keith only
-  S.notifLog.unshift({date:today(),project:'Card Log',trigger:`${CU} added a $${entry.amount} entry: "${name}"`,daysLeft:null,recipients:CARDLOG_USERS.join(', '),href:null});
+  S.notifLog.unshift({ts:Date.now(),date:today(),project:'Card Log',trigger:`${CU} added a $${entry.amount} entry: "${name}"`,daysLeft:null,recipients:CARDLOG_USERS.join(', '),href:null});
   await saveLog(S.notifLog);updateNotifBadge();
 
   // Clear form
@@ -1309,7 +1343,7 @@ window.deleteCardLogEntry=async id=>{
   await saveCardLog();
 
   if(entry){
-    S.notifLog.unshift({date:today(),project:'Card Log',trigger:`${CU} removed a $${entry.amount} entry: "${entry.name}"`,daysLeft:null,recipients:CARDLOG_USERS.join(', '),href:null});
+    S.notifLog.unshift({ts:Date.now(),date:today(),project:'Card Log',trigger:`${CU} removed a $${entry.amount} entry: "${entry.name}"`,daysLeft:null,recipients:CARDLOG_USERS.join(', '),href:null});
     await saveLog(S.notifLog);updateNotifBadge();
   }
 
@@ -1352,7 +1386,7 @@ window.saveCardLogEntryEdit=async id=>{
   e.editedBy=CU;e.editedDate=today();
   await saveCardLog();
 
-  S.notifLog.unshift({date:today(),project:'Card Log',trigger:`${CU} edited an entry: "${name}" ($${oldAmount} → $${e.amount})`,daysLeft:null,recipients:CARDLOG_USERS.join(', '),href:null});
+  S.notifLog.unshift({ts:Date.now(),date:today(),project:'Card Log',trigger:`${CU} edited an entry: "${name}" ($${oldAmount} → $${e.amount})`,daysLeft:null,recipients:CARDLOG_USERS.join(', '),href:null});
   await saveLog(S.notifLog);updateNotifBadge();
 
   closeOv();
@@ -1924,7 +1958,7 @@ function updateTasksBadge(){
         t.notifiedOverdue=t.notifiedOverdue||{};
         if(!t.notifiedOverdue[td]){
           t.notifiedOverdue[td]=true;
-          S.notifLog.unshift({date:td,project:'To-Do',trigger:`Overdue: ${t.text}`,daysLeft:Math.ceil((new Date(t.due)-new Date())/86400000),recipients:CU,href:null});
+          S.notifLog.unshift({ts:Date.now(),date:td,project:'To-Do',trigger:`Overdue: ${t.text}`,daysLeft:Math.ceil((new Date(t.due)-new Date())/86400000),recipients:CU,href:null});
           saveLog(S.notifLog);updateNotifBadge();
         }
       }
@@ -2255,7 +2289,7 @@ window.submitComplete=async id=>{
       const body=encodeURIComponent(`Hi Brian,\n\n${CU} has completed a step on "${p.name}" and added a follow-up:\n\nNext step: ${nsDesc}${nsDue?'\nNew deadline: '+fmtD(nsDue):''}\n\nThe item remains active on the dashboard.\n\nThanks,\n${CU}`);
       window.open(`mailto:${brian?.email||'mershon@ohio.edu'}?subject=${sub}&body=${body}`,'_blank');
       // Log to notification bell
-      S.notifLog.unshift({date:today(),project:p.name,trigger:`${CU} completed a step — next step: "${nsDesc.slice(0,60)}${nsDesc.length>60?'…':''}"`,daysLeft:nsDue?dU(nsDue):null,recipients:ADMIN,href:null});
+      S.notifLog.unshift({ts:Date.now(),date:today(),project:p.name,trigger:`${CU} completed a step — next step: "${nsDesc.slice(0,60)}${nsDesc.length>60?'…':''}"`,daysLeft:nsDue?dU(nsDue):null,recipients:ADMIN,href:null});
       await saveLog(S.notifLog);updateNotifBadge();
     }
 
@@ -2273,7 +2307,7 @@ window.submitComplete=async id=>{
 
     // Notify Brian via notification log when a performer completes an item
     if(!isAdmin()){
-      S.notifLog.unshift({date:today(),project:p.name,trigger:`${CU} marked this item complete ✅`,daysLeft:null,recipients:ADMIN,href:null});
+      S.notifLog.unshift({ts:Date.now(),date:today(),project:p.name,trigger:`${CU} marked this item complete ✅`,daysLeft:null,recipients:ADMIN,href:null});
       await saveLog(S.notifLog);updateNotifBadge();
     }
 
@@ -2980,7 +3014,7 @@ ${cardLogSection}${cardLogPerfSection}
 
 // ── Inline edit ──
 window.inlineE=async(id,f,v)=>{const p=S.projects.find(x=>x.id===id);if(!p)return;p[f]=v;await saveP(p)};
-window.extD=async(id,days)=>{const p=S.projects.find(x=>x.id===id);if(!p||!p.due)return;const d=new Date(p.due);d.setDate(d.getDate()+days);p.due=d.toISOString().slice(0,10);await saveP(p);S.notifLog.unshift({date:today(),project:p.name,trigger:'Deadline extended +'+days+' days',recipients:'(leadership)',href:null});await saveLog(S.notifLog);toast('Deadline extended +'+days+' days.')};
+window.extD=async(id,days)=>{const p=S.projects.find(x=>x.id===id);if(!p||!p.due)return;const d=new Date(p.due);d.setDate(d.getDate()+days);p.due=d.toISOString().slice(0,10);await saveP(p);S.notifLog.unshift({ts:Date.now(),date:today(),project:p.name,trigger:'Deadline extended +'+days+' days',recipients:'(leadership)',href:null});await saveLog(S.notifLog);toast('Deadline extended +'+days+' days.')};
 
 // ── Add/Edit form ──
 window.openAdd=()=>{_ed={id:String(Date.now()),name:'',category:CATEGORIES[0],phase:'Not Started',status:'Not Started',due:'',owner:CU,assignedTo:[],description:'',completed:false,completedDate:null,followUp:null,notes:[],steps:[],recipients:[],triggers:{t30:true,t14:true,t1:false,tc:true},notified:{},acknowledged:{},visibility:'group',group:GROUPS[0],createdBy:CU};renderForm('add')};
@@ -3209,6 +3243,25 @@ window.submitP=async eid=>{
       const body=encodeURIComponent(`Hi ${names},\n\nYou have been assigned to: ${obj.name}\n\nCategory: ${obj.category}\nStatus: ${phase}${obj.due?'\nDeadline: '+fmtD(obj.due):''}\n${description?'\nDetails: '+description:''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
       window.open(`mailto:${to}?subject=${sub}&body=${body}`,'_blank');
     }
+    // Add notification log entry so assigned users see a badge
+    const ts=Date.now();
+    newlyAssigned.forEach(name=>{
+      S.notifLog.unshift({
+        ts,
+        date:today(),
+        project:obj.name,
+        trigger:`${CU} assigned you to this item${obj.due?' — due '+fmtD(obj.due):''}`,
+        daysLeft:obj.due?dU(obj.due):null,
+        recipients:name,
+        href:null
+      });
+    });
+    // Also notify Brian if a performer created the assignment
+    if(!isAdmin()){
+      S.notifLog.unshift({ts:ts-1,date:today(),project:obj.name,trigger:`${CU} created/updated this item and assigned: ${newlyAssigned.join(', ')}`,daysLeft:obj.due?dU(obj.due):null,recipients:ADMIN,href:null});
+    }
+    await saveLog(S.notifLog);
+    updateNotifBadge();
   }
 
   // Auto-add to Brian's to-do if assigned to himself and no step todos exist
@@ -3561,10 +3614,11 @@ window.rmGC=async email=>{const c=S.contacts.find(x=>x.email===email);if(!confir
 
 // ── Notif log ──
 window.openNotifLog=()=>{
-  // Mark all as read
-  saveNotifReadCount(S.notifLog.length);
-  if(isAdmin())updateNotifBadge();
-  else updatePerfLogBadge();
+  // Mark all as read — persisted to Firestore
+  markNotifRead().then(()=>{
+    if(isAdmin())updateNotifBadge();
+    else updatePerfLogBadge();
+  });
 
   const urgColor=days=>{
     if(days<0)  return'var(--red-text)';
@@ -3635,7 +3689,7 @@ async function checkNotify(){
 
     const fire=(key,label,cond)=>{
       if(cond&&!notified[key]){
-        S.notifLog.unshift({date:td,project:p.name,trigger:label,daysLeft:days,recipients,href:null});
+        S.notifLog.unshift({ts:Date.now(),date:td,project:p.name,trigger:label,daysLeft:days,recipients,href:null});
         notified[key]=td;
         logChanged=true;pChanged=true;
       }
@@ -3661,8 +3715,9 @@ async function checkNotify(){
 window.removeLogEntry=async i=>{
   S.notifLog.splice(i,1);
   await saveLog(S.notifLog);
-  saveNotifReadCount(Math.max(0,getNotifReadCount()-1));
-  updateNotifBadge();
+  // Re-mark as read at current timestamp so removed entry doesn't recount
+  await markNotifRead();
+  if(isAdmin())updateNotifBadge();else updatePerfLogBadge();
   openNotifLog();
 };
 
@@ -3670,8 +3725,8 @@ window.clearAllLog=async()=>{
   if(!confirm('Clear all notification entries?'))return;
   S.notifLog=[];
   await saveLog([]);
-  saveNotifReadCount(0);
-  updateNotifBadge();
+  await clearNotifRead();
+  if(isAdmin())updateNotifBadge();else updatePerfLogBadge();
   closeOv();
   toast('Notification log cleared.');
 };
@@ -3951,6 +4006,7 @@ function completeLogin(name){
     if(typeof startCardsListener==='function')startCardsListener();
     if(typeof startExpenseListener==='function')startExpenseListener();
     if(typeof startMemListener==='function')startMemListener();
+    loadNotifReadTs();
     startListeners();
   } else {
     document.getElementById('admin-btn').style.display='none';
@@ -3969,6 +4025,7 @@ function completeLogin(name){
     if(pd)pd.innerHTML=`<div style="max-width:860px;margin:0 auto;padding:2rem;text-align:center;color:var(--text3)"><i class="ti ti-loader-2" style="font-size:28px;display:block;margin:0 auto 8px;animation:spin .7s linear infinite"></i><div style="font-size:14px">Loading your items…</div></div>`;
     startTodoListener();
     startCardLogListener();
+    loadNotifReadTs();
     startListeners();
   }
   startPresence();
