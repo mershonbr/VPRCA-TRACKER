@@ -3192,15 +3192,17 @@ window.submitP=async eid=>{
   }
   await saveP(obj);
 
-  // Notify newly assigned people via email
+  // Notify newly assigned people via email — single mailto with all addresses
   const newlyAssigned=assignedTo.filter(n=>!prevAssigned.includes(n)&&n!==CU);
   if(newlyAssigned.length){
-    newlyAssigned.forEach(name=>{
-      const owner=OWNERS.find(o=>o.name===name);if(!owner)return;
+    const owners=newlyAssigned.map(n=>OWNERS.find(o=>o.name===n)).filter(Boolean);
+    if(owners.length){
+      const to=owners.map(o=>o.email).join(',');
+      const names=owners.map(o=>o.name.split(' ')[0]).join(', ');
       const sub=encodeURIComponent(`[Assigned] ${obj.name}`);
-      const body=encodeURIComponent(`Hi ${name.split(' ')[0]},\n\nYou have been assigned to: ${obj.name}\n\nCategory: ${obj.category}\nStatus: ${phase}${obj.due?'\nDeadline: '+fmtD(obj.due):''}\n${description?'\nDetails: '+description:''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
-      window.open(`mailto:${owner.email}?subject=${sub}&body=${body}`,'_blank');
-    });
+      const body=encodeURIComponent(`Hi ${names},\n\nYou have been assigned to: ${obj.name}\n\nCategory: ${obj.category}\nStatus: ${phase}${obj.due?'\nDeadline: '+fmtD(obj.due):''}\n${description?'\nDetails: '+description:''}\n\nPlease log in to acknowledge and track this item.\n\nThanks,\n${CU}`);
+      window.open(`mailto:${to}?subject=${sub}&body=${body}`,'_blank');
+    }
   }
 
   // Auto-add to Brian's to-do if assigned to himself and no step todos exist
