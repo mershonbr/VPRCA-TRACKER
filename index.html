@@ -601,14 +601,14 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
       <div class="presence-wrap" id="presence-wrap"><span class="plabel">Online</span></div>
       <div class="user-chip"><div class="u-av" id="uav"></div><span class="u-name" id="uname"></span></div>
       <button class="btn sm adm" id="admin-btn" style="display:none" onclick="openAdmin()"><i class="ti ti-shield"></i> Admin</button>
-      <button class="btn sm gh" id="contacts-btn" onclick="openContacts()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-address-book"></i> Contacts</button>
-      <button class="btn sm gh" id="sop-lib-btn" onclick="openSOPLibrary()" style="color:#fff;border-color:rgba(255,255,255,.25);display:none"><i class="ti ti-library"></i> SOPs</button>
-      <button class="btn sm gh" id="notif-log-btn" onclick="openNotifLog()" style="color:#fff;border-color:rgba(255,255,255,.25)"><i class="ti ti-bell"></i> Log <span id="notif-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:2px;vertical-align:1px"></span></button>
-      <button class="btn sm gh" id="perf-log-btn" style="display:none;color:#fff;border-color:rgba(255,255,255,.25)" onclick="openNotifLog()"><i class="ti ti-bell"></i> Log <span class="log-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:2px;vertical-align:1px"></span></button>
-      <button class="btn sm gh" onclick="refreshDash()" id="refresh-btn" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Refresh"><i class="ti ti-refresh"></i> Refresh</button>
+      <button class="btn sm gh" id="contacts-btn" onclick="openContacts()" style="color:#fff;border-color:rgba(255,255,255,.25);background:transparent"><i class="ti ti-address-book"></i> Contacts</button>
+      <button class="btn sm gh" id="sop-lib-btn" onclick="openSOPLibrary()" style="color:#fff;border-color:rgba(255,255,255,.25);background:transparent;display:none"><i class="ti ti-library"></i> SOPs</button>
+      <button class="btn sm gh" id="notif-log-btn" onclick="openNotifLog()" style="color:#fff;border-color:rgba(255,255,255,.25);background:transparent"><i class="ti ti-bell"></i> Log <span id="notif-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:2px;vertical-align:1px"></span></button>
+      <button class="btn sm gh" id="perf-log-btn" style="display:none;color:#fff;border-color:rgba(255,255,255,.25);background:transparent" onclick="openNotifLog()"><i class="ti ti-bell"></i> Log <span class="log-badge" style="display:none;background:#EF4444;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:2px;vertical-align:1px"></span></button>
+      <button class="btn sm gh" onclick="refreshDash()" id="refresh-btn" style="color:#fff;border-color:rgba(255,255,255,.25);background:transparent" title="Refresh"><i class="ti ti-refresh"></i> Refresh</button>
       <button class="btn gld sm" id="add-item-btn" onclick="openAdd()" style="display:none"><i class="ti ti-plus"></i> Add item</button>
-      <button class="btn sm gh" onclick="openHelp()" style="color:#fff;border-color:rgba(255,255,255,.25)" title="Help"><i class="ti ti-help-circle"></i> Help</button>
-      <button class="btn sm gh" onclick="doSignOut()" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.15)" title="Sign out"><i class="ti ti-logout"></i></button>
+      <button class="btn sm gh" onclick="openHelp()" style="color:#fff;border-color:rgba(255,255,255,.25);background:transparent" title="Help"><i class="ti ti-help-circle"></i> Help</button>
+      <button class="btn sm gh" onclick="doSignOut()" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.15);background:transparent" title="Sign out"><i class="ti ti-logout"></i></button>
     </div>
   </div>
   <div id="preview-banner" style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:.6rem 1.5rem;background:#7C3AED;color:#fff;border-bottom:2px solid #5B21B6;position:sticky;top:64px;z-index:90;flex-wrap:wrap"></div>
@@ -619,7 +619,7 @@ select.ie{cursor:pointer;height:auto;padding:2px 4px}
       <button class="tab-btn" id="tab-fin" onclick="switchTab('fin')" style="display:none"><i class="ti ti-credit-card"></i> Finance</button>
       <button class="tab-btn" id="tab-agenda" onclick="switchTab('agenda')" style="display:none"><i class="ti ti-calendar-event"></i> Agenda</button>
     </div>
-    <div class="main"><div id="dash"></div><div id="cardlog-view" style="display:none"></div><div id="checklog-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
+    <div class="main" id="admin-main"><div id="dash"></div><div id="cardlog-view" style="display:none"></div><div id="checklog-view" style="display:none"></div><div id="fin-view" style="display:none"></div><div id="agenda-view" style="display:none"></div></div>
   </div>
   <div id="perf-app" style="display:none">
     <div class="tab-bar" id="perf-tab-bar">
@@ -1099,8 +1099,7 @@ window.previewAs=function(name){
   document.getElementById('notif-log-btn').style.display='none';
   document.getElementById('perf-log-btn').style.display='';
   // Hide Brian's admin dashboard entirely
-  const adminMain=document.getElementById('tab-bar-wrap').nextElementSibling;
-  if(adminMain)adminMain.style.display='none';
+  document.getElementById('admin-main').style.display='none';
   // Show performer view
   document.getElementById('perf-app').style.display='block';
   // Card Log tab visible only when previewing Keith Leffler
@@ -1116,8 +1115,7 @@ window.exitPreview=function(){
   if(banner)banner.style.display='none';
   document.getElementById('tab-bar-wrap').style.display='';
   // Restore Brian's admin dashboard
-  const adminMain=document.getElementById('tab-bar-wrap').nextElementSibling;
-  if(adminMain)adminMain.style.display='';
+  document.getElementById('admin-main').style.display='';
   document.getElementById('perf-app').style.display='none';
   document.getElementById('admin-btn').style.display='';
   document.getElementById('perf-log-btn').style.display='none';
@@ -3959,6 +3957,7 @@ function completeLogin(name){
     document.getElementById('notif-log-btn').style.display='none';
     document.getElementById('perf-log-btn').style.display='';
     document.getElementById('tab-bar-wrap').style.display='none';
+    document.getElementById('admin-main').style.display='none';
     document.getElementById('perf-app').style.display='block';
     // Card Log tab is visible to Keith Leffler only
     const pcl=document.getElementById('ptab-cardlog');
